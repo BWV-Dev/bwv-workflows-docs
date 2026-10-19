@@ -10,10 +10,10 @@ import workflowsSchema from "@site/generated/schema/workflows.schema.json";
 
 👤 Responsible: Project Leader
 
-This page will provide the complete generated field reference for `.bwv/workflows.yml`, including nested fields, required values, defaults, and supported enums.
+Put the repository configuration at `.bwv/workflows.yml`. BWV Workflows reads this file from the pull request's base branch, so a pull request cannot change the workflow that evaluates itself.
 
-:::note Work in progress
-The placeholder schema below proves the generated reference pipeline. A later export will replace it.
-:::
+Start with [Your first workflow](../getting-started/first-workflow), then use this generated reference to check nested fields, required values, defaults, and allowed values. Keep `version: 1` at the root of the file.
+
+The reference below is generated from the same schema used by BWV Workflows. Do not copy every field; add only the trigger, steps, defaults, and success action your workflow needs.
 
 <SchemaReference schema={workflowsSchema} />

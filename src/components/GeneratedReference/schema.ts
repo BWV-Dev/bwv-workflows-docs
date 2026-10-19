@@ -57,9 +57,10 @@ export function schemaType(schema: JsonSchema, root: JsonSchema): string {
   if (resolved.enum?.length) return typeof resolved.enum[0];
   const alternatives = resolved.oneOf ?? resolved.anyOf;
   if (alternatives) {
-    return [
-      ...new Set(alternatives.map((option) => schemaType(option, root))),
-    ].join(" | ");
+    const types = alternatives.map((option) => schemaType(option, root));
+    return types
+      .filter((type, index) => types.indexOf(type) === index)
+      .join(" | ");
   }
   return "—";
 }

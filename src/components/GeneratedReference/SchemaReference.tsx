@@ -14,6 +14,25 @@ type Props = {
 
 type NestedSchema = { label: string; schema: JsonSchema };
 
+function alternativeNames(
+  alternatives: JsonSchema[],
+  root: JsonSchema,
+): string[] {
+  const required = alternatives.map(
+    (option) => resolveSchema(option, root).required ?? [],
+  );
+  const common = required[0]?.filter((name) =>
+    required.every((names) => names.includes(name)),
+  );
+
+  return required.map((names, index) => {
+    const distinctive = names.filter((name) => !common?.includes(name));
+    return distinctive.length > 0
+      ? distinctive.slice(0, 2).join(" + ")
+      : `option ${index + 1}`;
+  });
+}
+
 function nestedSchemas(
   schema: JsonSchema,
   root: JsonSchema,
@@ -27,8 +46,9 @@ function nestedSchemas(
 
   const alternatives = resolved.oneOf ?? resolved.anyOf ?? resolved.allOf;
   if (!alternatives) return [];
+  const names = alternativeNames(alternatives, root);
   const nested = alternatives.flatMap((option, index) =>
-    nestedSchemas(option, root, `${label} — option ${index + 1}`),
+    nestedSchemas(option, root, `${label} — ${names[index]}`),
   );
   return nested.length === 1 ? [{ ...nested[0], label }] : nested;
 }
@@ -91,16 +111,16 @@ function PropertiesTable({
       </div>
       {properties.flatMap(([name, property]) =>
         nestedSchemas(property, root, `${path}${name}`).map((nested) => (
-          <section className={styles.nested} key={nested.label}>
-            <h3>
+          <details className={styles.nested} key={nested.label}>
+            <summary>
               <code>{nested.label}</code>
-            </h3>
+            </summary>
             <PropertiesTable
               schema={nested.schema}
               root={root}
               path={`${nested.label}.`}
             />
-          </section>
+          </details>
         )),
       )}
     </>
@@ -116,9 +136,9 @@ export default function SchemaReference({ schema }: Props): ReactNode {
     return <PropertiesTable schema={roots[0].schema} root={schema} />;
   }
   return roots.map((root) => (
-    <section className={styles.variant} key={root.label}>
-      <h2>{root.label}</h2>
+    <details className={styles.variant} key={root.label}>
+      <summary>{root.label}</summary>
       <PropertiesTable schema={root.schema} root={schema} />
-    </section>
+    </details>
   ));
 }

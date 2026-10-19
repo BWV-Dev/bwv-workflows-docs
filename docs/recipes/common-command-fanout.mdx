@@ -1,14 +1,136 @@
 ---
 title: common/command-fanout
 sidebar_position: 5
-description: Run a command once for every item in an input list.
+description: Run one project skill or command per item with bounded process-level parallelism.
 slug: /recipes/common-command-fanout
 ---
 
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
 👤 Responsible: Project Leader
 
-This page will explain how the command fan-out recipe accepts items, runs a command for each one, and limits parallel work.
+Use this step recipe inside a workflow or project recipe when a previous step returns several independent items and the same project skill or command must handle each item. Every item runs in its own process. Use it only when the items write disjoint files.
 
-:::note Work in progress
-The complete recipe guide will be written in Wave 2.
+:::note
+This is a step recipe. The calling workflow owns the trigger, planning step, success action, and pull request output.
 :::
+
+## What users see on the pull request
+
+Users see the calling workflow's `bwv/<workflow>` check and status comment. The fan-out step appears as one workflow step while its item processes run independently. Any output pull request is created by the calling workflow, not by this recipe.
+
+Direct reviewers to [the check run and status comment](../pull-requests/read-checks-status). After fixing an item, use the retry action described in [Running something again](../pull-requests/retry).
+
+## Prerequisites
+
+Prepare the target repository and the calling workflow:
+
+- Add a planning step that returns an array. Each item must contain the data needed to build that item's arguments.
+- Add the project skill under `.claude/skills/<name>/SKILL.md` or the project command under `.claude/commands/<name>.md`.
+- Make every item write a different file or directory. Processes share one working tree and may run at the same time.
+- Give the run entry every tool it needs and explicitly deny paths that it must not edit.
+- Choose a `maxParallel` value that the independent work can support.
+- Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
+
+## Add the workflow
+
+Create `.bwv/workflows.yml` on the base branch. This example calls a project command named `review-doc` for two fake documents:
+
+```yaml
+version: 1
+
+workflows:
+  - name: review-specs
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - id: plan
+        name: List documents to review
+        shell: >-
+          printf '%s\n' '{"files":[{"args":"docs/specs/login.md"},{"args":"docs/specs/profile.md"}]}'
+        outputJson: true
+      - id: review
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@<sha-of-latest-tag>
+        with:
+          id: document
+          items: ${{ steps.plan.output.files }}
+          args: ${{ item.args }}
+          model: sonnet
+          maxTurns: 20
+          allowedTools: ["Read", "Write", "Edit", "Glob"]
+          disallowedTools: ["Edit(docs/specs/**)"]
+          timeoutMinutes: 20
+          maxParallel: 2
+          toolkit:
+            run: { command: review-doc }
+```
+
+Replace the fixed planning output with your repository's planner. Keep `items` as one runtime expression so it resolves to the array rather than text.
+
+### Get the SHA of the latest tag
+
+Replace `<tag>` with the latest release tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
+```
+
+If the returned `type` is `tag`, peel the annotated tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
+```
+
+Or inspect the tag with Git:
+
+```bash
+recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
+git ls-remote --tags "$recipe_url" \
+  "refs/tags/<tag>" "refs/tags/<tag>^{}"
+```
+
+Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+
+## Generated input reference
+
+<RecipeInputs recipe="common/command-fanout" />
+
+## Inputs explained
+
+| Input             | Meaning                                                                            | Example                             |
+| ----------------- | ---------------------------------------------------------------------------------- | ----------------------------------- |
+| `id`              | Step ID emitted for the fan-out work.                                              | `document`                          |
+| `items`           | Runtime expression that resolves to the array to process.                          | `${{ steps.plan.output.files }}`    |
+| `args`            | Argument text evaluated for each item and passed to the selected skill or command. | `${{ item.args }}`                  |
+| `model`           | Model used by every item process.                                                  | `sonnet`                            |
+| `maxTurns`        | Maximum agent turns allowed for each item.                                         | `20`                                |
+| `allowedTools`    | Tools available to each item process.                                              | `["Read", "Write", "Edit", "Glob"]` |
+| `disallowedTools` | Tools or path-scoped edits explicitly denied to each item process.                 | `["Edit(docs/specs/**)"]`           |
+| `timeoutMinutes`  | Time limit for each fan-out step.                                                  | `20`                                |
+| `maxParallel`     | Maximum item processes that run at the same time.                                  | `2`                                 |
+| `toolkit`         | Required toolkit containing exactly one `run` skill or command.                    | `{ run: { command: review-doc } }`  |
+
+## Common problems
+
+### The recipe is rejected at the workflow root
+
+Place it under a workflow's `steps`. `common/command-fanout` emits steps, not complete workflows.
+
+### `items` is treated as text
+
+Pass one complete runtime expression, such as `${{ steps.plan.output.files }}`. Embedded expressions are converted to text and cannot provide the array expected by `forEach`.
+
+### Item processes overwrite each other
+
+Change the planner or command so every item writes disjoint paths. Lowering `maxParallel` may hide the collision but does not satisfy the recipe's contract.
+
+### The run entry is missing
+
+Supply `toolkit.run` as a project skill or command. This recipe has no default because it cannot know what your project needs to run.
+
+### A process cannot edit or read a required file
+
+Check `allowedTools` and `disallowedTools`. The same lists apply to every item, so split work into separate calls when items need different permissions.

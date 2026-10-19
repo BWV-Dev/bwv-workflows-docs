@@ -1,14 +1,28 @@
 ---
 title: Recipe catalog
 sidebar_position: 1
-description: Browse the maintained recipes available to BWV Workflows.
+description: Choose a maintained BWV Workflows recipe for translation, test cases, or fan-out work.
 slug: /recipes
 ---
 
 👤 Responsible: Project Leader
 
-This page will introduce the official recipes in `BWV-Dev/bwv-workflows-recipes`, explain when to use each one, and show how to pin the full commit SHA.
+Use an official recipe when its trigger and output match the process in your repository. Pin every recipe to a full commit SHA before you merge the configuration.
 
-:::note Work in progress
-The complete catalog will be written in Wave 2.
+| Recipe                                                                              | What it does                                                                                                                             | Trigger                                                                                                        | Who reviews the output                                                                       |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [translation/grouped](/recipes/translation-grouped)                                 | Translates Japanese Markdown into Vietnamese, one source group per draft pull request, and keeps the reviewed translation cache aligned. | A merged sync pull request, a push to a translation branch, or a pull request that changes translation output. | Dev & Com review each translation pull request. BWV Workflows verifies its cache.            |
+| [translation/sync-cache-completeness](/recipes/translation-sync-cache-completeness) | Finds reviewer edits, updates only the affected translation caches, and verifies that every edit was recorded.                           | The calling workflow decides. `translation/grouped` calls it after a push to a translation branch.             | BWV Workflows verifies the cache; Dev & Com continue reviewing the translation pull request. |
+| [testcase/batch](/recipes/testcase-batch)                                           | Generates test cases from reviewed translations in resumable batches and opens one draft pull request per batch.                         | A push to a configured branch that changes a `.vi.md` file below the source root.                              | Dev & Com review each generated test-case pull request.                                      |
+| [common/command-fanout](/recipes/common-command-fanout)                             | Runs one project skill or command for every item, with separate processes and bounded parallelism.                                       | The calling workflow decides.                                                                                  | The reviewers of the calling workflow review its output.                                     |
+
+## Choose a recipe
+
+1. **Project Leader:** Choose `translation/grouped` for the complete translation process. Do not add `translation/sync-cache-completeness` separately unless you are building your own translation workflow.
+2. **Project Leader:** Choose `testcase/batch` when reviewed translations are the source for generated test cases.
+3. **Project Leader:** Choose `common/command-fanout` inside a project recipe when the same project command must run independently for several items.
+4. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and replace `<sha-of-latest-tag>` with a full 40-character commit SHA.
+
+:::tip
+Start with each recipe's default toolkit. Override a toolkit only when your repository already has skills or scripts that meet the complete toolkit contract.
 :::

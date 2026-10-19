@@ -1,14 +1,114 @@
 ---
 title: testcase/batch
 sidebar_position: 4
-description: Process test cases in controlled batches.
+description: Generate test cases from reviewed translations in resumable draft pull request batches.
 slug: /recipes/testcase-batch
 ---
 
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
 👤 Responsible: Project Leader
 
-This page will explain how the batch test-case recipe divides work, controls parallel runs, and reports each result.
+Use this workflow recipe when reviewed `.vi.md` specifications are the source for generated test cases. On each matching push, it finds missing or stale test-case files, generates a batch, and opens one draft pull request. It then repeats from the updated working tree until the backlog is empty or `maxIterations` is reached.
 
-:::note Work in progress
-The complete recipe guide will be written in Wave 2.
-:::
+Progress comes from committed files and their source-commit metadata. A later run can resume without a separate cursor.
+
+## What users see on the pull request
+
+BWV Workflows opens one draft pull request per batch. Each pull request contains only that batch's test-case files. Dev & Com review the generated cases and every **TODO: to confirm** against the reviewed specification.
+
+Read [the check run and status comment](../pull-requests/read-checks-status) for the current batch. Use [Running something again](../pull-requests/retry) if generation fails after the source or configuration is fixed. If an output pull request was closed without a merge, follow [Recreating a closed pull request](../pull-requests/recreate).
+
+## Prerequisites
+
+Prepare the target repository before adding the recipe:
+
+- Store reviewed translations as `.vi.md` files below one source folder, such as `docs_vn/specs`.
+- Choose a separate mirrored output folder, such as `testcases/specs`.
+- Protect each configured source branch so only reviewed translations trigger generation.
+- Reserve the configured branch prefix for BWV Workflows. The recipe adds a stable batch ID to it.
+- Keep spaces out of configured paths and document paths.
+- Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
+
+## Add the workflow
+
+Create `.bwv/workflows.yml` on the base branch:
+
+```yaml
+version: 1
+
+workflows:
+  - name: generate-testcases
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/testcase/batch.yml@<sha-of-latest-tag>
+    with:
+      sourceRoot: docs_vn/specs
+      outputRoot: testcases/specs
+      branches: [main]
+      branchPrefix: bwv/testcases
+      model: sonnet
+      maxIterations: 10
+```
+
+The recipe uses its maintained planner and generation skill when `toolkit` is omitted. The default planner takes one pending file per batch; `maxIterations` limits passes, not files within a batch.
+
+### Get the SHA of the latest tag
+
+Replace `<tag>` with the latest release tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
+```
+
+If the returned `type` is `tag`, peel the annotated tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
+```
+
+Or inspect the tag with Git:
+
+```bash
+recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
+git ls-remote --tags "$recipe_url" \
+  "refs/tags/<tag>" "refs/tags/<tag>^{}"
+```
+
+Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+
+## Generated input reference
+
+<RecipeInputs recipe="testcase/batch" />
+
+## Inputs explained
+
+| Input           | Meaning                                                                                                                    | Example           |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| `sourceRoot`    | Root folder of reviewed `.vi.md` specifications.                                                                           | `docs_vn/specs`   |
+| `outputRoot`    | Root folder for mirrored `.testcase.md` files.                                                                             | `testcases/specs` |
+| `branches`      | Push branches that start planning when a reviewed translation changes.                                                     | `[main]`          |
+| `branchPrefix`  | Prefix for generated batch branches. The recipe adds a stable ID derived from the first file in the batch.                 | `bwv/testcases`   |
+| `model`         | Model used by the test-case generation skill.                                                                              | `sonnet`          |
+| `maxIterations` | Maximum batches one workflow run may publish.                                                                              | `10`              |
+| `toolkit`       | Complete replacement for the default batch planner and test-case generation skill. Omit it to use the maintained defaults. | Omitted           |
+
+## Common problems
+
+### A translation change does not start a run
+
+Confirm that the push landed on one of `branches` and changed a `.vi.md` file below `sourceRoot`.
+
+### The same source stays in the backlog
+
+The generated test-case file must end with source metadata containing the full commit that last changed the translation. Fix a custom generation tool that omits or changes that footer.
+
+### A large backlog remains after a successful run
+
+The run stops at `maxIterations`. Review the pull requests already opened, then start another run or raise the limit without exceeding the generated reference maximum.
+
+### A batch branch cannot be updated
+
+BWV Workflows does not overwrite a batch branch after another author changes its tip. Preserve the human commit, choose a different `branchPrefix`, or resolve the branch before retrying.
+
+### Two files resolve to one batch ID
+
+Rename one source path so each pending file produces a distinct branch ID. The planner refuses the collision rather than letting one batch overwrite another.

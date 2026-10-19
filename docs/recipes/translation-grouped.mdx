@@ -1,18 +1,124 @@
 ---
 title: translation/grouped
 sidebar_position: 2
-description: Translate documents in source-based groups.
+description: Translate Japanese Markdown in source-based groups and keep reviewed caches synchronized.
 slug: /recipes/translation-grouped
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
 import { RecipeInputs } from "@site/src/components/GeneratedReference";
 
 👤 Responsible: Project Leader
 
-This page will explain when to use the grouped translation recipe, how it separates source changes, and which outputs it expects.
+Use this workflow recipe for a repository that synchronizes Japanese Markdown through a dedicated branch and publishes reviewed Vietnamese translations to another branch. It groups files by their source pull request, creates one draft translation pull request per group, and checks that each translation and cache are complete before publication.
 
-:::note Work in progress
-The complete recipe guide will be written in Wave 2. The input table below is generated.
-:::
+The recipe also keeps cache files aligned with wording that reviewers edit on a translation branch. Pull requests into the configured gate branches must pass the cache check.
+
+## What users see on the pull request
+
+Before the sync pull request merges, BWV Workflows adds a planned [translation tracker](../pull-requests/translation-tracker). After the merge, the same tracker shows each source group and its generated pull request.
+
+<GitHubComment sample="translation-tracker-published" author="BWV Workflows" />
+
+Each generated pull request is a draft. Dev & Com review the Vietnamese Markdown there, then follow [Running something again](../pull-requests/retry), [Recreating a closed pull request](../pull-requests/recreate), or [When a merge is skipped or needs mapping](../pull-requests/merge-skipped) when the tracker offers an action.
+
+## Prerequisites
+
+Prepare the target repository before adding the recipe:
+
+- Keep the Japanese Markdown below one repository-relative source folder, such as `docs/specs`.
+- Choose a separate output folder that mirrors the source tree, such as `docs_vn/specs`.
+- Add a Markdown glossary, such as `docs/glossary.md`, with project terminology and translation rules. Project rules in this file take priority over the recipe's generic rules.
+- Use a sync branch, such as `docs-sync`, and merge it into the sync base, such as `main`, through a pull request.
+- Protect the sync base and every gate branch so reviewed output cannot bypass the required checks.
+- Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
+- Keep spaces out of the configured paths and document paths. The recipe passes these paths as separate command arguments.
+
+## Add the workflow
+
+Create `.bwv/workflows.yml` on the base branch:
+
+```yaml
+version: 1
+
+workflows:
+  - name: translate-specs
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@<sha-of-latest-tag>
+    with:
+      sourceRoot: docs/specs
+      outputRoot: docs_vn/specs
+      glossary: docs/glossary.md
+      syncBase: main
+      sourceBranch: docs-sync
+      gateBases: [main, docs-sync]
+      branchPrefix: bwv/translate
+      model: sonnet
+      maxFilesPerGroup: 3
+```
+
+The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted.
+
+### Get the SHA of the latest tag
+
+Replace `<tag>` with the latest release tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
+```
+
+If the returned `type` is `commit`, use its `sha`. If it is `tag`, peel the annotated tag and use the commit SHA returned here:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
+```
+
+You can also inspect both the tag and its peeled commit with Git:
+
+```bash
+recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
+git ls-remote --tags "$recipe_url" \
+  "refs/tags/<tag>" "refs/tags/<tag>^{}"
+```
+
+Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+
+## Generated input reference
 
 <RecipeInputs recipe="translation/grouped" />
+
+## Inputs explained
+
+| Input              | Meaning                                                                                                                                    | Example             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| `sourceRoot`       | Root folder of the Japanese `.md` source tree.                                                                                             | `docs/specs`        |
+| `outputRoot`       | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                                                      | `docs_vn/specs`     |
+| `glossary`         | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`  |
+| `syncBase`         | Base branch that receives the merged sync pull request and generated translation pull requests.                                            | `main`              |
+| `sourceBranch`     | Head branch of the sync pull request. A merge from this branch into `syncBase` starts grouping.                                            | `docs-sync`         |
+| `gateBases`        | Pull request base branches on which translation and cache changes must pass the cache-in-sync check.                                       | `[main, docs-sync]` |
+| `branchPrefix`     | Prefix for generated translation branches. BWV Workflows adds the sync pull request and group identifiers.                                 | `bwv/translate`     |
+| `model`            | Model used by the translation and cache-sync skills.                                                                                       | `sonnet`            |
+| `maxFilesPerGroup` | Maximum source files in one group and maximum translations run at the same time for that group.                                            | `3`                 |
+| `toolkit`          | Complete replacement for the default translation, cache-sync, output-check, and drift-check tools. Omit it to use the maintained defaults. | Omitted             |
+
+## Common problems
+
+### No translation starts after a merge
+
+Check that the pull request merged from `sourceBranch` into `syncBase` and changed a `.md` file below `sourceRoot`. The branch direction is significant.
+
+### A group fails with missing outputs
+
+Open the check run and inspect the named file. Every source must produce both the mirrored `.vi.md` translation and `.vi.json` cache. Fix the source, glossary, or custom toolkit, then follow [Running something again](../pull-requests/retry).
+
+### The tracker says outputs are partly on the base branch
+
+Do not retry immediately. Resolve the listed output files on the base branch first, then use the action offered by the [translation tracker](../pull-requests/translation-tracker).
+
+### The cache check fails after a review edit
+
+Check that the edit was pushed to a branch below `branchPrefix`. Read the cache-sync check result, fix any reported document structure or cache problem, and retry after the branch is corrected.
+
+### A configured path is rejected
+
+Use repository-relative paths without whitespace, `.` segments, or `..` segments. Confirm that the source folder and glossary exist on the base branch.

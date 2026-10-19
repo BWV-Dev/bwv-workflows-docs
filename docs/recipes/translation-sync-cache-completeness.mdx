@@ -1,14 +1,129 @@
 ---
 title: translation/sync-cache-completeness
 sidebar_position: 3
-description: Check that synchronized translation cache entries are complete.
+description: Synchronize every reviewed translation edit into its cache and verify completeness.
 slug: /recipes/translation-sync-cache-completeness
 ---
 
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
 👤 Responsible: Project Leader
 
-This page will explain when to use the translation cache completeness recipe, which files it checks, and how to configure its inputs.
+Use this step recipe when you are building a custom translation workflow that lets reviewers edit `.vi.md` files. It finds translations that changed after their `.vi.json` cache, lists every reviewed edit, runs one cache-sync process per affected document, and verifies that each edit is represented in the cache.
 
-:::note Work in progress
-The complete recipe guide will be written in Wave 2.
+:::note
+`translation/grouped` already calls this recipe. Do not add the wrapper below when you use `translation/grouped` unless you intentionally need another cache-sync workflow.
 :::
+
+## What users see on the pull request
+
+The calling workflow decides when this step runs and how it publishes changes. In the example below, a reviewer pushes an edit to a translation branch. BWV Workflows updates only the affected `.vi.json` caches, verifies them, and commits the cache changes back to the same pull request branch.
+
+Dev & Com can read the result in [the check run and status comment](../pull-requests/read-checks-status). If it fails, fix the reported document or cache problem before following [Running something again](../pull-requests/retry).
+
+## Prerequisites
+
+Prepare the target repository before adding this step recipe:
+
+- Keep Japanese source files and their mirrored `.vi.md` and `.vi.json` outputs in stable folder trees.
+- Add a Markdown glossary with the project terminology and segmentation rules used to create the translations.
+- Make sure each translation records its source path and source commit, and each cache keeps its metadata wrapper. The default translation recipe writes both.
+- Run the calling workflow with `fetchDepth: 0`. The drift and edit checks compare Git history.
+- Reserve `.bwv/vi-cache-edits/` for temporary plans created during the run. Do not commit that folder.
+- Protect the base branch so only reviewed, verified cache changes merge.
+- Keep spaces out of source, output, and document paths.
+
+## Add the workflow
+
+Create `.bwv/workflows.yml` on the base branch. This example watches the translation branches created by the grouped recipe:
+
+```yaml
+version: 1
+
+workflows:
+  - name: sync-reviewed-translation-caches
+    fetchDepth: 0
+    on:
+      push:
+        branches: ["bwv/translate/**"]
+        paths: ["docs_vn/specs/**/*.vi.md"]
+    steps:
+      - id: cache
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@<sha-of-latest-tag>
+        with:
+          sourceRoot: docs/specs
+          outputRoot: docs_vn/specs
+          glossary: docs/glossary.md
+          model: sonnet
+    onSuccess:
+      if: ${{ steps.cache_drift.output.drifted > 0 }}
+      commitMessage: "chore(bwv): sync reviewed translation caches"
+      createPullRequest:
+        branch: ${{ push.branch }}
+        base: main
+        title: "chore(vi): sync reviewed translation caches"
+        draft: true
+        labels: ["bwv-automation"]
+```
+
+The `cache` caller ID prefixes the nested `drift` step as `cache_drift`. Keep that prefix in the `onSuccess.if` expression.
+
+### Get the SHA of the latest tag
+
+Replace `<tag>` with the latest release tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
+```
+
+If the returned `type` is `tag`, peel the annotated tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
+```
+
+Or inspect the tag with Git:
+
+```bash
+recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
+git ls-remote --tags "$recipe_url" \
+  "refs/tags/<tag>" "refs/tags/<tag>^{}"
+```
+
+Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+
+## Generated input reference
+
+<RecipeInputs recipe="translation/sync-cache-completeness" />
+
+## Inputs explained
+
+| Input        | Meaning                                                                                                                                        | Example            |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `sourceRoot` | Root folder of the original Japanese `.md` files.                                                                                              | `docs/specs`       |
+| `outputRoot` | Root folder containing mirrored `.vi.md` translations and `.vi.json` caches.                                                                   | `docs_vn/specs`    |
+| `glossary`   | Markdown file containing project terms and rules for matching source and translation segments.                                                 | `docs/glossary.md` |
+| `model`      | Model used by the cache-sync skill.                                                                                                            | `sonnet`           |
+| `toolkit`    | Complete replacement for the default cache-sync skill, drift checker, and protected edit-plan checker. Omit it to use the maintained defaults. | Omitted            |
+
+## Common problems
+
+### The workflow fails before cache synchronization
+
+Confirm that `fetchDepth: 0` is set and that the source, translation, glossary, and metadata exist. The recipe stops before publishing when it cannot build a complete edit plan.
+
+### The verification reports a missing edit
+
+The cache-sync tool did not record every reviewed segment under the matching source text. Fix the custom tool or cache. Do not edit the translation merely to make the check pass.
+
+### The workflow reports changes outside the caches
+
+The sync step may change only the drifted `.vi.json` files. Remove unrelated changes and ensure a custom `syncCache` tool does not edit the translation or workflow files.
+
+### The transient plan folder is already tracked
+
+Remove `.bwv/vi-cache-edits/` from the repository. The recipe creates and removes protected plans there during each run.
+
+### The success condition cannot find `cache_drift`
+
+Match the expression to the caller step ID. If you rename `id: cache`, rename the prefix in `steps.cache_drift.output.drifted` too.
