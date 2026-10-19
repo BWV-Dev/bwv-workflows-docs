@@ -5,10 +5,83 @@ description: Understand what BWV Workflows does for a repository.
 slug: /overview/what-is-bwv-workflows
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
+
 👤 Responsible: Project Leader and Dev & Com
 
-This page will explain what BWV Workflows automates, where it reports results, and which responsibilities belong to Project Leaders and pull request contributors.
+BWV Workflows is a GitHub App that runs repository jobs with Claude. A
+repository defines its jobs in `.bwv/workflows.yml`. The App reports each run
+in GitHub and can open a pull request with the result.
 
-:::note Work in progress
-This guide will be completed in Wave 2.
-:::
+## Workflow Summary
+
+1. [A pull request or push triggers a workflow](#1-trigger-a-workflow).
+2. [BWV Workflows reports progress](#2-follow-the-run-in-github).
+3. [The App publishes the result](#3-review-the-result-pull-request).
+4. [Each role follows its own guide](#4-choose-your-role-track).
+
+## Step-by-Step Instructions
+
+### 1. Trigger a workflow
+
+👤 Responsible: Project Leader and Dev & Com
+
+A Project Leader chooses one or both triggers in `.bwv/workflows.yml`:
+
+- **Pull request:** Run when a pull request targets a configured base branch.
+- **Push:** Run when commits reach a configured branch.
+
+The workflow can filter by branch, pull request action, and changed path. See
+[Triggers](../configuring/triggers) for the configuration options.
+
+### 2. Follow the run in GitHub
+
+👤 Responsible: Dev & Com
+
+Open the source pull request. Look for these updates:
+
+- A check run named `bwv/<workflow>` shows each step and its result.
+- One status comment from **BWV Workflows** updates in place while the run
+  progresses.
+- A failed step includes a short error and the end of its output in the check
+  run.
+
+<GitHubComment sample="status-running" author="BWV Workflows" />
+
+Push workflows report on the pushed commit. They normally do not have a source
+pull request to comment on.
+
+### 3. Review the result pull request
+
+👤 Responsible: Dev & Com
+
+When a workflow is configured to publish changes, BWV Workflows commits those
+changes to a new branch and opens a result pull request. Review and merge that
+pull request through the repository's normal process.
+
+If a workflow only checks or reports information, it can finish without a
+result pull request. The check run remains the source of its result.
+
+#### Example: one change through `acme/web-app`
+
+1. A Project Leader adds a `review-docs` workflow to the `main` branch of
+   `acme/web-app`.
+2. A developer opens a pull request that changes `docs/specs/login.md`.
+3. BWV Workflows starts the `bwv/review-docs` check and posts one status
+   comment.
+4. The workflow reads the approved configuration from `main` and works on the
+   proposed document change.
+5. The check finishes. BWV Workflows links the result pull request from the
+   status comment.
+6. The team reviews the generated changes before merging them.
+
+### 4. Choose your role track
+
+👤 Responsible: Project Leader and Dev & Com
+
+- **Project Leader:** Start with
+  [Onboard your repository](../getting-started/onboard-repository). Then protect
+  the required branches and add the first workflow.
+- **Dev & Com:** Start with
+  [Reading the check run and status comment](../pull-requests/read-checks-status).
+  You do not need to read the workflow YAML.

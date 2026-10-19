@@ -5,10 +5,108 @@ description: Connect the workflow schema to YAML editor suggestions.
 slug: /getting-started/editor-autocomplete
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 👤 Responsible: Project Leader
 
-This page will show how to add the `$schema` directive with `<engine-host>` and how to ask the BWV Workflows maintainers for the correct host.
+Connect the BWV Workflows JSON Schemas to VS Code. The schemas add completion,
+field descriptions, and validation for workflow and recipe YAML.
 
-:::note Work in progress
-This guide will be completed in Wave 2.
+## Workflow Summary
+
+1. [Install the YAML extension](#1-install-the-yaml-extension).
+2. [Get the schema host](#2-get-the-schema-host).
+3. [Connect each YAML file to its schema](#3-connect-each-yaml-file-to-its-schema).
+4. [Verify completion and validation](#4-verify-completion-and-validation).
+
+## Step-by-Step Instructions
+
+### 1. Install the YAML extension
+
+👤 Responsible: Project Leader
+
+1. Open **Extensions** in VS Code.
+2. Search for **YAML** by Red Hat.
+3. Install the extension with identifier `redhat.vscode-yaml`.
+4. Reload VS Code if prompted.
+
+### 2. Get the schema host
+
+👤 Responsible: Project Leader
+
+Ask the BWV Workflows maintainers for the value of `<engine-host>`. Do not
+guess the host or commit it while it still contains the placeholder.
+
+:::note Company network required
+The schema URLs work only from the company network. Connect to that network
+before testing autocomplete or validation.
+:::
+
+### 3. Connect each YAML file to its schema
+
+👤 Responsible: Project Leader
+
+Choose one setup. Replace `<engine-host>` with the host supplied by the BWV
+Workflows maintainers.
+
+<Tabs groupId="schema-setup">
+  <TabItem value="headers" label="File headers" default>
+
+Add this comment as the first line of `.bwv/workflows.yml`:
+
+```yaml
+# yaml-language-server: $schema=https://<engine-host>/schemas/workflows.json
+version: 1
+```
+
+Add this comment as the first line of every recipe file:
+
+```yaml
+# yaml-language-server: $schema=https://<engine-host>/schemas/recipe-v1.json
+apiVersion: 1
+```
+
+Use the `recipe-v1` schema for local recipes and recipes kept in a recipe
+repository.
+
+  </TabItem>
+  <TabItem value="settings" label="VS Code settings">
+
+Create or update `.vscode/settings.json` in the repository:
+
+```json title=".vscode/settings.json"
+{
+  "yaml.schemas": {
+    "https://<engine-host>/schemas/workflows.json": ".bwv/workflows.yml",
+    "https://<engine-host>/schemas/recipe-v1.json": [
+      "recipes/**/*.yml",
+      ".bwv/recipes/*.yml"
+    ]
+  }
+}
+```
+
+Use this option when the team wants one shared mapping without header comments
+in every YAML file.
+
+  </TabItem>
+</Tabs>
+
+### 4. Verify completion and validation
+
+👤 Responsible: Project Leader
+
+1. Open `.bwv/workflows.yml` from the repository workspace.
+2. Place the cursor under a workflow and start editor completion.
+3. Confirm that VS Code suggests fields such as `on`, `steps`, and
+   `onSuccess`.
+4. Enter an unknown field and confirm that the YAML extension marks it as an
+   error. Remove the field afterward.
+5. Open a recipe file and confirm that `apiVersion`, `inputs`, `workflows`, and
+   `steps` receive recipe-aware suggestions.
+
+:::warning Schema validation is not the final check
+Some rules depend on the complete workflow and run only when BWV Workflows
+reads the configuration. Treat a successful check run as the final validation.
 :::
