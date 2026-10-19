@@ -1,0 +1,42 @@
+{
+  "name": "bwv-workflows-docs",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve",
+    "clear": "docusaurus clear",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "content-guard": "node scripts/content-guard.mjs",
+    "test:content-guard": "node --test scripts/content-guard.test.mjs"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.10.2",
+    "@docusaurus/preset-classic": "3.10.2",
+    "@easyops-cn/docusaurus-search-local": "0.55.3",
+    "@mdx-js/react": "^3.1.1",
+    "clsx": "^2.1.1",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-markdown": "10.1.0",
+    "rehype-raw": "7.0.0",
+    "remark-gfm": "4.0.1"
+  },
+  "devDependencies": {
+    "@docusaurus/tsconfig": "3.10.2",
+    "@docusaurus/types": "3.10.2",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.2",
+    "prettier": "^3.6.2",
+    "raw-loader": "^4.0.2",
+    "typescript": "6.0.3"
+  }
+}

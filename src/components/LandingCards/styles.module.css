@@ -1,0 +1,58 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.8rem;
+  min-height: 9rem;
+  padding: 1.25rem;
+  border: 1px solid var(--bwv-border);
+  border-radius: 0.75rem;
+  color: var(--ifm-font-color-base);
+  background: var(--bwv-surface);
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.card strong {
+  align-self: center;
+  font-size: 1rem;
+}
+
+.card > span:last-child {
+  grid-column: 2;
+  color: var(--bwv-muted);
+  line-height: 1.55;
+}
+
+.icon {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.5rem;
+  color: var(--ifm-color-primary);
+  background: color-mix(in srgb, var(--ifm-color-primary) 10%, transparent);
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/workflows.schema.json",
+  "title": "BWV Workflows configuration",
+  "type": "object",
+  "required": ["version", "workflows"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "default": 1,
+      "description": "Configuration format version."
+    },
+    "workflows": {
+      "type": "array",
+      "description": "Workflows declared for the repository.",
+      "items": {
+        "type": "object",
+        "required": ["name", "on", "steps"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Stable workflow name."
+          },
+          "on": {
+            "type": "object",
+            "description": "Events that start this workflow.",
+            "properties": {
+              "pull_request": {
+                "type": "object",
+                "description": "Pull request trigger."
+              },
+              "push": {
+                "type": "object",
+                "description": "Push trigger."
+              }
+            }
+          },
+          "steps": {
+            "type": "array",
+            "description": "Ordered work to run.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Optional step identifier."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

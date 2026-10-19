@@ -1,0 +1,117 @@
+:root {
+  --ifm-color-primary: #e84f18;
+  --ifm-color-primary-dark: #d94713;
+  --ifm-color-primary-darker: #cd4312;
+  --ifm-color-primary-darkest: #a8370f;
+  --ifm-color-primary-light: #eb632f;
+  --ifm-color-primary-lighter: #ed6c3d;
+  --ifm-color-primary-lightest: #f18a66;
+  --ifm-font-family-base:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --ifm-heading-font-family: var(--ifm-font-family-base);
+  --ifm-heading-font-weight: 680;
+  --ifm-code-font-size: 92%;
+  --ifm-navbar-height: 4rem;
+  --bwv-border: #e6e7eb;
+  --bwv-surface: #ffffff;
+  --bwv-muted: #5f6673;
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #ff7545;
+  --ifm-color-primary-dark: #ff5f28;
+  --ifm-color-primary-darker: #ff541a;
+  --ifm-color-primary-darkest: #dc3800;
+  --ifm-color-primary-light: #ff8b62;
+  --ifm-color-primary-lighter: #ff9670;
+  --ifm-color-primary-lightest: #ffc0aa;
+  --bwv-border: #343943;
+  --bwv-surface: #20242b;
+  --bwv-muted: #aeb5c0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-size: 15px;
+}
+
+.navbar {
+  border-bottom: 1px solid var(--bwv-border);
+  box-shadow: none;
+}
+
+.navbar__brand::before {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.55rem;
+  border-radius: 50%;
+  background: var(--ifm-color-primary);
+  content: "";
+}
+
+.navbar__title {
+  font-weight: 700;
+}
+
+.theme-doc-sidebar-container {
+  border-right-color: var(--bwv-border) !important;
+}
+
+.menu__link {
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  background: color-mix(in srgb, var(--ifm-color-primary) 10%, transparent);
+}
+
+.theme-doc-markdown {
+  max-width: 820px;
+}
+
+.theme-doc-markdown h1 {
+  letter-spacing: -0.035em;
+}
+
+.theme-doc-markdown h2 {
+  margin-top: 2.25rem;
+  letter-spacing: -0.02em;
+}
+
+.alert {
+  border: 1px solid var(--bwv-border);
+  border-left-width: 4px;
+  box-shadow: none;
+}
+
+table {
+  display: table;
+  width: 100%;
+}
+
+table th,
+table td {
+  border-color: var(--bwv-border);
+}
+
+.footer {
+  border-top: 1px solid var(--bwv-border);
+  background: var(--ifm-background-surface-color);
+}
+
+.footer__copyright {
+  color: var(--bwv-muted);
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+@media (min-width: 997px) {
+  .main-wrapper > .container {
+    --ifm-container-width-xl: 1320px;
+  }
+}

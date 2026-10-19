@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/recipe-v1.schema.json",
+  "title": "BWV Workflows recipe",
+  "type": "object",
+  "required": ["version", "steps"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "default": 1,
+      "description": "Recipe format version."
+    },
+    "description": {
+      "type": "string",
+      "description": "Short purpose of the recipe."
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Values accepted by the recipe.",
+      "properties": {
+        "sourceRoot": {
+          "type": "string",
+          "description": "Repository-relative source directory."
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "description": "Steps inserted into the workflow.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Optional step identifier."
+          }
+        }
+      }
+    }
+  }
+}

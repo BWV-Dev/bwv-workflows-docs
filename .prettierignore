@@ -1,0 +1,5 @@
+build
+.docusaurus
+node_modules
+pnpm-lock.yaml
+generated/schema/*.json

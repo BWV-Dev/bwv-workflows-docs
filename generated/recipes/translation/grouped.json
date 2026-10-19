@@ -1,0 +1,27 @@
+{
+  "path": "translation/grouped.yml",
+  "description": "Translate changed documents in source groups.",
+  "inputs": [
+    {
+      "name": "sourceRoot",
+      "type": "string",
+      "required": true,
+      "description": "Repository-relative directory that contains source documents."
+    },
+    {
+      "name": "maxFilesPerGroup",
+      "type": "integer",
+      "required": false,
+      "default": 3,
+      "description": "Maximum number of source files in one group."
+    },
+    {
+      "name": "language",
+      "type": "string",
+      "required": false,
+      "default": "vi",
+      "description": "Target language code.",
+      "enum": ["ja", "vi"]
+    }
+  ]
+}

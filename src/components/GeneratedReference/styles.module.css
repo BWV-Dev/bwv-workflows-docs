@@ -1,0 +1,35 @@
+.tableWrap {
+  margin: 1rem 0 1.5rem;
+  overflow-x: auto;
+}
+
+.tableWrap table {
+  min-width: 690px;
+  margin: 0;
+}
+
+.tableWrap td:first-child code {
+  white-space: nowrap;
+}
+
+.nested {
+  margin: 1.5rem 0 0 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--bwv-border);
+}
+
+.nested h3,
+.nested h4,
+.nested h5,
+.nested h6 {
+  margin-top: 0;
+}
+
+.variant {
+  margin-top: 2rem;
+}
+
+.empty {
+  color: var(--bwv-muted);
+  font-style: italic;
+}
