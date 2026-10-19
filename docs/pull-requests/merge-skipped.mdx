@@ -5,10 +5,86 @@ description: Resolve skipped groups and source changes that need mapping.
 slug: /pull-requests/merge-skipped
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
+
 👤 Responsible: Dev & Com
 
-This page will explain tracker messages for work already on the base branch, partly present outputs, and source changes that need a mapping.
+## When you see this
 
-:::note Work in progress
-This guide will be completed in Wave 2.
+Two uncommon messages need a person to act:
+
+- **merge workflows did not run** means the bot could not safely determine the merge result it should process.
+- **needs mapping** means the bot found more than one possible source pull request for a source change.
+
+## Step-by-step
+
+### If the merge was skipped
+
+<GitHubComment sample="merge-skipped" author="BWV Workflows" />
+
+1. **Dev or Com:** Read the **Skipped** list in the bot comment.
+2. On that merged pull request, comment:
+
+   ```text
+   /bwv retry
+   ```
+
+3. Wait for the bot's answer and the new `bwv/…` check runs.
+4. If the same skip reason appears again, ask the BWV Workflows maintainers to investigate. Do not close and reopen the pull request.
+
+### If a group needs mapping
+
+<GitHubComment
+  sample="translation-tracker-needs-mapping"
+  author="BWV Workflows"
+/>
+
+1. **Dev or Com:** Read the **Needs a provenance decision** section.
+2. Check the candidate source pull requests named there and decide which one owns the change.
+3. On the sync pull request, copy the command shown by the tracker. It has this form:
+
+   ```text
+   /bwv provenance <sha>=<pr>
+   ```
+
+4. Replace `<sha>` with the commit shown and `<pr>` with the chosen source pull request number. For example:
+
+   ```text
+   /bwv provenance 5555555=7
+   ```
+
+This case is rare. If the candidate pull requests do not make the correct choice clear, ask the BWV Workflows maintainers before commenting.
+
+## What happens next
+
+`/bwv retry` asks the skipped merge workflows to run again. `/bwv provenance …` saves the chosen source mapping and rechecks that merge. The tracker then replaces **needs mapping** with the resolved group and continues publication.
+
+:::note Why did the bot skip instead of guessing?
+The bot publishes from a specific merge result. When it cannot identify that result safely, it leaves the work untouched and tells you which workflows did not run.
 :::
+
+:::caution Choose the mapping carefully
+The selected pull request becomes the source shown for that group. Verify the changed files and the candidate pull requests before posting the command.
+:::
+
+:::note Is `/bwv provenance` another retry command?
+No. Use it only for a tracker row that says **needs mapping**. Use `/bwv retry` for an ordinary failed or skipped run.
+:::
+
+### Related tracker outcomes
+
+These do not mean that the merge itself was skipped:
+
+<GitHubComment
+  sample="translation-tracker-outputs-already-on-base"
+  author="BWV Workflows"
+/>
+
+No action is needed when all outputs are already on the base branch.
+
+<GitHubComment
+  sample="translation-tracker-outputs-partly-on-base"
+  author="BWV Workflows"
+/>
+
+When only some outputs are on the base branch, resolve the listed files there and then retry the group.
