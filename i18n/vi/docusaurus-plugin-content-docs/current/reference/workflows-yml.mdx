@@ -1,0 +1,20 @@
+---
+title: workflows.yml
+sidebar_position: 1
+description: Tài liệu tham khảo được tạo tự động cho .bwv/workflows.yml.
+slug: /reference/workflows-yml
+source_hash: 40a71a750f613719f1eb17b11fb50274d6ff3e4973ed4fad58ca2211ca47de0c
+---
+
+import { SchemaReference } from "@site/src/components/GeneratedReference";
+import workflowsSchema from "@site/generated/schema/workflows.schema.json";
+
+👤 Phụ trách: Project Leader
+
+Đặt cấu hình repository tại `.bwv/workflows.yml`. BWV Workflows đọc file này từ nhánh đích (base branch) của pull request. Vì vậy, pull request không thể thay đổi workflow đang kiểm tra chính nó.
+
+Bắt đầu với [Workflow đầu tiên của bạn](../getting-started/first-workflow). Sau đó, dùng tài liệu tham khảo được tạo tự động này để kiểm tra các trường lồng nhau, giá trị bắt buộc, giá trị mặc định và giá trị được phép. Giữ `version: 1` ở cấp cao nhất của file.
+
+Phần tham khảo bên dưới được tạo từ chính schema mà BWV Workflows sử dụng. Đừng sao chép mọi trường. Chỉ thêm điều kiện kích hoạt (trigger), các bước, giá trị mặc định và hành động khi thành công mà workflow của bạn cần.
+
+<SchemaReference schema={workflowsSchema} />
