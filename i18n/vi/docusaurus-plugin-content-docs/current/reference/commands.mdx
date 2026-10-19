@@ -1,0 +1,19 @@
+---
+title: Lệnh /bwv
+sidebar_position: 3
+description: Tài liệu tham khảo được tạo tự động cho các lệnh dùng trong comment của pull request.
+slug: /reference/commands
+source_hash: 564e81d304e7a05d158ad8c49d5b93c29255ff6666ce57225dfaa4e3abd45c0e
+---
+
+import { Commands } from "@site/src/components/GeneratedReference";
+
+👤 Phụ trách: Dev & Com
+
+Nhập lệnh trên một dòng mới trong tab **Conversation** của pull request. Bắt đầu dòng bằng `/bwv`. Nếu văn bản chỉ nhắc đến hoặc trích dẫn một lệnh thì lệnh đó sẽ không chạy.
+
+BWV Workflows chỉ thực hiện lệnh của người có quyền ghi (write access) vào repository. Lệnh không được hỗ trợ có thể trả về danh sách lệnh, nhưng không chạy workflow. Đừng sửa comment cũ thành lệnh. Hãy thêm comment mới.
+
+Dùng đúng cú pháp trong bảng được tạo tự động. Xem [Chạy lại một tác vụ](../pull-requests/retry), [Tạo lại pull request đã đóng](../pull-requests/recreate) và [Khi merge bị bỏ qua hoặc cần chọn nguồn](../pull-requests/merge-skipped) để biết cách làm tương ứng trên pull request.
+
+<Commands />

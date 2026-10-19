@@ -1,0 +1,91 @@
+---
+title: Khi lần merge bị bỏ qua hoặc cần chọn nguồn
+sidebar_position: 5
+description: Xử lý các nhóm bị bỏ qua và thay đổi cần được gắn với pull request nguồn.
+slug: /pull-requests/merge-skipped
+source_hash: 04e83691ece18a41267cf50ee469d63293fa1e8c7b3bef879e243905c559ce56
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+
+👤 Phụ trách: Dev & Com
+
+## Khi nào bạn cần trang này
+
+Hai thông báo ít gặp sau đây cần một người xử lý:
+
+- **merge workflows did not run** nghĩa là bot không thể xác định an toàn kết quả merge cần xử lý.
+- **needs mapping** nghĩa là bot tìm thấy nhiều pull request nguồn có thể là nguồn của một thay đổi.
+
+## Từng bước thực hiện
+
+### Nếu workflow sau khi merge bị bỏ qua
+
+<GitHubComment sample="merge-skipped" author="BWV Workflows" />
+
+1. **Dev hoặc Com:** Đọc danh sách **Skipped** trong comment của bot.
+2. Trên pull request đã merge đó, hãy comment:
+
+   ```text
+   /bwv retry
+   ```
+
+3. Chờ câu trả lời của bot và các check run (ô kết quả kiểm tra hiện ở tab **Checks** của PR) `bwv/…` mới.
+4. Nếu cùng một lý do bỏ qua xuất hiện lần nữa, hãy nhờ BWV Workflows maintainers kiểm tra. Đừng đóng rồi mở lại pull request.
+
+### Nếu một nhóm cần chọn nguồn
+
+<GitHubComment
+  sample="translation-tracker-needs-mapping"
+  author="BWV Workflows"
+/>
+
+1. **Dev hoặc Com:** Đọc phần **Needs a provenance decision**.
+2. Kiểm tra các pull request nguồn được nêu ở đó và quyết định thay đổi này thuộc về pull request nào.
+3. Trên pull request đồng bộ, sao chép lệnh mà comment theo dõi (tracker) hiển thị. Lệnh có dạng:
+
+   ```text
+   /bwv provenance <sha>=<pr>
+   ```
+
+4. Thay `<sha>` bằng commit được hiển thị và `<pr>` bằng số pull request nguồn bạn chọn. Ví dụ:
+
+   ```text
+   /bwv provenance 5555555=7
+   ```
+
+Trường hợp này hiếm khi xảy ra. Nếu bạn không thể xác định lựa chọn đúng từ các pull request được đề xuất, hãy hỏi BWV Workflows maintainers trước khi comment.
+
+## Điều gì xảy ra tiếp theo
+
+`/bwv retry` yêu cầu các workflow sau khi merge bị bỏ qua chạy lại. `/bwv provenance …` lưu pull request nguồn bạn chọn và kiểm tra lại lần merge đó. Sau đó, tracker thay **needs mapping** bằng nhóm đã được xử lý và tiếp tục xuất bản.
+
+:::note Tại sao bot bỏ qua thay vì tự đoán?
+Bot xuất bản từ một kết quả merge cụ thể. Khi không thể xác định an toàn kết quả đó, bot không thay đổi tác vụ và cho bạn biết workflow nào chưa chạy.
+:::
+
+:::caution Hãy chọn nguồn cẩn thận
+Pull request bạn chọn sẽ trở thành nguồn được hiển thị cho nhóm đó. Hãy kiểm tra các tệp đã thay đổi và các pull request được đề xuất trước khi đăng lệnh.
+:::
+
+:::note `/bwv provenance` có phải là một lệnh chạy lại khác không?
+Không. Chỉ dùng lệnh này cho hàng trong tracker có ghi **needs mapping**. Dùng `/bwv retry` cho lần chạy bị lỗi hoặc bị bỏ qua thông thường.
+:::
+
+### Các kết quả tracker liên quan
+
+Các kết quả sau không có nghĩa là chính lần merge đã bị bỏ qua:
+
+<GitHubComment
+  sample="translation-tracker-outputs-already-on-base"
+  author="BWV Workflows"
+/>
+
+Bạn không cần làm gì khi tất cả kết quả đã có trên nhánh đích (base branch).
+
+<GitHubComment
+  sample="translation-tracker-outputs-partly-on-base"
+  author="BWV Workflows"
+/>
+
+Khi chỉ một phần kết quả có trên nhánh đích, hãy xử lý các tệp được liệt kê tại đó rồi chạy lại nhóm.

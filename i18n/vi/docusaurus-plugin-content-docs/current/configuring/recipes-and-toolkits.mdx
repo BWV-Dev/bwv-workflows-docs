@@ -1,0 +1,120 @@
+---
+title: Recipe và toolkit
+sidebar_position: 3
+description: Dùng lại các bước workflow được chăm sóc và ghim mọi nguồn bằng SHA của commit.
+slug: /configuring/recipes-and-toolkits
+source_hash: 041c22d94fa2c2770f03046e69e6102255bb8a98aa8c9715c38094f52e3fd15a
+---
+
+👤 Phụ trách: Project Leader
+
+Dùng lại recipe cục bộ hoặc recipe từ xa đã được duyệt thay vì sao chép các bước. Ghim mỗi recipe từ xa vào đúng commit mà bạn đã review.
+
+## Tóm tắt workflow
+
+1. [Dùng recipe cục bộ](#1-use-a-local-recipe).
+2. [Ghim recipe từ xa](#2-pin-a-remote-recipe).
+3. [Chọn hoặc thay toolkit](#3-choose-or-replace-a-toolkit).
+4. [Đọc lỗi cấu hình](#4-read-configuration-errors).
+
+## Hướng dẫn từng bước
+
+### 1. Dùng recipe cục bộ {#1-use-a-local-recipe}
+
+👤 Phụ trách: Project Leader
+
+Lưu recipe của dự án trong `.bwv/recipes/`. Tham chiếu recipe từ `.bwv/workflows.yml` bằng đường dẫn bắt đầu với `./.bwv/recipes/`:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: review-specs
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - name: Review the changed specifications
+        uses: ./.bwv/recipes/review-specs.yml
+        with:
+          source: docs/specs
+```
+
+Workflow recipe được dùng trong danh sách `workflows`. Step recipe được dùng bên trong `steps`, như ví dụ trên. Recipe có thể dùng file cùng cấp như `./check.yml`, nhưng đường dẫn recipe cục bộ phải nằm trong `.bwv/recipes/`.
+
+Commit recipe trước khi kiểm tra. BWV Workflows đọc recipe từ cùng commit đáng tin cậy với `.bwv/workflows.yml`.
+
+### 2. Ghim recipe từ xa {#2-pin-a-remote-recipe}
+
+👤 Phụ trách: Project Leader
+
+Recipe từ xa có dạng:
+
+```text
+<owner>/<repo>/<path>.yml@<ref>
+```
+
+Ví dụ, recipe chính thức bắt đầu bằng `BWV-Dev/bwv-workflows-recipes/recipes/` và kết thúc bằng SHA đầy đủ gồm 40 ký tự của commit. Mở [Danh mục recipe](/recipes), chọn một recipe rồi sao chép toàn bộ ví dụ `uses`.
+
+Nhờ BWV Workflows maintainers duyệt mọi nguồn từ xa trong lúc [đưa repository vào sử dụng](../getting-started/onboard-repository). File workflow không thể thêm nguồn vào danh sách được duyệt hoặc cấp cho App quyền truy cập nguồn đó.
+
+Lấy commit đứng sau release tag trước khi merge cấu hình. Trước tiên, kiểm tra đối tượng tag:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
+```
+
+Nếu `type` là `commit`, dùng `sha` được trả về. Nếu `type` là `tag`, mở tag có chú thích rồi dùng kết quả sau:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
+```
+
+Thay chỗ giữ chỗ `@<sha-of-latest-tag>` của recipe bằng SHA đầy đủ đó. SHA đầy đủ giữ nguyên recipe mà bạn đã review. Nhánh hoặc tag có thể di chuyển có thể chọn nội dung khác mà repository của bạn không có thay đổi nào.
+
+### 3. Chọn hoặc thay toolkit {#3-choose-or-replace-a-toolkit}
+
+👤 Phụ trách: Project Leader
+
+Toolkit là một đầu vào của recipe. Nó nối các thao tác mà recipe cần với skill, command hoặc script. Khi mở rộng recipe, toolkit thay `claude.run` và các chỗ giữ chỗ `$[[ toolkit.<key> ]]` bằng các mục cụ thể đó.
+
+Step recipe cục bộ sau khai báo toolkit mặc định:
+
+```yaml title=".bwv/recipes/review-specs.yml"
+apiVersion: 1
+inputs:
+  source:
+    type: path
+    required: true
+  toolkit:
+    type: toolkit
+    contract: review checks the source; verify validates the result
+    default:
+      review: { skill: review-specs }
+      verify: { script: .bwv/scripts/check-specs.sh }
+steps:
+  - name: Review specifications
+    claude:
+      run: $[[ toolkit.review ]]
+      args: $[[ inputs.source ]]
+      allowedTools: [Read, Edit, Glob]
+  - name: Verify specifications
+    shell: $[[ toolkit.verify ]] $[[ inputs.source ]]
+```
+
+Dùng toolkit mặc định khi nó phù hợp với dự án. Để thay thế, truyền toàn bộ toolkit trong `with`. Toolkit mới thay cả bộ thay vì gộp từng key. Mọi skill, command và script được nêu tên phải tồn tại trong commit đáng tin cậy.
+
+Đường dẫn script của toolkit chạy từ commit nơi mục toolkit được kiểm tra, không phải từ cây làm việc của pull request. Bên trong script, hãy tải file hỗ trợ theo đường dẫn tương đối với chính script đó, ví dụ `. "$(dirname "$0")/lib.sh"`. Đường dẫn tương đối với thư mục làm việc hiện tại sẽ đọc nhánh đã checkout.
+
+Front matter của skill từ xa chỉ được chứa `name`, `description`, `when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`, `version` và `license`. Mọi key khác đều bị từ chối để cài đặt công cụ và model của chính bước vẫn có hiệu lực. Command của toolkit từ xa không được hỗ trợ. Hãy dùng command thay thế của dự án hoặc skill từ recipe từ xa.
+
+### 4. Đọc lỗi cấu hình {#4-read-configuration-errors}
+
+👤 Phụ trách: Project Leader
+
+BWV Workflows mở rộng recipe trước khi chạy workflow. Đầu vào bị thiếu, key không rõ trong `with`, file toolkit bị thiếu, nguồn từ xa không hợp lệ và lỗi trong recipe lồng nhau đều là lỗi cấu hình.
+
+Với một pull request đang mở hoặc một lần push, hãy mở check có tên `bwv/config`. Phần tóm tắt **Invalid workflow config** cho biết recipe và nút bị lỗi. Trên pull request, hãy sửa `.bwv/workflows.yml` hoặc recipe trên nhánh đích (base branch). Cấu hình của chính pull request không điều khiển lần chạy đó.
+
+Sau khi sửa và merge cấu hình, hãy tạo một sự kiện mới hoặc chạy lại workflow đủ điều kiện. Xem [Đọc check run và comment trạng thái](../pull-requests/read-checks-status) để hiểu bố cục của check.

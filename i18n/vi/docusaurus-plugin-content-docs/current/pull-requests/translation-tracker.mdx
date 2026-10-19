@@ -1,0 +1,110 @@
+---
+title: Comment theo dõi bản dịch
+sidebar_position: 2
+description: Theo dõi các nhóm bản dịch từ lúc xem trước đến khi xuất bản.
+slug: /pull-requests/translation-tracker
+source_hash: 920d7591eebabd3c000d3a0c77d5fa6abac59ab075fedeebf538f8fe7f057631
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+
+👤 Phụ trách: Dev & Com
+
+## Khi nào bạn cần trang này
+
+Comment **BWV source groups** là comment theo dõi (tracker) bản dịch. Comment này cho biết những thay đổi nguồn nào thuộc cùng một nhóm và mỗi nhóm đã có PR kết quả hay chưa.
+
+Trước khi merge, tracker chỉ là bản xem trước. Sau khi merge, bot sửa chính comment đó để hiển thị kết quả chính thức.
+
+## Từng bước thực hiện
+
+### 1. Kiểm tra tiêu đề tracker
+
+- **planned** nghĩa là chỉ đang xem trước. Chưa có bước dịch nào chạy, chưa có nhánh nào được push và chưa có PR kết quả nào được mở.
+- **running** nghĩa là pull request đã merge đang được xử lý.
+- **published** nghĩa là lần chạy đã kết thúc. Hãy đọc từng hàng vì một số nhóm vẫn có thể cần bạn xử lý.
+
+<GitHubComment sample="translation-tracker-planned" author="BWV Workflows" />
+
+:::caution Bản xem trước chỉ để tham khảo
+Đừng duyệt một pull request nguồn chỉ vì bản xem trước có vẻ đầy đủ. Bot tính lại các nhóm khi pull request được merge. Tracker ở trạng thái **published** mới là kết quả chính thức.
+:::
+
+<GitHubComment sample="translation-tracker-running" author="BWV Workflows" />
+
+### 2. Đọc các cột
+
+| Cột              | Ý nghĩa                                                                  |
+| ---------------- | ------------------------------------------------------------------------ |
+| **Group**        | Tên nhóm dùng với `/bwv retry <group>` hoặc `/bwv recreate <group>`.     |
+| **Source**       | Pull request nguồn hoặc thay đổi nguồn trực tiếp đã tạo ra các tệp.      |
+| **Published PR** | PR kết quả, hoặc kết quả hiện tại nếu không có pull request nào được mở. |
+| **Files**        | Các tệp nguồn có trong nhóm đó.                                          |
+
+### 3. Đọc biểu tượng kết quả
+
+| Nội dung bạn thấy                        | Ý nghĩa                                                                                            | Việc cần làm                                             |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Đường dẫn pull request, ví dụ `#8`       | Đã xuất bản thành công.                                                                            | Kiểm tra PR kết quả đó.                                  |
+| ❌ **failed**                            | Bước được nêu tên đã bị lỗi.                                                                       | Mở **details**, sửa nguyên nhân rồi chạy lại nhóm.       |
+| ✅ **already on** the base branch        | Tất cả kết quả cần có đã được thêm hoặc cập nhật tại nhánh đích (base branch) sau khi merge nguồn. | Không cần xuất bản hoặc chạy lại.                        |
+| ⏸️ **outputs partly on** the base branch | Chỉ một phần kết quả cần có đã được cập nhật tại nhánh đích.                                       | Xử lý các tệp được liệt kê trên nhánh đích rồi chạy lại. |
+| ⚠️ **needs mapping**                     | Bot không thể chọn pull request nguồn sở hữu một thay đổi nguồn.                                   | Thêm lệnh mà tracker hiển thị.                           |
+| `#8 (closed)`                            | PR kết quả đã bị đóng mà chưa merge.                                                               | Chỉ tạo lại nếu bạn muốn có một PR kết quả mới.          |
+| 🔄 **running**                           | Nhóm đó đang chạy.                                                                                 | Chờ.                                                     |
+
+<GitHubComment sample="translation-tracker-published" author="BWV Workflows" />
+
+<GitHubComment
+  sample="translation-tracker-failed-with-retry"
+  author="BWV Workflows"
+/>
+
+<GitHubComment
+  sample="translation-tracker-outputs-already-on-base"
+  author="BWV Workflows"
+/>
+
+<GitHubComment
+  sample="translation-tracker-outputs-partly-on-base"
+  author="BWV Workflows"
+/>
+
+<GitHubComment
+  sample="translation-tracker-needs-mapping"
+  author="BWV Workflows"
+/>
+
+<GitHubComment
+  sample="translation-tracker-closed-output-pr"
+  author="BWV Workflows"
+/>
+
+### 4. Kiểm tra các PR kết quả
+
+1. **Dev:** Mở từng pull request được dẫn trong cột **Published PR** và kiểm tra các thay đổi kỹ thuật.
+2. **Com:** Kiểm tra ý nghĩa, thuật ngữ và xem bản dịch có đầy đủ không.
+3. **Dev và Com:** Yêu cầu sửa nếu cần. Trong lúc duyệt, thay đổi có thể được push thẳng lên nhánh của PR kết quả.
+4. Chỉ merge PR kết quả sau khi dự án đã duyệt xong theo quy trình thông thường.
+
+Bot tạo các PR kết quả. Dev và Com vẫn có trách nhiệm kiểm tra và merge các PR đó.
+
+## Điều gì xảy ra tiếp theo
+
+Tracker vẫn nằm trên pull request nguồn đã merge và tóm tắt tất cả nhóm. Nếu một PR kết quả bị đóng hoặc mở lại, bot cập nhật hàng tương ứng. Khi bạn chạy lại một nhóm, kết quả gần nhất đang hiển thị của các nhóm khác vẫn được giữ nguyên.
+
+:::note Tại sao các nhóm thay đổi sau khi merge?
+Bản xem trước dùng trạng thái các nhánh tại thời điểm đó. Tracker cuối cùng dùng kết quả merge, nên có thể khác nếu một trong hai nhánh thay đổi trước khi merge.
+:::
+
+:::note Tại sao không thể chạy lại một nhóm đã published?
+Bot đã xuất bản nhóm đó. Hãy kiểm tra PR kết quả được dẫn. Nếu PR đã bị đóng mà chưa merge và bạn cần một PR mới, hãy xem [Tạo lại một pull request đã đóng](/pull-requests/recreate).
+:::
+
+:::tip Các ô thao tác nằm ở đâu?
+Mở rộng phần **Actions** bên dưới tracker đã hoàn tất. Phần này chỉ xuất hiện khi có ít nhất một nhóm có thể chạy lại hoặc tạo lại.
+:::
+
+:::note Nếu một hàng trong tracker tạm thời chưa cập nhật thì sao?
+Tracker hiển thị kết quả gần nhất mà bot đã báo. Trước khi tạo lại PR kết quả, bot kiểm tra xem PR đó có còn đang đóng và chưa merge hay không. Bot sẽ không tạo thêm một PR chỉ vì hàng cũ chưa kịp cập nhật.
+:::

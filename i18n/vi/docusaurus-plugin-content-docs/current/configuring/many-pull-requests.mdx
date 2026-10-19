@@ -1,0 +1,100 @@
+---
+title: Nhiều pull request từ một lần chạy
+sidebar_position: 6
+description: Lặp lại workflow và xuất bản một pull request gọn, đúng trọng tâm sau mỗi lượt.
+slug: /configuring/many-pull-requests
+source_hash: 0018b9265ca90f2739bfe33f402e107e89ba27888d98938a88567305a368784a
+---
+
+👤 Phụ trách: Project Leader
+
+Dùng `loop` khi một lần push có thể tạo ra nhiều việc hơn mức nên đưa vào một pull request gọn, đúng trọng tâm. Mỗi lượt sẽ lập kế hoạch cho một nhóm việc, chạy mọi bước rồi xuất bản nhóm đó trước khi bắt đầu lượt tiếp theo.
+
+Nếu bạn tạo testcase, hãy bắt đầu với [recipe testcase/batch](../recipes/testcase-batch) do BWV Workflows maintainers chăm sóc. Chỉ tự viết vòng lặp khi repository cần cách lập kế hoạch hoặc xử lý nhóm việc khác.
+
+## Tóm tắt workflow
+
+1. [Để bước lập kế hoạch mô tả một nhóm việc](#1-make-the-plan-step-describe-one-batch).
+2. [Lặp lại khi vẫn còn việc](#2-repeat-while-work-remains).
+3. [Dùng một nhánh khác cho mỗi nhóm việc](#3-use-a-different-branch-for-every-batch).
+4. [Thiết kế để có thể tiếp tục công việc](#4-design-resumable-progress).
+
+## Hướng dẫn từng bước
+
+### 1. Để bước lập kế hoạch mô tả một nhóm việc {#1-make-the-plan-step-describe-one-batch}
+
+👤 Phụ trách: Project Leader
+
+Thêm bước lập kế hoạch trước bước xử lý. Bước này cần đọc cây Git hiện tại và trả về JSON có cấu trúc, gồm:
+
+- Các file trong nhóm việc tiếp theo.
+- Mã định danh ổn định và dùng được trong Git cho nhóm việc.
+- Lượng việc còn lại sau nhóm này.
+
+Ví dụ sau giao việc lập kế hoạch cho một script trong repository:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: update-doc-batches
+    fetchDepth: 0
+    on:
+      push:
+        branches: [main]
+        paths: ["docs/specs/**"]
+    loop:
+      while: ${{ steps.plan.output.remaining > 0 }}
+      maxIterations: 20
+    steps:
+      - id: plan
+        name: Plan the next batch
+        shell: node scripts/plan-doc-batch.mjs
+        outputJson: true
+      - name: Update this batch
+        forEach: ${{ steps.plan.output.files }}
+        fanout: process
+        maxParallel: 2
+        claude:
+          prompt: |
+            Update the generated documentation for ${{ item }}.
+            Do not change files owned by another batch.
+          allowedTools: [Read, Write, Edit]
+    onSuccess:
+      createPullRequest:
+        branch: "bwv/docs/${{ steps.plan.output.batchId }}"
+        title: "docs: update ${{ steps.plan.output.batchId }}"
+```
+
+Ví dụ, script lập kế hoạch có thể trả về `{"batchId":"account-login","files":["docs/specs/account/login.md"],"remaining":3}`. Hãy giữ cho script có kết quả ổn định: cùng một trạng thái Git phải tạo ra cùng một kế hoạch.
+
+`loop` yêu cầu điều kiện kích hoạt `on.push`. Một lần chạy cho pull request có nhánh nguồn (head branch) và nhánh đích (base branch) riêng. Vì vậy, nó không thể tạo các nhóm sau từ cùng một nhánh nhất quán một cách an toàn.
+
+### 2. Lặp lại khi vẫn còn việc {#2-repeat-while-work-remains}
+
+👤 Phụ trách: Project Leader
+
+Đặt `loop.while` theo nội dung trả về của bước lập kế hoạch. BWV Workflows đánh giá giá trị này sau mỗi lượt. Kết quả đúng (truthy) sẽ bắt đầu lượt khác trong cùng cây làm việc. Kết quả sai sẽ kết thúc sau khi nhóm hiện tại được xuất bản.
+
+Đặt `maxIterations` thành giới hạn trên có chủ đích. Giá trị mặc định là `20` và không được vượt quá `100`. Mỗi lượt chạy lại các bước của workflow.
+
+Vòng lặp cũng dừng nếu hai lượt liên tiếp không xuất bản gì. Cách này bảo vệ lần chạy khi bước lập kế hoạch báo vẫn còn việc nhưng các bước không tạo thay đổi Git. Hãy sửa bước lập kế hoạch hoặc bước xử lý trước khi bắt đầu lần chạy khác.
+
+### 3. Dùng một nhánh khác cho mỗi nhóm việc {#3-use-a-different-branch-for-every-batch}
+
+👤 Phụ trách: Project Leader
+
+Để `onSuccess.createPullRequest.branch` thay đổi theo nhóm đã lập kế hoạch. Ví dụ dùng `${{ steps.plan.output.batchId }}`. BWV Workflows từ chối tên nhánh bị lặp trong cùng một lần chạy, vì việc xuất bản nhóm sau sẽ thay thế pull request của nhóm trước.
+
+Đừng tạo mã định danh chỉ từ số việc còn lại. Một lần push mới có thể thay đổi số này và khiến nhóm sau dùng lại tên cũ. Hãy tạo mã từ nội dung ổn định của nhóm, chẳng hạn đường dẫn đầu tiên trong kế hoạch và thêm hash ngắn khi cần.
+
+Mỗi lượt thành công sẽ mở pull request riêng. Người review có thể xử lý các nhóm trước trong khi job vẫn đang lập kế hoạch cho các nhóm sau.
+
+### 4. Thiết kế để có thể tiếp tục công việc {#4-design-resumable-progress}
+
+👤 Phụ trách: Project Leader
+
+Lưu tiến độ trong Git. Bước lập kế hoạch phải tính lại việc đã xong và việc còn lại từ file và lịch sử trong repository. BWV Workflows không lưu con trỏ hay commit được xử lý gần nhất cho vòng lặp. Nhờ vậy, lần chạy bị dừng vẫn có thể tính phần việc còn lại mà không phụ thuộc vào trạng thái tiến trình đã mất.
+
+Một lần push đến trong lúc đang chạy sẽ không bắt đầu job thứ hai. Khi lượt hiện tại có vẻ đã xong, job đang chạy sẽ kiểm tra lại nhánh. Nếu nhánh đã thay đổi, job merge các commit mới từ nhánh đích vào nhánh làm việc rồi chạy thêm một lượt có giới hạn.
+
+Nếu lần chạy đạt `maxIterations` khi vẫn còn việc, các pull request đã xuất bản vẫn được giữ nguyên. Lần push tiếp theo hoặc lần chạy lại đủ điều kiện sẽ bắt đầu một lần chạy mới. Bước lập kế hoạch sẽ tính lại việc còn lại từ Git. Làm theo [Chạy lại một tác vụ](../pull-requests/retry) khi check cho phép chạy lại (retry).
