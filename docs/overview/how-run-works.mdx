@@ -7,8 +7,88 @@ slug: /overview/how-a-run-works
 
 👤 Responsible: Project Leader and Dev & Com
 
-This page will summarize how an event selects a workflow, runs its steps, updates GitHub checks and comments, and publishes changes.
+A run moves through four visible stages: trigger, check run, status comment,
+and result pull request. The workflow may stop after reporting if it has no
+changes to publish.
 
-:::note Work in progress
-This guide will be completed in Wave 2.
+## Workflow Summary
+
+1. [Trigger the configured workflow](#1-trigger-the-configured-workflow).
+2. [Read the check run](#2-read-the-check-run).
+3. [Follow the status comment](#3-follow-the-status-comment).
+4. [Review the result pull request](#4-review-the-result-pull-request).
+5. [Know which branch controls the run](#5-know-which-branch-controls-the-run).
+
+## Step-by-Step Instructions
+
+### 1. Trigger the configured workflow
+
+👤 Responsible: Project Leader and Dev & Com
+
+A matching GitHub event starts the run:
+
+- A pull request is opened, updated, reopened, or merged, when that action is
+  configured.
+- A push reaches a configured branch.
+
+BWV Workflows reads `.bwv/workflows.yml`, matches the branch and paths, and
+selects the workflows that should run.
+
+### 2. Read the check run
+
+👤 Responsible: Dev & Com
+
+BWV Workflows creates a check named `bwv/<workflow>` on the source commit. The
+check shows queued, running, passed, and failed steps. It also shows the final
+error when a step cannot complete.
+
+For configuration errors, look for the `bwv/config` check. It tells the Project
+Leader which trusted branch supplied the invalid configuration.
+
+### 3. Follow the status comment
+
+👤 Responsible: Dev & Com
+
+For a pull request run, BWV Workflows posts one status comment and edits it as
+steps finish. This keeps the current state in one place. A Project Leader can
+turn this comment off with `statusComment: false`; the check run still exists.
+
+A push run normally reports only through its check run because there is no
+source pull request.
+
+### 4. Review the result pull request
+
+👤 Responsible: Dev & Com
+
+If the workflow creates changes and has `onSuccess.createPullRequest`
+configured, BWV Workflows commits the result, pushes a branch, and opens a
+result pull request. The completed check and status comment link to it.
+
+If the workflow creates no changes, or is not configured to open a pull
+request, the run ends after reporting its result.
+
+### 5. Know which branch controls the run
+
+👤 Responsible: Project Leader
+
+:::important The target branch controls executable workflow content
+For a pull request run, BWV Workflows reads `.bwv/workflows.yml`, `.claude/`
+skills and commands, and local recipes from the pull request's base branch.
+That configuration also chooses the source and ref for any remote recipes. The
+pull request head supplies only the content to work on.
+
+For a push run, the pushed branch is both the target branch and the content
+being worked on.
 :::
+
+This rule has two practical consequences:
+
+1. A change to `.bwv/workflows.yml` in your pull request takes effect after it
+   is merged. The same rule applies to `.claude/` skills and commands.
+2. A workflow that runs when a pull request is merged uses the base branch as
+   it was immediately before that merge. Configuration carried by the merged
+   pull request takes effect **from the next merge**.
+
+Merge workflow changes into the target branch before using them in a test pull
+request. Protect every target branch as described in
+[Protect your branches](../getting-started/protect-branches).
