@@ -3,7 +3,7 @@ title: Chạy lại một tác vụ
 sidebar_position: 3
 description: Chạy lại tác vụ đủ điều kiện bằng ô chọn, check run hoặc lệnh.
 slug: /pull-requests/retry
-source_hash: f6fad74f73d051585d1ad6dc3f8f1afd54001fd1306e6deede458e4113e9217d
+source_hash: 2eb3dca190ae00e29821e38d59a84bde3cb5e49bed2837f68397fcd41a0a112b
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -25,7 +25,9 @@ Có ba cách: chọn ô được hiển thị, chọn **Re-run** trên một che
 3. Chọn ô **Retry** cho workflow hoặc nhóm bị lỗi.
 4. Chờ bot bỏ chọn ô và hiển thị một dòng **queued** hoặc **running**.
 
-{/* TODO(screenshot): A BWV Workflows tracker Actions section expanded while a user ticks `Retry source-pr-7`, with repository name, avatars, and pull request number blurred */}
+![Comment theo dõi BWV Workflows đã mở rộng với ô Retry source-pr-7 chưa được chọn](/img/screenshots/retry-tracker-checkbox.png)
+
+_Mở rộng **Actions**, sau đó chọn ô **Retry `source-pr-7`**._
 
 <GitHubComment sample="status-failed-with-retry" author="BWV Workflows" />
 
@@ -37,7 +39,9 @@ Có ba cách: chọn ô được hiển thị, chọn **Re-run** trên một che
 
 Với workflow có nhóm, check của workflow sẽ chạy lại những nhóm mà tracker vẫn cho phép. Check của một nhóm chỉ chạy lại chính nhóm đó.
 
-{/* TODO(screenshot): The GitHub Re-run button on a failed `bwv/translate-docs/source-pr-7` check run, tightly cropped with repository name and pull request number blurred */}
+![Nút Re-run trên check bwv/translate-docs/source-pr-7 bị lỗi](/img/screenshots/retry-check-rerun.png)
+
+_Chọn **Re-run** trên check `bwv/translate-docs/source-pr-7` bị lỗi._
 
 ### Cách 3: Thêm comment vào pull request
 
@@ -57,7 +61,9 @@ Lệnh này yêu cầu chạy lại một workflow. Hãy thay `translate-docs` b
 
 Sau khi chấp nhận lệnh, bot thêm phản ứng 👍 rồi trả lời kết quả bằng một comment.
 
-{/* TODO(screenshot): A `/bwv retry source-pr-7` pull request comment with the accepted 👍 reaction from BWV Workflows, with repository name, avatars, and pull request number blurred */}
+![Comment slash bwv retry source-pr-7 có phản ứng thích](/img/screenshots/retry-command-reaction.png)
+
+_Phản ứng 👍 của **BWV Workflows** xác nhận `/bwv retry source-pr-7` đã được chấp nhận._
 
 Xem [bảng lệnh /bwv](/reference/commands) để biết danh sách đầy đủ được tạo tự động.
 

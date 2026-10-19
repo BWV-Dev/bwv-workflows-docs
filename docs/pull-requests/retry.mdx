@@ -24,7 +24,9 @@ Choose one of three ways: tick the offered box, select **Re-run** on one check r
 3. Tick the **Retry** box for the failed workflow or group.
 4. Wait for the bot to untick the box and show a queued or running line.
 
-{/* TODO(screenshot): A BWV Workflows tracker Actions section expanded while a user ticks `Retry source-pr-7`, with repository name, avatars, and pull request number blurred */}
+![An expanded BWV Workflows tracker with an unticked Retry source-pr-7 box](/img/screenshots/retry-tracker-checkbox.png)
+
+_Expand **Actions**, then tick the **Retry `source-pr-7`** box._
 
 <GitHubComment sample="status-failed-with-retry" author="BWV Workflows" />
 
@@ -36,7 +38,9 @@ Choose one of three ways: tick the offered box, select **Re-run** on one check r
 
 For a grouped workflow, the workflow check retries the groups the tracker still offers. A group check retries only that group.
 
-{/* TODO(screenshot): The GitHub Re-run button on a failed `bwv/translate-docs/source-pr-7` check run, tightly cropped with repository name and pull request number blurred */}
+![The Re-run button on a failed bwv/translate-docs/source-pr-7 check](/img/screenshots/retry-check-rerun.png)
+
+_Select **Re-run** on the failed `bwv/translate-docs/source-pr-7` check._
 
 ### Option 3: Add a pull request comment
 
@@ -56,7 +60,9 @@ This requests one workflow. Replace `translate-docs` with the exact workflow or 
 
 The bot adds a 👍 reaction after it has accepted the command, then answers with its result in a comment.
 
-{/* TODO(screenshot): A `/bwv retry source-pr-7` pull request comment with the accepted 👍 reaction from BWV Workflows, with repository name, avatars, and pull request number blurred */}
+![A slash bwv retry source-pr-7 comment with a thumbs-up reaction](/img/screenshots/retry-command-reaction.png)
+
+_The **BWV Workflows** 👍 reaction confirms that `/bwv retry source-pr-7` was accepted._
 
 See the [/bwv command reference](/reference/commands) for the complete generated list.
 

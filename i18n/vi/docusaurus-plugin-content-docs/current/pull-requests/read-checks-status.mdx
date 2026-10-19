@@ -3,7 +3,7 @@ title: Đọc check run và comment trạng thái
 sidebar_position: 1
 description: Xem trạng thái hiện tại và kết quả của một lần chạy BWV Workflows.
 slug: /pull-requests/read-checks-status
-source_hash: 4e4e0f395632aa56af8bff66479aecd099ddf02ba7b26f1d9aa975f4dc648500
+source_hash: 73f73b8ad50335d1d76bc6851e44361b1aeb08ce4d7f69ed5cf1da2e1b3f6314
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -19,7 +19,9 @@ BWV Workflows báo cáo từng workflow ở hai nơi trên một pull request (P
 
 Cả hai đều hiển thị cùng một bảng các bước. Hãy dùng check run khi bạn cần xem nội dung trả về từ một bước bị lỗi. Dùng comment để xem nhanh tiến độ và thực hiện thao tác như **Retry**.
 
-{/* TODO(screenshot): Pull request Checks tab showing a `bwv/translate-docs` workflow check and a `bwv/translate-docs/source-pr-7` group check, with repository name, avatars, and pull request number blurred */}
+![Tab Checks của pull request với check workflow translate-docs và check nhóm nguồn](/img/screenshots/read-checks-status-workflow-group.png)
+
+_Check workflow tóm tắt lần chạy; check nhóm báo kết quả của một nhóm nguồn._
 
 ## Từng bước thực hiện
 

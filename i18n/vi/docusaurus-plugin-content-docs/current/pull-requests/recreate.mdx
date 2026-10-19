@@ -3,7 +3,7 @@ title: Tạo lại một pull request đã đóng
 sidebar_position: 4
 description: Tạo lại tác vụ đã xuất bản sau khi pull request của tác vụ đó bị đóng.
 slug: /pull-requests/recreate
-source_hash: 92a7bf8abc850a5788da52dd804b12c8bc13b54a35d1962a139e76d5833c9021
+source_hash: df15f18cc1b947e8b1b77712d3216d71493c88d12357be1e0495cae19d373c3d
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -37,7 +37,9 @@ Với workflow không có nhóm, hãy dùng ô **Recreate pull request** trong c
   author="BWV Workflows"
 />
 
-{/* TODO(screenshot): A BWV Workflows comment while a user ticks `Recreate pull request source-pr-7`, with the Actions section open and repository name, avatars, and pull request number blurred */}
+![Comment theo dõi BWV Workflows đã mở rộng với ô Recreate pull request source-pr-7 chưa được chọn](/img/screenshots/recreate-tracker-checkbox.png)
+
+_Mở rộng **Actions**, sau đó chọn **Recreate pull request `source-pr-7`**._
 
 ### Cách 2: Chọn **Recreate PR**
 
@@ -47,7 +49,9 @@ Với workflow không có nhóm, hãy dùng ô **Recreate pull request** trong c
 
 Nút này có trên PR kết quả của workflow có nhóm. Với workflow không có nhóm, hãy dùng ô chọn trong comment hoặc lệnh bên dưới.
 
-{/* TODO(screenshot): The GitHub Recreate PR button on a completed `bwv/translate-docs/source-pr-7` check run of a closed output pull request, tightly cropped with repository name and pull request number blurred */}
+![Nút Recreate PR trên check bwv/translate-docs/source-pr-7 đã hoàn tất](/img/screenshots/recreate-check-button.png)
+
+_Chọn **Recreate PR** trên check nhóm đã hoàn tất._
 
 ### Cách 3: Thêm lệnh
 
