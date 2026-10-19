@@ -29,6 +29,10 @@ jobs:
           CONTENT_DENYLIST: ${{ secrets.CONTENT_DENYLIST }}
       - name: Test content guard
         run: pnpm test:content-guard
+      - name: Check Vietnamese pages
+        run: pnpm check:i18n
+      - name: Test i18n check
+        run: pnpm test:i18n
       - name: Typecheck
         run: pnpm typecheck
       - name: Build the site

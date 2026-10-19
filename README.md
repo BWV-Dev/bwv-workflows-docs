@@ -19,6 +19,8 @@ Run every local check before opening a pull request:
 pnpm format:check
 pnpm typecheck
 pnpm check:generated
+pnpm check:i18n
+pnpm test:i18n
 pnpm content-guard
 pnpm test:content-guard
 pnpm build
@@ -45,7 +47,25 @@ Keep all content suitable for a public, indexed repository even though the site 
 - State only the required security action and a one-line reason.
 - Only name `BWV-Dev/bwv-workflows-recipes` and this documentation repository among organization repositories.
 
-Run `pnpm content-guard` before committing. The guard scans text in `docs/`, `src/`, `generated/`, the README, and site configuration. It deliberately does not scan images. CI can add a private case-insensitive regular expression through `CONTENT_DENYLIST`; never store its value in this repository.
+Run `pnpm content-guard` before committing. The guard scans text in `docs/`, `i18n/`, `src/`, `generated/`, the README, and site configuration. It deliberately does not scan images. CI can add a private case-insensitive regular expression through `CONTENT_DENYLIST`; never store its value in this repository.
+
+## Translate into Vietnamese
+
+English under `docs/` is the source of truth. Put each Vietnamese page at the same relative path under `i18n/vi/docusaurus-plugin-content-docs/current/`. Keep slugs, relative links, MDX components, code, YAML keys, file paths, GitHub labels, bot text, check names, and `/bwv` commands unchanged.
+
+Use short, friendly sentences and address the reader as “bạn.” Follow the shared [Vietnamese glossary](i18n/vi/GLOSSARY.md), including its role-line formats.
+
+Regenerate interface translation catalogs after adding or changing a translatable component string:
+
+```bash
+pnpm write-translations -- --locale vi
+```
+
+Translate new messages in `i18n/vi/code.json` and the theme/plugin JSON files. Do not translate generated schema descriptions, recipe data, command descriptions, or bot samples.
+
+Every Vietnamese page must include `source_hash` in its front matter. Set it deliberately to the SHA-256 of the corresponding English file after normalizing line endings to LF. `pnpm check:i18n` fails when a page or valid hash is missing. It lists stale hashes as warnings without failing so the translator can review the English change before updating the hash.
+
+The build precheck rejects missing Vietnamese pages. A translator working on a partial local branch may bypass only that missing-page check with `I18N_ALLOW_MISSING=1 pnpm build` (PowerShell: `$env:I18N_ALLOW_MISSING=1; pnpm build`). This flag is local-only and must never be set in CI.
 
 ## Refresh generated content
 

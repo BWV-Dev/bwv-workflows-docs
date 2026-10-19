@@ -1,3 +1,4 @@
+import Translate from "@docusaurus/Translate";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -48,7 +49,11 @@ export default function GitHubComment({
         <div className={styles.header}>
           <strong>{author}</strong>
           <span className={styles.badge}>bot</span>
-          <span className={styles.muted}>commented with example data</span>
+          <span className={styles.muted}>
+            <Translate id="githubComment.exampleData">
+              commented with example data
+            </Translate>
+          </span>
         </div>
         <div className={styles.body}>
           <ReactMarkdown

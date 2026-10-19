@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
-import { compileDenylist, inspectText } from "./content-guard.mjs";
+import {
+  compileDenylist,
+  inspectText,
+  scanRepository,
+} from "./content-guard.mjs";
 
 test("allows the two approved BWV-Dev repositories", () => {
   const text = "BWV-Dev/bwv-workflows-recipes BWV-Dev/bwv-workflows-docs";
@@ -67,4 +74,24 @@ test("applies CONTENT_DENYLIST case-insensitively", () => {
 test("rejects an invalid or empty-matching denylist", () => {
   assert.throws(() => compileDenylist("["), /not a valid regular expression/);
   assert.throws(() => compileDenylist(".*"), /must not match an empty string/);
+});
+
+test("scans translated content under i18n", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "bwv-content-guard-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const translationDirectory = path.join(root, "i18n", "vi");
+  await mkdir(translationDirectory, { recursive: true });
+  await writeFile(
+    path.join(translationDirectory, "example.mdx"),
+    "Visit service.example.internal.",
+  );
+
+  const result = await scanRepository(root);
+  assert.deepEqual(result.findings, [
+    {
+      file: "i18n/vi/example.mdx",
+      line: 1,
+      rule: "internal-looking hostname",
+    },
+  ]);
 });

@@ -8,15 +8,19 @@
   },
   "scripts": {
     "start": "docusaurus start",
+    "prebuild": "node scripts/check-i18n.mjs --missing-only",
     "build": "pnpm check:generated && docusaurus build",
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
+    "write-translations": "docusaurus write-translations",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "check:generated": "node scripts/check-generated.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
     "content-guard": "node scripts/content-guard.mjs",
-    "test:content-guard": "node --test scripts/content-guard.test.mjs"
+    "test:content-guard": "node --test scripts/content-guard.test.mjs",
+    "test:i18n": "node --test scripts/check-i18n.test.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.2",

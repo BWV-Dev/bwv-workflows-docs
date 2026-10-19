@@ -1,4 +1,5 @@
 import Link from "@docusaurus/Link";
+import { translate } from "@docusaurus/Translate";
 import type { ReactNode } from "react";
 
 import styles from "./styles.module.css";
@@ -12,26 +13,50 @@ type Card = {
 
 const cards: Card[] = [
   {
-    title: "Getting started",
-    description: "Onboard a repository and add its first workflow.",
+    title: translate({
+      id: "landingCards.gettingStarted.title",
+      message: "Getting started",
+    }),
+    description: translate({
+      id: "landingCards.gettingStarted.description",
+      message: "Onboard a repository and add its first workflow.",
+    }),
     to: "/getting-started/onboard-repository",
     icon: "→",
   },
   {
-    title: "Working on a pull request",
-    description: "Read results, retry a run, and recreate closed work.",
+    title: translate({
+      id: "landingCards.pullRequest.title",
+      message: "Working on a pull request",
+    }),
+    description: translate({
+      id: "landingCards.pullRequest.description",
+      message: "Read results, retry a run, and recreate closed work.",
+    }),
     to: "/pull-requests/read-checks-status",
     icon: "✓",
   },
   {
-    title: "Recipe catalog",
-    description: "Choose a maintained recipe and inspect its inputs.",
+    title: translate({
+      id: "landingCards.recipes.title",
+      message: "Recipe catalog",
+    }),
+    description: translate({
+      id: "landingCards.recipes.description",
+      message: "Choose a maintained recipe and inspect its inputs.",
+    }),
     to: "/recipes",
     icon: "◇",
   },
   {
-    title: "Reference",
-    description: "Look up workflow fields, recipe fields, and commands.",
+    title: translate({
+      id: "landingCards.reference.title",
+      message: "Reference",
+    }),
+    description: translate({
+      id: "landingCards.reference.description",
+      message: "Look up workflow fields, recipe fields, and commands.",
+    }),
     to: "/reference/workflows-yml",
     icon: "{}",
   },

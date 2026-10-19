@@ -14,7 +14,17 @@ const config: Config = {
   noIndex: true,
   i18n: {
     defaultLocale: "en",
-    locales: ["en"],
+    locales: ["en", "vi"],
+    localeConfigs: {
+      en: {
+        label: "English",
+        htmlLang: "en",
+      },
+      vi: {
+        label: "Tiếng Việt",
+        htmlLang: "vi",
+      },
+    },
   },
   markdown: {
     format: "detect",
@@ -74,6 +84,7 @@ const config: Config = {
           label: "Reference",
           position: "left",
         },
+        { type: "localeDropdown", position: "right" },
         { type: "search", position: "right" },
       ],
     },

@@ -1,0 +1,18 @@
+{
+  "title": {
+    "message": "BWV Workflows",
+    "description": "The title in the navbar"
+  },
+  "item.label.Docs": {
+    "message": "Tài liệu",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Recipe catalog": {
+    "message": "Danh mục recipe",
+    "description": "Navbar item with label Recipe catalog"
+  },
+  "item.label.Reference": {
+    "message": "Tham khảo",
+    "description": "Navbar item with label Reference"
+  }
+}

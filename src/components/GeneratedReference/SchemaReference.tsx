@@ -1,3 +1,4 @@
+import Translate, { translate } from "@docusaurus/Translate";
 import type { ReactNode } from "react";
 
 import styles from "./styles.module.css";
@@ -29,7 +30,13 @@ function alternativeNames(
     const distinctive = names.filter((name) => !common?.includes(name));
     return distinctive.length > 0
       ? distinctive.slice(0, 2).join(" + ")
-      : `option ${index + 1}`;
+      : translate(
+          {
+            id: "generatedReference.option",
+            message: "option {number}",
+          },
+          { number: index + 1 },
+        );
   });
 }
 
@@ -68,7 +75,11 @@ function PropertiesTable({
 
   if (properties.length === 0) {
     return (
-      <p className={styles.empty}>This schema has no documented properties.</p>
+      <p className={styles.empty}>
+        <Translate id="generatedReference.empty">
+          This schema has no documented properties.
+        </Translate>
+      </p>
     );
   }
 
@@ -78,12 +89,26 @@ function PropertiesTable({
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Required</th>
-              <th>Default</th>
-              <th>Description</th>
-              <th>Enum</th>
+              <th>
+                <Translate id="generatedReference.name">Name</Translate>
+              </th>
+              <th>
+                <Translate id="generatedReference.type">Type</Translate>
+              </th>
+              <th>
+                <Translate id="generatedReference.required">Required</Translate>
+              </th>
+              <th>
+                <Translate id="generatedReference.default">Default</Translate>
+              </th>
+              <th>
+                <Translate id="generatedReference.description">
+                  Description
+                </Translate>
+              </th>
+              <th>
+                <Translate id="generatedReference.enum">Enum</Translate>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -95,7 +120,13 @@ function PropertiesTable({
                     <code>{name}</code>
                   </td>
                   <td>{schemaType(propertySchema, root)}</td>
-                  <td>{required.has(name) ? "Yes" : "No"}</td>
+                  <td>
+                    {required.has(name) ? (
+                      <Translate id="generatedReference.yes">Yes</Translate>
+                    ) : (
+                      <Translate id="generatedReference.no">No</Translate>
+                    )}
+                  </td>
                   <td>{displayValue(propertySchema.default)}</td>
                   <td>{propertySchema.description ?? "—"}</td>
                   <td>

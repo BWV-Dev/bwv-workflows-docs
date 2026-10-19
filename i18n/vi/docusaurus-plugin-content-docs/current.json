@@ -1,0 +1,30 @@
+{
+  "version.label": {
+    "message": "Hiện tại",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Overview": {
+    "message": "Tổng quan",
+    "description": "The label for category 'Overview' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Getting started": {
+    "message": "Bắt đầu",
+    "description": "The label for category 'Getting started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Guides — Configuring": {
+    "message": "Hướng dẫn — Cấu hình",
+    "description": "The label for category 'Guides — Configuring' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Recipe catalog": {
+    "message": "Danh mục recipe",
+    "description": "The label for category 'Recipe catalog' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Guides — Working on a pull request": {
+    "message": "Hướng dẫn — Làm việc với pull request",
+    "description": "The label for category 'Guides — Working on a pull request' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Reference": {
+    "message": "Tham khảo",
+    "description": "The label for category 'Reference' in sidebar 'docsSidebar'"
+  }
+}
