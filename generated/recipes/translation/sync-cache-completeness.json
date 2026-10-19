@@ -1,0 +1,42 @@
+{
+  "path": "recipes/translation/sync-cache-completeness.yml",
+  "description": "List every reviewer edit, run the caller's cache-sync command with its existing arguments, and verify the cache learned every edit before anything is published.",
+  "inputs": [
+    {
+      "name": "sourceRoot",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "outputRoot",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "glossary",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": false,
+      "default": {
+        "syncCache": {
+          "skill": "sync-translation-cache"
+        },
+        "checkDrift": {
+          "script": "scripts/check-cache-drift.sh"
+        },
+        "cacheEdits": {
+          "script": "scripts/vi-cache-edits.mjs"
+        }
+      }
+    }
+  ]
+}

@@ -1,56 +1,581 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/workflows.schema.json",
-  "title": "BWV Workflows configuration",
   "type": "object",
-  "required": ["version", "workflows"],
   "properties": {
     "version": {
-      "type": "integer",
-      "const": 1,
-      "default": 1,
-      "description": "Configuration format version."
+      "type": "number",
+      "const": 1
+    },
+    "defaults": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "default": "sonnet"
+        },
+        "maxTurns": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "default": 30
+        },
+        "timeoutMinutes": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "default": 20
+        },
+        "permissionMode": {
+          "type": "string",
+          "enum": [
+            "default",
+            "acceptEdits",
+            "dontAsk",
+            "plan",
+            "bypassPermissions"
+          ],
+          "default": "acceptEdits"
+        },
+        "maxBudgetUsd": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
     },
     "workflows": {
+      "minItems": 1,
       "type": "array",
-      "description": "Workflows declared for the repository.",
       "items": {
-        "type": "object",
-        "required": ["name", "on", "steps"],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Stable workflow name."
-          },
-          "on": {
+        "anyOf": [
+          {
             "type": "object",
-            "description": "Events that start this workflow.",
             "properties": {
-              "pull_request": {
-                "type": "object",
-                "description": "Pull request trigger."
+              "name": {
+                "type": "string",
+                "minLength": 1
               },
-              "push": {
+              "on": {
                 "type": "object",
-                "description": "Push trigger."
-              }
-            }
-          },
-          "steps": {
-            "type": "array",
-            "description": "Ordered work to run.",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "Optional step identifier."
+                "properties": {
+                  "pull_request": {
+                    "type": "object",
+                    "properties": {
+                      "types": {
+                        "default": [
+                          "opened",
+                          "synchronize"
+                        ],
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "opened",
+                            "reopened",
+                            "synchronize",
+                            "ready_for_review",
+                            "closed"
+                          ]
+                        }
+                      },
+                      "base": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "merged": {
+                        "type": "boolean"
+                      },
+                      "head": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "paths": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "ignorePaths": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "base"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "push": {
+                    "type": "object",
+                    "properties": {
+                      "branches": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "paths": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "ignorePaths": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "branches"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "steps": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "if": {
+                          "type": "string"
+                        },
+                        "forEach": {
+                          "type": "string"
+                        },
+                        "fanout": {
+                          "type": "string",
+                          "enum": [
+                            "subagent",
+                            "process"
+                          ]
+                        },
+                        "maxParallel": {
+                          "default": 3,
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 20
+                        },
+                        "continueOnError": {
+                          "default": false,
+                          "type": "boolean"
+                        },
+                        "timeoutMinutes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "claude": {
+                          "type": "object",
+                          "properties": {
+                            "prompt": {
+                              "type": "string"
+                            },
+                            "promptFile": {
+                              "type": "string"
+                            },
+                            "skill": {
+                              "type": "string"
+                            },
+                            "command": {
+                              "type": "string"
+                            },
+                            "args": {
+                              "type": "string"
+                            },
+                            "model": {
+                              "type": "string"
+                            },
+                            "allowedTools": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "disallowedTools": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "permissionMode": {
+                              "type": "string",
+                              "enum": [
+                                "default",
+                                "acceptEdits",
+                                "dontAsk",
+                                "plan",
+                                "bypassPermissions"
+                              ]
+                            },
+                            "maxTurns": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "maxBudgetUsd": {
+                              "type": "number",
+                              "exclusiveMinimum": 0
+                            },
+                            "appendSystemPrompt": {
+                              "type": "string"
+                            },
+                            "outputSchema": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
+                              "additionalProperties": {}
+                            }
+                          },
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "claude"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "if": {
+                          "type": "string"
+                        },
+                        "forEach": {
+                          "type": "string"
+                        },
+                        "fanout": {
+                          "type": "string",
+                          "enum": [
+                            "subagent",
+                            "process"
+                          ]
+                        },
+                        "maxParallel": {
+                          "default": 3,
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 20
+                        },
+                        "continueOnError": {
+                          "default": false,
+                          "type": "boolean"
+                        },
+                        "timeoutMinutes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "shell": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "outputJson": {
+                          "default": false,
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "shell"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "if": {
+                          "type": "string"
+                        },
+                        "forEach": {
+                          "type": "string"
+                        },
+                        "fanout": {
+                          "type": "string",
+                          "enum": [
+                            "subagent",
+                            "process"
+                          ]
+                        },
+                        "maxParallel": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 20
+                        },
+                        "continueOnError": {
+                          "type": "boolean"
+                        },
+                        "timeoutMinutes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "uses": {
+                          "type": "string",
+                          "minLength": 1,
+                          "not": {
+                            "pattern": "^[^@]*@(?:[rR][eE][fF][sS]|[pP][uU][lL][lL]|[gG][hH]-[rR][eE][aA][dD][oO][nN][lL][yY]-[qQ][uU][eE][uU][eE])/"
+                          }
+                        },
+                        "with": {
+                          "default": {},
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "uses"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
                 }
+              },
+              "fetchDepth": {
+                "default": 1,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "context": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "submodule": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._-]+\\/[A-Za-z0-9._-]+$"
+                    },
+                    "require": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "submodule",
+                    "repo"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "statusComment": {
+                "default": true,
+                "type": "boolean"
+              },
+              "loop": {
+                "type": "object",
+                "properties": {
+                  "while": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "maxIterations": {
+                    "default": 20,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "while"
+                ],
+                "additionalProperties": false
+              },
+              "onSuccess": {
+                "type": "object",
+                "properties": {
+                  "if": {
+                    "type": "string"
+                  },
+                  "commitMessage": {
+                    "default": "chore(bwv): automated update",
+                    "type": "string"
+                  },
+                  "createPullRequest": {
+                    "type": "object",
+                    "properties": {
+                      "branch": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "base": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "body": {
+                        "type": "string"
+                      },
+                      "draft": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "labels": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "branch",
+                      "title"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "comment": {
+                    "default": false,
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "sourcePrGrouping": {
+                "type": "object",
+                "properties": {
+                  "paths": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "ignorePaths": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "sourceRoot": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requireOutputs": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "maxFilesPerGroup": {
+                    "default": 3,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "paths",
+                  "requireOutputs"
+                ],
+                "additionalProperties": false
               }
-            }
+            },
+            "required": [
+              "name",
+              "on",
+              "steps"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uses": {
+                "type": "string",
+                "minLength": 1,
+                "not": {
+                  "pattern": "^[^@]*@(?:[rR][eE][fF][sS]|[pP][uU][lL][lL]|[gG][hH]-[rR][eE][aA][dD][oO][nN][lL][yY]-[qQ][uU][eE][uU][eE])/"
+                }
+              },
+              "with": {
+                "default": {},
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "name",
+              "uses"
+            ],
+            "additionalProperties": false
           }
-        }
+        ]
       }
     }
-  }
+  },
+  "required": [
+    "version",
+    "workflows"
+  ],
+  "additionalProperties": false
 }

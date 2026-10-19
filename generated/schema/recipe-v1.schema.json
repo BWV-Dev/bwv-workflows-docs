@@ -1,41 +1,1798 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/recipe-v1.schema.json",
-  "title": "BWV Workflows recipe",
-  "type": "object",
-  "required": ["version", "steps"],
-  "properties": {
-    "version": {
-      "type": "integer",
-      "default": 1,
-      "description": "Recipe format version."
-    },
-    "description": {
-      "type": "string",
-      "description": "Short purpose of the recipe."
-    },
-    "inputs": {
+  "anyOf": [
+    {
       "type": "object",
-      "description": "Values accepted by the recipe.",
       "properties": {
-        "sourceRoot": {
-          "type": "string",
-          "description": "Repository-relative source directory."
-        }
-      }
-    },
-    "steps": {
-      "type": "array",
-      "description": "Steps inserted into the workflow.",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Optional step identifier."
+        "apiVersion": {
+          "type": "number",
+          "const": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "inputs": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "array",
+                      "object",
+                      "path",
+                      "glob"
+                    ]
+                  },
+                  "enum": {
+                    "type": "array",
+                    "items": {}
+                  },
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "minimum": {
+                    "type": "number"
+                  },
+                  "maximum": {
+                    "type": "number"
+                  },
+                  "required": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "default": {}
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "toolkit"
+                  },
+                  "contract": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "required": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "keys": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                    }
+                  },
+                  "default": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "skill": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                            }
+                          },
+                          "required": [
+                            "skill"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "command": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                            }
+                          },
+                          "required": [
+                            "command"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "script": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "script"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "contract"
+                ],
+                "additionalProperties": false
+              }
+            ]
           }
+        },
+        "locals": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "model": {},
+            "maxTurns": {},
+            "timeoutMinutes": {},
+            "permissionMode": {},
+            "maxBudgetUsd": {}
+          },
+          "additionalProperties": false
+        },
+        "workflows": {
+          "anyOf": [
+            {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "on": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "pull_request": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "types": {
+                                            "default": [
+                                              "opened",
+                                              "synchronize"
+                                            ],
+                                            "anyOf": [
+                                              {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "enum": [
+                                                        "opened",
+                                                        "reopened",
+                                                        "synchronize",
+                                                        "ready_for_review",
+                                                        "closed"
+                                                      ]
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "base": {
+                                            "anyOf": [
+                                              {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "merged": {
+                                            "anyOf": [
+                                              {
+                                                "type": "boolean"
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "head": {
+                                            "anyOf": [
+                                              {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "paths": {
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "ignorePaths": {
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "base"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "push": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "branches": {
+                                            "anyOf": [
+                                              {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "paths": {
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "ignorePaths": {
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "branches"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "additionalProperties": false
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "steps": {
+                            "anyOf": [
+                              {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "if": {
+                                              "type": "string"
+                                            },
+                                            "forEach": {
+                                              "type": "string"
+                                            },
+                                            "fanout": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "subagent",
+                                                    "process"
+                                                  ]
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "maxParallel": {
+                                              "default": 3,
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer",
+                                                  "exclusiveMinimum": 0,
+                                                  "maximum": 20
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "continueOnError": {
+                                              "default": false,
+                                              "anyOf": [
+                                                {
+                                                  "type": "boolean"
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "timeoutMinutes": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer",
+                                                  "exclusiveMinimum": 0,
+                                                  "maximum": 9007199254740991
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "claude": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "prompt": {
+                                                      "type": "string"
+                                                    },
+                                                    "promptFile": {
+                                                      "type": "string"
+                                                    },
+                                                    "skill": {
+                                                      "type": "string"
+                                                    },
+                                                    "command": {
+                                                      "type": "string"
+                                                    },
+                                                    "args": {
+                                                      "type": "string"
+                                                    },
+                                                    "model": {
+                                                      "type": "string"
+                                                    },
+                                                    "allowedTools": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "array",
+                                                          "items": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipePlaceholder"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "disallowedTools": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "array",
+                                                          "items": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipePlaceholder"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "permissionMode": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "default",
+                                                            "acceptEdits",
+                                                            "dontAsk",
+                                                            "plan",
+                                                            "bypassPermissions"
+                                                          ]
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipeInterpolation"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "maxTurns": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "integer",
+                                                          "exclusiveMinimum": 0,
+                                                          "maximum": 9007199254740991
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipePlaceholder"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "maxBudgetUsd": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "number",
+                                                          "exclusiveMinimum": 0
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipePlaceholder"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "appendSystemPrompt": {
+                                                      "type": "string"
+                                                    },
+                                                    "outputSchema": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "object",
+                                                          "propertyNames": {
+                                                            "type": "string"
+                                                          },
+                                                          "additionalProperties": {}
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipePlaceholder"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "run": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "additionalProperties": false
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "claude"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "if": {
+                                              "type": "string"
+                                            },
+                                            "forEach": {
+                                              "type": "string"
+                                            },
+                                            "fanout": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "subagent",
+                                                    "process"
+                                                  ]
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "maxParallel": {
+                                              "default": 3,
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer",
+                                                  "exclusiveMinimum": 0,
+                                                  "maximum": 20
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "continueOnError": {
+                                              "default": false,
+                                              "anyOf": [
+                                                {
+                                                  "type": "boolean"
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "timeoutMinutes": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer",
+                                                  "exclusiveMinimum": 0,
+                                                  "maximum": 9007199254740991
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "shell": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "outputJson": {
+                                              "default": false,
+                                              "anyOf": [
+                                                {
+                                                  "type": "boolean"
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "shell"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "if": {
+                                              "type": "string"
+                                            },
+                                            "forEach": {
+                                              "type": "string"
+                                            },
+                                            "fanout": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "subagent",
+                                                    "process"
+                                                  ]
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "maxParallel": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer",
+                                                  "exclusiveMinimum": 0,
+                                                  "maximum": 20
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "continueOnError": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "boolean"
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "timeoutMinutes": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "integer",
+                                                  "exclusiveMinimum": 0,
+                                                  "maximum": 9007199254740991
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
+                                            "uses": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ],
+                                              "not": {
+                                                "pattern": "^[^@]*@(?:[rR][eE][fF][sS]|[pP][uU][lL][lL]|[gG][hH]-[rR][eE][aA][dD][oO][nN][lL][yY]-[qQ][uU][eE][uU][eE])/"
+                                              }
+                                            },
+                                            "with": {
+                                              "default": {},
+                                              "anyOf": [
+                                                {
+                                                  "type": "object",
+                                                  "propertyNames": {
+                                                    "type": "string"
+                                                  },
+                                                  "additionalProperties": {}
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "uses"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "$ref": "#/$defs/recipePlaceholder"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "fetchDepth": {
+                            "default": 1,
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "context": {
+                            "default": [],
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "submodule": {
+                                          "type": "string"
+                                        },
+                                        "repo": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "pattern": "^[A-Za-z0-9._-]+\\/[A-Za-z0-9._-]+$"
+                                            },
+                                            {
+                                              "$ref": "#/$defs/recipeInterpolation"
+                                            }
+                                          ]
+                                        },
+                                        "require": {
+                                          "default": [],
+                                          "anyOf": [
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            {
+                                              "$ref": "#/$defs/recipePlaceholder"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "submodule",
+                                        "repo"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "$ref": "#/$defs/recipePlaceholder"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "statusComment": {
+                            "default": true,
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "loop": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "while": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
+                                      }
+                                    ]
+                                  },
+                                  "maxIterations": {
+                                    "default": 20,
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 100
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "while"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "onSuccess": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "if": {
+                                    "type": "string"
+                                  },
+                                  "commitMessage": {
+                                    "default": "chore(bwv): automated update",
+                                    "type": "string"
+                                  },
+                                  "createPullRequest": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "branch": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipeInterpolation"
+                                              }
+                                            ]
+                                          },
+                                          "base": {
+                                            "type": "string"
+                                          },
+                                          "title": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipeInterpolation"
+                                              }
+                                            ]
+                                          },
+                                          "body": {
+                                            "type": "string"
+                                          },
+                                          "draft": {
+                                            "default": false,
+                                            "anyOf": [
+                                              {
+                                                "type": "boolean"
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          },
+                                          "labels": {
+                                            "default": [],
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "branch",
+                                          "title"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "comment": {
+                                    "default": false,
+                                    "anyOf": [
+                                      {
+                                        "type": "boolean"
+                                      },
+                                      {
+                                        "type": "string"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "additionalProperties": false
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "sourcePrGrouping": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "paths": {
+                                    "anyOf": [
+                                      {
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            {
+                                              "$ref": "#/$defs/recipeInterpolation"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "ignorePaths": {
+                                    "anyOf": [
+                                      {
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            {
+                                              "$ref": "#/$defs/recipeInterpolation"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "sourceRoot": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
+                                      }
+                                    ]
+                                  },
+                                  "requireOutputs": {
+                                    "anyOf": [
+                                      {
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            {
+                                              "$ref": "#/$defs/recipeInterpolation"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "maxFilesPerGroup": {
+                                    "default": 3,
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "paths",
+                                  "requireOutputs"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "on",
+                          "steps"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "uses": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ],
+                            "not": {
+                              "pattern": "^[^@]*@(?:[rR][eE][fF][sS]|[pP][uU][lL][lL]|[gG][hH]-[rR][eE][aA][dD][oO][nN][lL][yY]-[qQ][uU][eE][uU][eE])/"
+                            }
+                          },
+                          "with": {
+                            "default": {},
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {}
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "uses"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/recipePlaceholder"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "#/$defs/recipePlaceholder"
+            }
+          ]
         }
-      }
+      },
+      "required": [
+        "apiVersion",
+        "workflows"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "number",
+          "const": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "inputs": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "array",
+                      "object",
+                      "path",
+                      "glob"
+                    ]
+                  },
+                  "enum": {
+                    "type": "array",
+                    "items": {}
+                  },
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "minimum": {
+                    "type": "number"
+                  },
+                  "maximum": {
+                    "type": "number"
+                  },
+                  "required": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "default": {}
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "toolkit"
+                  },
+                  "contract": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "required": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "keys": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                    }
+                  },
+                  "default": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "skill": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                            }
+                          },
+                          "required": [
+                            "skill"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "command": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                            }
+                          },
+                          "required": [
+                            "command"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "script": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "script"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "contract"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "locals": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "model": {},
+            "maxTurns": {},
+            "timeoutMinutes": {},
+            "permissionMode": {},
+            "maxBudgetUsd": {}
+          },
+          "additionalProperties": false
+        },
+        "steps": {
+          "anyOf": [
+            {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "if": {
+                            "type": "string"
+                          },
+                          "forEach": {
+                            "type": "string"
+                          },
+                          "fanout": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "subagent",
+                                  "process"
+                                ]
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "maxParallel": {
+                            "default": 3,
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 20
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "continueOnError": {
+                            "default": false,
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "timeoutMinutes": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "claude": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "prompt": {
+                                    "type": "string"
+                                  },
+                                  "promptFile": {
+                                    "type": "string"
+                                  },
+                                  "skill": {
+                                    "type": "string"
+                                  },
+                                  "command": {
+                                    "type": "string"
+                                  },
+                                  "args": {
+                                    "type": "string"
+                                  },
+                                  "model": {
+                                    "type": "string"
+                                  },
+                                  "allowedTools": {
+                                    "anyOf": [
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "disallowedTools": {
+                                    "anyOf": [
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "permissionMode": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "default",
+                                          "acceptEdits",
+                                          "dontAsk",
+                                          "plan",
+                                          "bypassPermissions"
+                                        ]
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
+                                      }
+                                    ]
+                                  },
+                                  "maxTurns": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "maxBudgetUsd": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "exclusiveMinimum": 0
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "appendSystemPrompt": {
+                                    "type": "string"
+                                  },
+                                  "outputSchema": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "propertyNames": {
+                                          "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "run": {
+                                    "type": "string"
+                                  }
+                                },
+                                "additionalProperties": false
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "claude"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "if": {
+                            "type": "string"
+                          },
+                          "forEach": {
+                            "type": "string"
+                          },
+                          "fanout": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "subagent",
+                                  "process"
+                                ]
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "maxParallel": {
+                            "default": 3,
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 20
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "continueOnError": {
+                            "default": false,
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "timeoutMinutes": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "shell": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "outputJson": {
+                            "default": false,
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "shell"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "if": {
+                            "type": "string"
+                          },
+                          "forEach": {
+                            "type": "string"
+                          },
+                          "fanout": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "subagent",
+                                  "process"
+                                ]
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "maxParallel": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 20
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "continueOnError": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "timeoutMinutes": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "uses": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ],
+                            "not": {
+                              "pattern": "^[^@]*@(?:[rR][eE][fF][sS]|[pP][uU][lL][lL]|[gG][hH]-[rR][eE][aA][dD][oO][nN][lL][yY]-[qQ][uU][eE][uU][eE])/"
+                            }
+                          },
+                          "with": {
+                            "default": {},
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {}
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "uses"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/recipePlaceholder"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "#/$defs/recipePlaceholder"
+            }
+          ]
+        }
+      },
+      "required": [
+        "apiVersion",
+        "steps"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "recipePlaceholder": {
+      "type": "string",
+      "pattern": "^\\$\\[\\[[\\s\\S]*\\]\\]$"
+    },
+    "recipeInterpolation": {
+      "type": "string",
+      "pattern": "\\$\\[\\[[\\s\\S]*\\]\\]"
     }
   }
 }

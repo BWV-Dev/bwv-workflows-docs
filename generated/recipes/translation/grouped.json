@@ -1,27 +1,72 @@
 {
-  "path": "translation/grouped.yml",
-  "description": "Translate changed documents in source groups.",
+  "path": "recipes/translation/grouped.yml",
+  "description": "Translate Japanese Markdown documents into Vietnamese one source pull request at a time after a merged sync pull request, keep the reviewed translation cache in sync on the bot's branches, and gate pull requests on that cache.",
   "inputs": [
     {
       "name": "sourceRoot",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "outputRoot",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "glossary",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "syncBase",
       "type": "string",
-      "required": true,
-      "description": "Repository-relative directory that contains source documents."
+      "required": true
+    },
+    {
+      "name": "sourceBranch",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "gateBases",
+      "type": "array",
+      "required": true
+    },
+    {
+      "name": "branchPrefix",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": false,
+      "default": "sonnet"
     },
     {
       "name": "maxFilesPerGroup",
-      "type": "integer",
+      "type": "number",
       "required": false,
-      "default": 3,
-      "description": "Maximum number of source files in one group."
+      "default": 3
     },
     {
-      "name": "language",
-      "type": "string",
+      "name": "toolkit",
+      "type": "toolkit",
       "required": false,
-      "default": "vi",
-      "description": "Target language code.",
-      "enum": ["ja", "vi"]
+      "default": {
+        "translate": {
+          "skill": "translate-doc"
+        },
+        "syncCache": {
+          "skill": "sync-translation-cache"
+        },
+        "checkOutputs": {
+          "script": "scripts/check-group-outputs.sh"
+        },
+        "checkDrift": {
+          "script": "scripts/check-cache-drift.sh"
+        }
+      }
     }
   ]
 }
