@@ -7,8 +7,153 @@ slug: /configuring/passing-data
 
 👤 Responsible: Project Leader
 
-This page will explain step outputs, expression bindings, `forEach`, and safe patterns for passing structured data between steps.
+Give steps stable IDs, pass their outputs through expressions, and use
+`forEach` only when every item can work independently.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
-:::
+## Workflow Summary
+
+1. [Capture a step output](#1-capture-a-step-output).
+2. [Use expressions in the right context](#2-use-expressions-in-the-right-context).
+3. [Run independent items in parallel](#3-run-independent-items-in-parallel).
+4. [Choose reporting and publication](#4-choose-reporting-and-publication).
+5. [Choose the clone depth](#5-choose-the-clone-depth).
+
+## Step-by-Step Instructions
+
+### 1. Capture a step output
+
+👤 Responsible: Project Leader
+
+Set `id` on a step, then read its result as `${{ steps.<id>.output }}`:
+
+| Step kind                       | Value stored in `output`                            |
+| ------------------------------- | --------------------------------------------------- |
+| `claude` with `outputSchema`    | Parsed structured output that matches the schema.   |
+| `claude` without `outputSchema` | Final assistant text.                               |
+| `shell`                         | Trimmed stdout, up to 64 KiB per command.           |
+| `shell` with `forEach`          | An array of stdout strings in item order.           |
+| `shell` with `outputJson: true` | Stdout parsed as JSON. Invalid JSON fails the step. |
+
+Use `outputJson: true` when another step needs fields or an array rather than
+plain text:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: prepare-spec-reviews
+    fetchDepth: 0
+    statusComment: true
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - id: plan
+        name: Plan the review files
+        shell: >-
+          printf '%s\n'
+          '{"items":[{"source":"docs/specs/login.md","file":"docs/reviews/login.md"},{"source":"docs/specs/profile.md","file":"docs/reviews/profile.md"}]}'
+        outputJson: true
+      - id: review
+        name: Review each specification
+        forEach: ${{ steps.plan.output.items }}
+        fanout: process
+        maxParallel: 2
+        timeoutMinutes: 20
+        claude:
+          prompt: |
+            Read ${{ item.source }}.
+            Write the review to ${{ item.file }} and do not change other files.
+          allowedTools: [Read, Edit, Glob]
+          disallowedTools:
+            - "Edit(.bwv/**)"
+            - "Edit(.claude/**)"
+    onSuccess:
+      comment: |
+        Reviewed this plan:
+        ${{ steps.plan.output }}
+      createPullRequest:
+        branch: "bwv/spec-review/pr-${{ pr.number }}"
+        title: "docs: add specification reviews"
+```
+
+A non-zero shell exit still records its output but fails the step. Make a
+reporting script exit `0` when its findings are valid output; use a non-zero
+exit only when the check itself failed.
+
+### 2. Use expressions in the right context
+
+👤 Responsible: Project Leader
+
+Runtime expressions use `${{ ... }}`. They can read `owner`, `repo`,
+`workflow`, `loop.index`, previous `steps`, and the event context. A pull
+request has `pr.*`; a push has `push.*`. Inside `forEach`, `item` and `index`
+are also available.
+
+Think of expression destinations in two groups:
+
+| Context       | What happens                                                                                | Typical fields                           |
+| ------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Value context | A field containing exactly one expression keeps its array, object, boolean, or number type. | `if`, `forEach`, recipe inputs           |
+| Text context  | Expressions become text inside the surrounding string.                                      | prompts, arguments, branch names, titles |
+
+`onSuccess.comment` and `createPullRequest.body` are always text contexts.
+When they contain an object, BWV Workflows renders indented JSON instead of
+`[object Object]`.
+
+An unknown variable or a missing property fails with the expression path. It
+does not silently become an empty value.
+
+### 3. Run independent items in parallel
+
+👤 Responsible: Project Leader
+
+`forEach` must resolve to an array. An empty array skips the step; another type
+fails it. `maxParallel` defaults to 3 and accepts a positive integer up to 20.
+
+Choose the Claude fan-out mode:
+
+| Mode       | Behavior                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| `process`  | Starts one Claude process per item and enforces `maxParallel`.                              |
+| `subagent` | Starts one Claude process and asks it to dispatch subagents; `maxParallel` is a soft limit. |
+
+A prompt step defaults to `subagent`. A `skill` or `command` step defaults to
+`process`, and `fanout: subagent` is refused for those steps because the slash
+command must be the process prompt.
+
+Make every item write disjoint files. When items contain a `file` or `files`
+field, BWV Workflows rejects duplicate targets before starting Claude. Review
+the plan yourself when the target is expressed another way.
+
+### 4. Choose reporting and publication
+
+👤 Responsible: Project Leader
+
+`statusComment` defaults to `true`. On a pull request, BWV Workflows keeps one
+comment updated with the step table. Set it to `false` only when the check run
+is enough. A push without an associated pull request reports through its
+`bwv/<workflow>` check run.
+
+`onSuccess` runs after the workflow succeeds and its optional `if` condition
+passes:
+
+- `comment: true` posts a standalone summary. A string posts that text.
+  `false` is the default.
+- `createPullRequest` commits changed files and creates or updates a pull
+  request. Set its required `branch` and `title`; `base`, `body`, `draft`, and
+  `labels` are optional.
+- `commitMessage` changes the commit message used for published files.
+
+No output pull request is needed when the successful run changed no files.
+Dev and Com still review every pull request that is created.
+
+### 5. Choose the clone depth
+
+👤 Responsible: Project Leader
+
+`fetchDepth` defaults to `1`. Keep it for steps that need only the checked-out
+tree. Set `fetchDepth: 0` when a step reads repository history, including any
+script or Claude tool call that uses `git log`; a depth-1 clone cannot provide
+the earlier commits.
