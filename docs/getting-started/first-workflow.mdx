@@ -7,8 +7,126 @@ slug: /getting-started/first-workflow
 
 👤 Responsible: Project Leader
 
-This page will walk through adding `.bwv/workflows.yml`, choosing a trigger, defining a first step, and verifying the resulting check run.
+Add a small pull request workflow to confirm that onboarding, branch
+protection, execution, and result publication all work.
 
-:::note Work in progress
-This guide will be completed in Wave 2.
+## Workflow Summary
+
+1. [Add the workflow file](#1-add-the-workflow-file).
+2. [Merge the configuration into the base branch](#2-merge-the-configuration-into-the-base-branch).
+3. [Open a test pull request](#3-open-a-test-pull-request).
+4. [Verify the run](#4-verify-the-run).
+5. [Read a failure](#5-read-a-failure).
+
+## Step-by-Step Instructions
+
+### 1. Add the workflow file
+
+👤 Responsible: Project Leader
+
+Create `.bwv/workflows.yml` with this configuration. Replace `main` if the
+repository uses a different protected base branch.
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: first-workflow
+    on:
+      pull_request:
+        types: [opened, synchronize, reopened]
+        base: [main]
+    steps:
+      - name: Write a change summary
+        claude:
+          prompt: |
+            Read the pull request diff.
+            Create or update docs/workflow-summary.md with a short summary.
+            Do not change any other file.
+          allowedTools: [Read, Write, Edit, "Bash(git diff:*)"]
+    onSuccess:
+      createPullRequest:
+        branch: "bwv/first-workflow/pr-${{ pr.number }}"
+        title: "docs: add workflow summary"
+      comment: false
+```
+
+This workflow runs one Claude step for pull requests into `main`. When the step
+changes `docs/workflow-summary.md`, BWV Workflows opens a result pull request.
+
+### 2. Merge the configuration into the base branch
+
+👤 Responsible: Project Leader
+
+Commit the file on a setup branch:
+
+```bash
+git switch -c chore/add-bwv-workflow main
+git add .bwv/workflows.yml
+git commit -m "chore: add first BWV workflow"
+git push --set-upstream origin chore/add-bwv-workflow
+gh pr create --base main --title "chore: add first BWV workflow" --body "Add the initial BWV Workflows configuration."
+```
+
+Review and merge this setup pull request through the protected branch. The
+workflow does not govern its own setup pull request because configuration comes
+from the base branch.
+
+:::important Merge before testing
+The workflow must exist on `main` before a separate test pull request can use
+it. A change to `.bwv/workflows.yml` takes effect after it is merged.
 :::
+
+### 3. Open a test pull request
+
+👤 Responsible: Project Leader
+
+Update the local base branch, create a test branch, and edit a harmless
+document such as `docs/specs/login.md`:
+
+```bash
+git switch main
+git pull --ff-only
+git switch -c docs/test-first-workflow
+# Edit docs/specs/login.md, then continue.
+git add docs/specs/login.md
+git commit -m "docs: test BWV workflow"
+git push --set-upstream origin docs/test-first-workflow
+gh pr create --base main --title "docs: test BWV workflow" --body "Verify the first BWV workflow."
+```
+
+Do not merge the test pull request until the run has finished.
+
+### 4. Verify the run
+
+👤 Responsible: Project Leader
+
+Expect these results:
+
+1. A check named `bwv/first-workflow` starts on the test pull request.
+2. One **BWV Workflows** status comment updates as the step runs.
+3. The check passes after the step completes.
+4. If `docs/workflow-summary.md` changed, the comment links to a result pull
+   request named **docs: add workflow summary**.
+
+{/* TODO(screenshot): Capture the test pull request Checks view with bwv/first-workflow selected. Use a fake or test repository and blur the organization, repository, avatars, and pull request number. */}
+
+{/* TODO(screenshot): Capture the BWV Workflows status comment linking to the result pull request. Use a fake or test repository and blur the organization, repository, avatars, and pull request numbers. */}
+
+Review the generated file in the result pull request. Close the test pull
+request and result pull request when the verification is complete, or merge
+them if the changes are useful.
+
+### 5. Read a failure
+
+👤 Responsible: Project Leader
+
+1. Open the failed `bwv/first-workflow` check.
+2. Find the first failed step and read its error.
+3. Expand the output block for the end of the Claude step's output.
+4. Check the status comment for the same workflow state.
+5. Fix the configuration on the base branch when the failure is in
+   `.bwv/workflows.yml`.
+
+See [Reading the check run and status comment](../pull-requests/read-checks-status)
+for the full report layout. See [Troubleshooting and FAQ](../troubleshooting)
+when the error does not identify the fix.
