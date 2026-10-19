@@ -1,0 +1,80 @@
+---
+title: Đưa repository vào sử dụng
+sidebar_position: 1
+description: Nhờ maintainers chuẩn bị một repository để dùng BWV Workflows.
+slug: /getting-started/onboard-repository
+source_hash: 1c4b9c4892cef392daa59b8b7d56d9568e3be451b6f2c2ec762b22bf81f586e9
+---
+
+👤 Phụ trách: Project Leader
+
+Nhờ BWV Workflows maintainers đưa repository vào sử dụng. Cài đặt và cấu hình engine là phần việc của maintainers.
+
+## Tóm tắt workflow
+
+1. [Chọn repository và nguồn recipe](#1-chọn-repository-và-nguồn-recipe).
+2. [Gửi yêu cầu đưa vào sử dụng](#2-gửi-yêu-cầu-đưa-vào-sử-dụng).
+3. [Chờ maintainers thiết lập](#3-chờ-maintainers-thiết-lập).
+4. [Kiểm tra GitHub App](#4-kiểm-tra-github-app).
+
+## Hướng dẫn từng bước
+
+### 1. Chọn repository và nguồn recipe
+
+👤 Phụ trách: Project Leader
+
+Chuẩn bị các giá trị sau:
+
+- Repository đích theo dạng `<owner>/<repo>`, ví dụ `acme/web-app`.
+- Mọi repository từ xa sẽ cung cấp recipe.
+- `None` nếu workflow chỉ dùng các bước trực tiếp hoặc recipe nằm trong `.bwv/recipes/` của repository đích.
+
+Ghi `BWV-Dev/bwv-workflows-recipes` nếu bạn định dùng recipe chính thức. Liệt kê mọi nguồn đã được duyệt khác bằng tên đầy đủ `<owner>/<repo>`.
+
+:::tip Bắt đầu với đúng các nguồn bạn cần
+Thay đổi YAML không thể cấp cho App quyền truy cập một nguồn recipe hoặc mở rộng danh sách nguồn đã duyệt. Hãy hỏi BWV Workflows maintainers trước khi tham chiếu nguồn khác.
+:::
+
+### 2. Gửi yêu cầu đưa vào sử dụng
+
+👤 Phụ trách: Project Leader
+
+Gửi yêu cầu cho BWV Workflows maintainers theo mẫu sau:
+
+```text
+Repository: acme/web-app
+Recipe sources:
+- BWV-Dev/bwv-workflows-recipes
+```
+
+Dùng `Recipe sources: None` khi không cần nguồn từ xa. Không gửi token, thông tin đăng nhập của App hoặc liên kết cài đặt.
+
+### 3. Chờ maintainers thiết lập
+
+👤 Phụ trách: BWV Workflows maintainers
+
+Maintainers sẽ:
+
+1. Xác nhận repository đích có thể dùng BWV Workflows.
+2. Cài đặt hoặc mở rộng phạm vi cài đặt GitHub App **BWV Workflows** cho repository đích.
+3. Cho phép bản cài đặt đó đọc từng nguồn recipe từ xa đã được duyệt và cho phép nguồn này trong cấu hình dịch vụ.
+4. Xác nhận khi repository đã sẵn sàng để thêm file workflow.
+
+Hãy chờ xác nhận đó trước khi thêm `.bwv/workflows.yml`. Nếu bản cài đặt không đọc được một nguồn recipe, bước kiểm tra cấu hình sẽ thất bại.
+
+### 4. Kiểm tra GitHub App
+
+👤 Phụ trách: Project Leader
+
+1. Mở `acme/web-app` trên GitHub.
+2. Chọn **Settings** (Cài đặt).
+3. Trong **Integrations** (Tích hợp), chọn **GitHub Apps**.
+4. Xác nhận **BWV Workflows** xuất hiện trong danh sách App đã cài đặt cho repository.
+
+{/* TODO(screenshot): Capture repository Settings → GitHub Apps with BWV Workflows visible. Use a fake or test repository and blur the organization, avatars, and any pull request numbers. */}
+
+:::note Không có quyền truy cập
+Nếu **BWV Workflows** không có trong danh sách, hãy nhờ BWV Workflows maintainers kiểm tra bản cài đặt. Không tự cài App từ một liên kết khác.
+:::
+
+Tiếp tục với [Bảo vệ nhánh](./protect-branches).

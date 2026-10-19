@@ -1,0 +1,84 @@
+---
+title: Bảo vệ nhánh
+sidebar_position: 2
+description: Thêm các quy tắc bảo vệ nhánh cần thiết để thay đổi workflow an toàn.
+slug: /getting-started/protect-branches
+source_hash: 359dc77d1a9a80c27476a15b3b631f647a00a6258af829da1803c785611c3471
+---
+
+👤 Phụ trách: Project Leader
+
+Bảo vệ mọi nhánh có thể điều khiển một lần chạy BWV Workflows. Người có thể push vào một trong các nhánh này sẽ quyết định App chạy nội dung gì bằng quyền ghi (write access).
+
+## Tóm tắt workflow
+
+1. [Liệt kê mọi nhánh điều khiển lần chạy](#1-liệt-kê-mọi-nhánh-điều-khiển-lần-chạy).
+2. [Tạo quy tắc bảo vệ](#2-tạo-quy-tắc-bảo-vệ).
+3. [Bật các cài đặt được khuyến nghị](#3-bật-các-cài-đặt-được-khuyến-nghị).
+4. [Kiểm tra mọi nhánh đã cấu hình](#4-kiểm-tra-mọi-nhánh-đã-cấu-hình).
+
+## Hướng dẫn từng bước
+
+### 1. Liệt kê mọi nhánh điều khiển lần chạy
+
+👤 Phụ trách: Project Leader
+
+Bảo vệ cả hai nhóm nhánh sau:
+
+1. Mọi nhánh đích (base branch) được điều kiện kích hoạt (trigger) `on.pull_request` chấp nhận.
+2. Mọi nhánh được ghi trong trigger `on.push.branches`.
+
+Ví dụ, trigger này yêu cầu bảo vệ `main`, mọi nhánh khớp với `release/*` và `develop`:
+
+```yaml
+on:
+  pull_request:
+    base: [main, "release/*"]
+  push:
+    branches: [develop]
+```
+
+Kiểm tra lại mỗi khi `.bwv/workflows.yml` thêm hoặc thay đổi mẫu nhánh.
+
+### 2. Tạo quy tắc bảo vệ
+
+👤 Phụ trách: Project Leader
+
+1. Mở repository trên GitHub.
+2. Chọn **Settings → Branches** (Cài đặt → Nhánh).
+3. Trong **Branch protection rules** (Quy tắc bảo vệ nhánh), chọn **Add classic branch protection rule** (Thêm quy tắc bảo vệ nhánh kiểu cũ).
+4. Nhập tên hoặc mẫu nhánh, ví dụ `main`, `develop` hoặc `release/*`.
+5. Tiếp tục với các cài đặt bên dưới trước khi lưu quy tắc.
+
+{/* TODO(screenshot): Capture GitHub Settings → Branches while adding a branch protection rule for a fake or test repository. Crop tightly and blur the organization, repository, and avatars. */}
+
+### 3. Bật các cài đặt được khuyến nghị
+
+👤 Phụ trách: Project Leader
+
+Bật các cài đặt sau cho mỗi mẫu được bảo vệ:
+
+- **Require a pull request before merging** (Bắt buộc có pull request trước khi merge).
+- **Require approvals** (Bắt buộc phê duyệt): đặt ít nhất một lượt phê duyệt.
+- **Dismiss stale pull request approvals when new commits are pushed** (Bỏ các phê duyệt cũ khi có commit mới được push).
+- **Require review from Code Owners** (Bắt buộc Code Owners review) nếu repository chỉ định người phụ trách cho `.bwv/**` hoặc `.claude/**`.
+- **Require conversation resolution before merging** (Bắt buộc giải quyết hội thoại trước khi merge).
+- **Do not allow bypassing the settings** (Không cho phép bỏ qua cài đặt) với thay đổi thông thường.
+- Không bật force push và xóa nhánh.
+
+Giữ nguyên mọi check trạng thái bắt buộc đang có. Chỉ thêm check `bwv/<workflow>` sau khi workflow đó đã chạy và bạn biết tên cuối cùng của check.
+
+:::warning Bảo vệ mẫu nhánh trước khi bật trigger
+Tạo bảo vệ cho mọi nhánh khớp, không chỉ nhánh mặc định. Trigger push cho `develop` không được bảo vệ bởi quy tắc chỉ áp dụng cho `main`.
+:::
+
+### 4. Kiểm tra mọi nhánh đã cấu hình
+
+👤 Phụ trách: Project Leader
+
+1. Quay lại **Settings → Branches**.
+2. Đối chiếu từng mẫu nhánh đích của pull request trong `.bwv/workflows.yml` với một quy tắc bảo vệ.
+3. Đối chiếu từng mẫu `on.push.branches` với một quy tắc bảo vệ.
+4. Mở một pull request thử nghiệm và xác nhận GitHub yêu cầu lượt review đã cấu hình trước khi merge.
+
+Tiếp tục với [Workflow đầu tiên](./first-workflow).

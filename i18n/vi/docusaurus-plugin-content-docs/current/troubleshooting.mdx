@@ -1,0 +1,77 @@
+---
+title: Khắc phục sự cố và câu hỏi thường gặp
+sidebar_position: 7
+description: Xử lý các lỗi cấu hình và workflow pull request thường gặp.
+slug: /troubleshooting
+source_hash: 40ee836177beaf9cdda736e8378c71a0cf2af1e4bbbfa88e98adc9e661850b9b
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+
+👤 Phụ trách: Project Leader và Dev & Com
+
+Bắt đầu với check `bwv/…` mới nhất trên commit hiện tại. Đọc phần tóm tắt và comment của BWV Workflows trước khi yêu cầu chạy lại.
+
+## Không có gì chạy
+
+Kiểm tra lần lượt các nguyên nhân sau:
+
+1. **Workflow không khớp.** Đối chiếu hành động của pull request, nhánh đích (base branch), nhánh nguồn (head branch) và các đường dẫn đã thay đổi với điều kiện kích hoạt (trigger) của workflow. Mọi bộ lọc đã cấu hình đều phải khớp. Xem [Điều kiện kích hoạt](./configuring/triggers).
+2. **Cấu hình chỉ có trên nhánh nguồn.** Workflow pull request dùng `.bwv/workflows.yml` từ nhánh đích hiện tại. Merge cấu hình vào nhánh đích trước khi thử nghiệm. Xem [Workflow đầu tiên](./getting-started/first-workflow#2-merge-cấu-hình-vào-nhánh-đích).
+3. **Pull request đến từ một fork.** BWV Workflows không chạy các bước workflow cho pull request từ fork. Nếu nội dung được tin cậy để chạy, hãy chuyển nội dung đó sang một nhánh trong repository.
+4. **App chưa được cài đặt cho repository.** Nhờ BWV Workflows maintainers xác nhận bản cài đặt và quyền truy cập repository. Xem [Đưa repository vào sử dụng](./getting-started/onboard-repository).
+
+## `bwv/config` có màu đỏ
+
+Mở check `bwv/config` và đọc thông báo kiểm tra tính hợp lệ. Sửa `.bwv/workflows.yml` hoặc recipe được tham chiếu trên nhánh đích; nếu chỉ sửa nhánh nguồn của pull request, cấu hình đáng tin cậy cho pull request đó sẽ không đổi.
+
+Dùng [Tự động gợi ý trong editor](./getting-started/editor-autocomplete) để phát hiện lỗi schema khi chỉnh sửa. Sau đó, làm theo [Workflow đầu tiên](./getting-started/first-workflow) để merge và thử bản sửa.
+
+## Một bước thất bại với lỗi permission denied
+
+Mở bước đã thất bại và xác định tool hoặc đường dẫn mà bước đó cố dùng. Kiểm tra `disallowedTools` của bước hoặc recipe trước; quy tắc từ chối khớp sẽ được ưu tiên. Chỉ thay đổi quy tắc về tool khi bạn thực sự muốn cấp quyền truy cập đó, rồi chạy lại phần việc thất bại.
+
+Xem [Các bước: claude, shell, uses](./configuring/steps) để biết quyền của bước và [Chạy lại một tác vụ](./pull-requests/retry) để biết các cách chạy lại.
+
+## Đang chờ hạn mức
+
+Chờ đến thời gian tự động chạy lại hiển thị trong check. Gửi thêm yêu cầu **Retry** (Chạy lại) không làm thời gian chờ kết thúc sớm hơn. Nếu thời gian UTC hiển thị đã qua một khoảng hợp lý mà vẫn không có cập nhật, hãy nhờ BWV Workflows maintainers kiểm tra.
+
+Xem [Chờ hạn mức và các trạng thái bị kẹt khác](./pull-requests/waiting) để biết từng thông báo chờ và hành động tiếp theo.
+
+## Lần merge bị bỏ qua
+
+Mở comment merge-skipped của BWV Workflows và làm theo lý do trong đó. Workflow không chạy vì BWV Workflows không thể xác nhận an toàn input của lần merge hoặc chọn đúng nguồn. Không dùng **Retry** cho đến khi điều kiện được nêu đã được xử lý.
+
+Xem [Khi một lần merge bị bỏ qua hoặc cần chọn nguồn](./pull-requests/merge-skipped).
+
+## Yêu cầu retry của tôi không làm gì
+
+Một nhóm đã được xuất bản không đủ điều kiện để **Retry**. Hãy review PR kết quả hiện có, hoặc dùng **Recreate** (Tạo lại) nếu pull request đó đã đóng mà chưa merge.
+
+Một yêu cầu đã được chấp nhận cũng có thể phải chờ phần việc đang chạy. Đọc dòng yêu cầu trong comment theo dõi (tracker) hoặc check đang xếp hàng, rồi đợi lần chạy được nêu hoàn tất. Xem [Chạy lại một tác vụ](./pull-requests/retry) và [Chờ hạn mức và các trạng thái bị kẹt khác](./pull-requests/waiting).
+
+## PR kết quả đã bị đóng
+
+Một lần chạy thông thường hoặc **Retry** không mở lại PR kết quả đã đóng mà chưa merge. Chỉ dùng hành động **Recreate** được cung cấp khi bạn muốn có một PR kết quả mới.
+
+Xem [Tạo lại pull request đã đóng](./pull-requests/recreate).
+
+## Tự động gợi ý trong editor không hoạt động
+
+Kết nối vào mạng công ty, sau đó mở lại file YAML và kiểm tra URL schema đã cấu hình. Nếu URL hoặc quyền truy cập vẫn không hoạt động, hãy hỏi BWV Workflows maintainers về giá trị `<engine-host>` hiện tại.
+
+Xem [Tự động gợi ý trong editor](./getting-started/editor-autocomplete) để biết đầy đủ các bước thiết lập và kiểm tra.
+
+## Nhờ BWV Workflows maintainers hỗ trợ
+
+Gửi kèm các thông tin sau:
+
+- Repository, ví dụ `acme/web-app`.
+- Liên kết đến pull request bị ảnh hưởng.
+- Tên workflow chính xác trong check `bwv/<workflow>`.
+- Dòng footer nhỏ ở cuối phần tóm tắt check run: `Job … · attempt n/max · delivery …`.
+
+Dòng footer giúp xác định lần chạy trong log của engine. Sao chép toàn bộ dòng mà không thay đổi các giá trị job, attempt hoặc delivery.
+
+<GitHubComment sample="check-run-failed" author="BWV Workflows" />

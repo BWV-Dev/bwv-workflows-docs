@@ -1,0 +1,103 @@
+---
+title: Tự động gợi ý trong editor
+sidebar_position: 4
+description: Kết nối schema của workflow với gợi ý YAML trong editor.
+slug: /getting-started/editor-autocomplete
+source_hash: 776faca11ebc2678bf9a2eac0dfad373564f4e44014d8a9256dba840e21df988
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+👤 Phụ trách: Project Leader
+
+Kết nối JSON Schema của BWV Workflows với VS Code. Các schema thêm tính năng gợi ý, mô tả trường và kiểm tra tính hợp lệ cho YAML của workflow và recipe.
+
+## Tóm tắt workflow
+
+1. [Cài extension YAML](#1-cài-extension-yaml).
+2. [Lấy host của schema](#2-lấy-host-của-schema).
+3. [Kết nối từng file YAML với schema](#3-kết-nối-từng-file-yaml-với-schema).
+4. [Kiểm tra gợi ý và tính hợp lệ](#4-kiểm-tra-gợi-ý-và-tính-hợp-lệ).
+
+## Hướng dẫn từng bước
+
+### 1. Cài extension YAML
+
+👤 Phụ trách: Project Leader
+
+1. Mở **Extensions** (Tiện ích mở rộng) trong VS Code.
+2. Tìm **YAML** của Red Hat.
+3. Cài extension có mã `redhat.vscode-yaml`.
+4. Khởi động lại VS Code nếu được yêu cầu.
+
+### 2. Lấy host của schema
+
+👤 Phụ trách: Project Leader
+
+Hỏi BWV Workflows maintainers về giá trị của `<engine-host>`. Không tự đoán host hoặc commit giá trị khi vẫn còn placeholder.
+
+:::note Cần mạng công ty
+Các URL schema chỉ hoạt động từ mạng công ty. Hãy kết nối vào mạng đó trước khi thử tính năng gợi ý hoặc kiểm tra tính hợp lệ.
+:::
+
+### 3. Kết nối từng file YAML với schema
+
+👤 Phụ trách: Project Leader
+
+Chọn một cách thiết lập. Thay `<engine-host>` bằng host do BWV Workflows maintainers cung cấp.
+
+<Tabs groupId="schema-setup">
+  <TabItem value="headers" label="Header của file" default>
+
+Thêm comment này vào dòng đầu tiên của `.bwv/workflows.yml`:
+
+```yaml
+# yaml-language-server: $schema=https://<engine-host>/schemas/workflows.json
+version: 1
+```
+
+Thêm comment này vào dòng đầu tiên của mọi file recipe:
+
+```yaml
+# yaml-language-server: $schema=https://<engine-host>/schemas/recipe-v1.json
+apiVersion: 1
+```
+
+Dùng schema `recipe-v1` cho recipe cục bộ và recipe nằm trong một repository recipe.
+
+  </TabItem>
+  <TabItem value="settings" label="Cài đặt VS Code">
+
+Tạo hoặc cập nhật `.vscode/settings.json` trong repository:
+
+```json title=".vscode/settings.json"
+{
+  "yaml.schemas": {
+    "https://<engine-host>/schemas/workflows.json": ".bwv/workflows.yml",
+    "https://<engine-host>/schemas/recipe-v1.json": [
+      "recipes/**/*.yml",
+      ".bwv/recipes/*.yml"
+    ]
+  }
+}
+```
+
+Dùng cách này khi nhóm muốn chia sẻ một mapping chung mà không thêm comment header vào mọi file YAML.
+
+  </TabItem>
+</Tabs>
+
+### 4. Kiểm tra gợi ý và tính hợp lệ
+
+👤 Phụ trách: Project Leader
+
+1. Mở `.bwv/workflows.yml` từ workspace của repository.
+2. Đặt con trỏ bên dưới một workflow rồi bật tính năng gợi ý của editor.
+3. Xác nhận VS Code gợi ý các trường như `on`, `steps` và `onSuccess`.
+4. Nhập một trường không tồn tại và xác nhận extension YAML đánh dấu đó là lỗi. Sau đó xóa trường này.
+5. Mở một file recipe và xác nhận `apiVersion`, `inputs`, `workflows` và `steps` có gợi ý dành cho recipe.
+
+:::warning Kiểm tra bằng schema chưa phải bước cuối
+Một số quy tắc phụ thuộc vào toàn bộ workflow và chỉ chạy khi BWV Workflows đọc cấu hình. Hãy xem một check run thành công là kết quả kiểm tra cuối cùng.
+:::
