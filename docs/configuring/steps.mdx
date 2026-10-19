@@ -7,8 +7,197 @@ slug: /configuring/steps
 
 👤 Responsible: Project Leader
 
-This page will compare `claude`, `shell`, and `uses` steps and show the required fields for each step type.
+Build a workflow from `claude`, `shell`, and `uses` steps. Put reusable policy
+in repository defaults or a recipe, then keep each step focused on one result.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
+## Workflow Summary
+
+1. [Choose a Claude task](#1-choose-a-claude-task).
+2. [Run a shell command safely](#2-run-a-shell-command-safely).
+3. [Insert a step recipe](#3-insert-a-step-recipe).
+4. [Control failures, conditions, and timeouts](#4-control-failures-conditions-and-timeouts).
+
+## Step-by-Step Instructions
+
+### 1. Choose a Claude task
+
+👤 Responsible: Project Leader
+
+A `claude` step must set exactly one task source:
+
+| Field        | Use it for                                                        |
+| ------------ | ----------------------------------------------------------------- |
+| `prompt`     | Instructions written directly in the workflow.                    |
+| `promptFile` | Instructions read from a repository file.                         |
+| `skill`      | `.claude/skills/<name>/SKILL.md`. This is the strict skill form.  |
+| `command`    | `.claude/commands/<name>.md`, or a skill used as a slash command. |
+
+Only `skill` and `command` accept `args`. The named skill or command must
+already exist on the base branch before a pull request can use it.
+
+This workflow shows a direct prompt, a skill, and a command:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+defaults:
+  model: sonnet
+  maxTurns: 30
+  timeoutMinutes: 20
+  permissionMode: acceptEdits
+workflows:
+  - name: maintain-specs
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - name: Summarize the change
+        claude:
+          prompt: Review the pull request diff and summarize the specification changes.
+          allowedTools: [Read, Glob, "Bash(git diff:*)"]
+      - name: Update the review file
+        claude:
+          skill: update-spec-review
+          args: docs/specs
+          allowedTools: [Read, Edit, Glob]
+          disallowedTools:
+            - "Edit(.bwv/**)"
+            - "Edit(.claude/**)"
+      - name: Check terminology
+        claude:
+          command: check-terminology
+          args: docs/specs
+          model: sonnet
+```
+
+`model`, `maxTurns`, `permissionMode`, and `timeoutMinutes` can be set in the
+root `defaults`. A step value overrides the corresponding default. When they
+are omitted, the runtime defaults are `sonnet`, 30 turns, `acceptEdits`, and 20
+minutes.
+
+#### Restrict tools explicitly
+
+Keep `allowedTools` narrow and list only the tools the task needs. Under the
+default `permissionMode: acceptEdits`, narrowing `allowedTools` does not
+prevent writes inside the worktree. Use `disallowedTools` for an actual write
+restriction.
+
+Scope file rules with `Edit(<glob>)`. Do not use `Write(<glob>)`; file write
+permissions are evaluated through `Edit`. Never grant broad `Bash` in a step
+that relies on a path deny. Grant only narrow, read-only shell rules such as
+`Bash(git diff:*)`, because a general shell can reach the same files by another
+route.
+
+:::caution A denied tool fails the step
+When a tool rule blocks an attempted action, BWV Workflows marks the step as
+failed. Use `continueOnError: true` only when that denial is an expected result
+and later steps can handle it.
 :::
+
+### 2. Run a shell command safely
+
+👤 Responsible: Project Leader
+
+A `shell` step runs `/bin/sh` in the checked-out worktree. Its trimmed stdout
+becomes the step output. Set `outputJson: true` when stdout is one JSON value:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: inspect-spec
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - id: plan
+        name: Select a specification
+        shell: >-
+          printf '%s\n'
+          '{"file":"docs/specs/login.md"}'
+        outputJson: true
+      - name: Check the selected specification
+        shell: >-
+          ./.bwv/scripts/check-spec.sh
+          "${{ steps.plan.output.file }}"
+```
+
+Pass runtime expressions as positional arguments to a script, as above. A
+top-level expression or one inside double quotes is preserved as one argument
+during the shell's first parse.
+
+BWV Workflows refuses expressions in contexts that can change how the shell
+parses the command: single quotes, arithmetic, command substitutions,
+comments, expression-bearing heredocs, an expression after an unescaped
+backslash, and unsupported parameter expansions. Move the value to a normal
+positional argument instead.
+
+Do not put runtime values into commands that parse their arguments again,
+including `eval`, trap command strings, `sh -c` command strings, export
+operands, or Bash arithmetic. Quoting protects the first parse only.
+
+:::warning Review scripts from triggering branches
+A direct `shell` step runs repository content from the checked-out commit.
+Protect every triggering branch because a change to a called script changes
+what the step executes.
+:::
+
+### 3. Insert a step recipe
+
+👤 Responsible: Project Leader
+
+Use `uses` to insert the `steps` from a local or remote step recipe:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: review-specs
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - id: review
+        name: Review the changed specifications
+        uses: ./.bwv/recipes/review-specs.yml
+        with:
+          source: docs/specs
+```
+
+The recipe is expanded while configuration loads. No `uses` step remains at
+runtime. A step-recipe caller may set `id`, `name`, `if`, and `with`; the
+recipe's emitted steps own `forEach`, `fanout`, `maxParallel`,
+`continueOnError`, and `timeoutMinutes`.
+
+See [Recipes and toolkits](./recipes-and-toolkits) before adding a remote
+source.
+
+### 4. Control failures, conditions, and timeouts
+
+👤 Responsible: Project Leader
+
+Use these fields on resolved `claude` and `shell` steps:
+
+| Field             | Behavior                                                                      |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `id`              | Makes the result available as `${{ steps.<id>.output }}`. IDs must be unique. |
+| `name`            | Labels the step in the check run and status comment.                          |
+| `if`              | Runs the step only when the expression is truthy; otherwise it is skipped.    |
+| `forEach`         | Requires an array and repeats the step for its items.                         |
+| `fanout`          | Selects `process` or `subagent` execution for a repeated Claude step.         |
+| `maxParallel`     | Limits parallel items; defaults to 3 and cannot exceed 20.                    |
+| `continueOnError` | Continues after this step fails. Defaults to `false`.                         |
+| `timeoutMinutes`  | Sets a positive whole-minute timeout for the step. Defaults to 20.            |
+
+Without `continueOnError`, the workflow stops at the first failed step. With
+it, the failed step and its output remain visible, and later steps may use the
+recorded output. A non-zero shell exit, invalid JSON from `outputJson`, a
+timeout, or a denied Claude tool all count as failures.
+
+See [Passing data, forEach, and expressions](./passing-data) for repeated work
+and expression contexts. Use the generated
+[workflow configuration reference](/reference/workflows-yml) for the complete
+field list.

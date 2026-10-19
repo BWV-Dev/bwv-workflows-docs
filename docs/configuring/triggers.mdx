@@ -7,8 +7,155 @@ slug: /configuring/triggers
 
 👤 Responsible: Project Leader
 
-This page will explain `pull_request` and `push` triggers, branch filters, path filters, and how all filters work together.
+Choose the events, branches, and paths that can start each workflow. Protect
+every branch that controls a run before enabling its trigger.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
+## Workflow Summary
+
+1. [Configure a pull request trigger](#1-configure-a-pull-request-trigger).
+2. [Configure a push trigger](#2-configure-a-push-trigger).
+3. [Use both triggers when needed](#3-use-both-triggers-when-needed).
+4. [Merge configuration changes before testing](#4-merge-configuration-changes-before-testing).
+
+## Step-by-Step Instructions
+
+### 1. Configure a pull request trigger
+
+👤 Responsible: Project Leader
+
+Use `on.pull_request` when work should follow changes proposed to a base
+branch:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: review-specs
+    on:
+      pull_request:
+        types: [opened, synchronize, reopened, ready_for_review]
+        base: [main, "release/*"]
+        head: ["feature/*"]
+        paths: ["docs/specs/**"]
+        ignorePaths: ["docs/specs/archive/**"]
+    steps:
+      - name: Review the specification changes
+        claude:
+          prompt: |
+            Review the changed files under docs/specs.
+            Report inconsistencies without editing any file.
+          allowedTools: [Read, Glob, "Bash(git diff:*)"]
+```
+
+Every configured filter must pass:
+
+| Field         | What it matches                                                                                                              |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `types`       | GitHub action: `opened`, `synchronize`, `reopened`, `ready_for_review`, or `closed`. Defaults to `opened` and `synchronize`. |
+| `base`        | The pull request's target branch. This non-empty list is required.                                                           |
+| `head`        | The source branch. Omit it to accept any non-fork source branch.                                                             |
+| `merged`      | Whether a `closed` pull request was merged. Use it with `types: [closed]`.                                                   |
+| `paths`       | At least one changed file must match.                                                                                        |
+| `ignorePaths` | The workflow is skipped when every otherwise matching file is ignored.                                                       |
+
+Branch and path entries are glob patterns. Paths are repository-relative and
+include dotfiles when the glob matches them.
+
+Use a merged-close trigger for work that must start only after a pull request
+lands:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: publish-merged-specs
+    on:
+      pull_request:
+        types: [closed]
+        base: [main]
+        merged: true
+        paths: ["docs/specs/**"]
+    steps:
+      - name: Record the merged specification
+        shell: printf '%s\n' "The specification pull request was merged"
+```
+
+:::important Fork pull requests never run
+BWV Workflows always skips pull requests from forks. This behavior is not
+configurable.
 :::
+
+### 2. Configure a push trigger
+
+👤 Responsible: Project Leader
+
+Use `on.push` for work that follows a direct update to a protected branch:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: check-published-specs
+    on:
+      push:
+        branches: [main, "release/*"]
+        paths: ["docs/specs/**"]
+        ignorePaths: ["docs/specs/archive/**"]
+    steps:
+      - name: Check the published specifications
+        shell: ./.bwv/scripts/check-specs.sh docs/specs
+```
+
+`branches` is required and decides whether the workflow can run. `paths` and
+`ignorePaths` use the same matching rule as a pull request when the changed
+file list is complete.
+
+:::caution Push path filters are advisory
+GitHub limits the commit list in a push payload to 20 entries. When BWV
+Workflows cannot know the complete file list, it runs the workflow instead of
+risking a missed change. Make the steps confirm whether work is required.
+:::
+
+Protect every matching push branch. A push run executes repository content
+from the pushed commit, so that branch must require the same review as other
+code that controls automation. See [Protect your branches](../getting-started/protect-branches).
+
+### 3. Use both triggers when needed
+
+👤 Responsible: Project Leader
+
+Put `pull_request` and `push` under the same `on` block when either event
+should start the same steps:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: validate-specs
+    on:
+      pull_request:
+        types: [opened, synchronize, reopened]
+        base: [main]
+        paths: ["docs/specs/**"]
+      push:
+        branches: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - name: Validate the specifications
+        shell: ./.bwv/scripts/check-specs.sh docs/specs
+```
+
+At least one of the two trigger kinds is required. When both are present, each
+event is matched only against its own trigger block.
+
+### 4. Merge configuration changes before testing
+
+👤 Responsible: Project Leader
+
+For a pull request run, BWV Workflows reads `.bwv/workflows.yml` and
+`.claude/` from the pull request's base branch. Changes in the pull request
+itself do not control that run. Merge them into the target branch, then open or
+update a separate pull request to test them.
+
+For a push run, BWV Workflows reads the configuration from the pushed commit
+on the target branch. A new push trigger therefore starts applying after the
+configuration reaches a branch matched by `on.push.branches`.
+
+See [Your first workflow](../getting-started/first-workflow) for a complete
+merge-and-test sequence.
