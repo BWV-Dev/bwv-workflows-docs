@@ -5,10 +5,111 @@ description: Group merged source documents for translation work.
 slug: /configuring/translating-after-merge
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
+
 👤 Responsible: Project Leader
 
-This page will configure `sourcePrGrouping`, define required outputs, and explain the preview-to-published tracker flow.
+Start with the maintained [translation/grouped recipe](../recipes/translation-grouped). It already configures grouping, translation, output checks, and the reviewer tracker. Write your own grouped workflow only when the repository needs a different process.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
+`sourcePrGrouping` takes the documents from one merged sync pull request, traces each document to its source pull request, and runs the workflow once per source group. Each group can then publish a focused output pull request.
+
+## Workflow Summary
+
+1. [Choose the source files](#1-choose-the-source-files).
+2. [Declare every required output](#2-declare-every-required-output).
+3. [Give every group its own branch](#3-give-every-group-its-own-branch).
+4. [Understand preview and merge phases](#4-understand-preview-and-merge-phases).
+
+## Step-by-Step Instructions
+
+### 1. Choose the source files
+
+👤 Responsible: Project Leader
+
+Set `sourcePrGrouping.paths` explicitly. It is required and has no default. A sync pull request can contain documents, code, and configuration, so BWV Workflows cannot safely choose which files belong to the translation job.
+
+Use the same glob in `on.pull_request.paths` when the workflow should run only for those files. The two fields have different jobs:
+
+- `on.pull_request.paths` decides whether the workflow matches the merged pull request.
+- `sourcePrGrouping.paths` decides which changed, non-deleted files become source groups.
+
+This example groups Markdown below `docs/specs` and publishes one pull request per group:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: translate-after-merge
+    fetchDepth: 0
+    on:
+      pull_request:
+        types: [closed]
+        base: [main]
+        head: [docs-sync]
+        merged: true
+        paths: ["docs/specs/**/*.md"]
+    sourcePrGrouping:
+      paths: ["docs/specs/**/*.md"]
+      ignorePaths: ["docs/specs/templates/**"]
+      sourceRoot: docs/specs
+      requireOutputs:
+        - "docs_vn/specs/${{ rel }}.vi.md"
+        - "docs_vn/specs/${{ rel }}.vi.json"
+      maxFilesPerGroup: 3
+    steps:
+      - name: Translate documents
+        forEach: ${{ sourceGroup.files }}
+        fanout: process
+        maxParallel: 1
+        claude:
+          prompt: |
+            Translate ${{ item }} into Vietnamese.
+            Mirror its path below docs_vn/specs.
+            Write both the .vi.md translation and its .vi.json cache.
+          allowedTools: [Read, Write, Edit]
+    onSuccess:
+      createPullRequest:
+        branch: "bwv/translate/sync-${{ sourceGroup.syncPr }}/${{ sourceGroup.id }}"
+        title: "docs(vi): ${{ sourceGroup.id }}"
+        draft: true
+```
+
+Set `maxFilesPerGroup` to the largest group one output pull request should contain. Larger source groups are split into stable parts.
+
+### 2. Declare every required output
+
+👤 Responsible: Project Leader
+
+List every file that one source document must produce in `requireOutputs`. BWV Workflows resolves each template for each source file and publishes the group only when all resolved files exist. Validate file contents in a workflow step when existence alone is not enough.
+
+Use `sourceRoot` with `${{ rel }}` for a nested source tree. For example, these sources stay distinct:
+
+| Source                        | `${{ rel }}`    | Required translation                |
+| ----------------------------- | --------------- | ----------------------------------- |
+| `docs/specs/account/login.md` | `account/login` | `docs_vn/specs/account/login.vi.md` |
+| `docs/specs/admin/login.md`   | `admin/login`   | `docs_vn/specs/admin/login.vi.md`   |
+
+Avoid `${{ name }}` for nested documents. It contains only the basename, so both files above become `login` and claim the same output. BWV Workflows rejects a group when its source files collide across every declared output.
+
+:::important Keep the step and output map aligned
+`requireOutputs` does not create files. Make the steps write the exact paths declared there. A missing required output fails the group and prevents publication.
 :::
+
+### 3. Give every group its own branch
+
+👤 Responsible: Project Leader
+
+Include `${{ sourceGroup.id }}` in `onSuccess.createPullRequest.branch`. This stable identifier gives each group a deterministic branch and lets a retry find the same output pull request. A grouped workflow without it is invalid because one group could overwrite another group's branch.
+
+The repository chooses the rest of the branch namespace. The example also includes `${{ sourceGroup.syncPr }}` to keep separate sync pull requests easy to distinguish.
+
+### 4. Understand preview and merge phases
+
+👤 Responsible: Project Leader and Dev & Com
+
+Before merge, BWV Workflows posts a planned tracker automatically. Preview mode groups the current base and head, but it does not run a step, push a branch, or open an output pull request.
+
+<GitHubComment sample="translation-tracker-planned" author="BWV Workflows" />
+
+After the sync pull request merges, BWV Workflows recomputes the groups from the merge result. This merge-time result is authoritative. The same tracker changes from **planned** to **running**, then to **published**.
+
+Reviewers use the tracker to open output pull requests, inspect failures, and request eligible retries. Send Dev & Com to [The translation tracker](../pull-requests/translation-tracker) instead of documenting those actions in the workflow file.
