@@ -1,0 +1,96 @@
+---
+title: Đọc check run và comment trạng thái
+sidebar_position: 1
+description: Xem trạng thái hiện tại và kết quả của một lần chạy BWV Workflows.
+slug: /pull-requests/read-checks-status
+source_hash: 4e4e0f395632aa56af8bff66479aecd099ddf02ba7b26f1d9aa975f4dc648500
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+
+👤 Phụ trách: Dev & Com
+
+## Khi nào bạn cần trang này
+
+BWV Workflows báo cáo từng workflow ở hai nơi trên một pull request (PR):
+
+- Một check run (ô kết quả kiểm tra hiện ở tab **Checks** của PR) có tên `bwv/<workflow>`.
+- Một comment trạng thái của **BWV Workflows** trong cuộc trò chuyện.
+
+Cả hai đều hiển thị cùng một bảng các bước. Hãy dùng check run khi bạn cần xem nội dung trả về từ một bước bị lỗi. Dùng comment để xem nhanh tiến độ và thực hiện thao tác như **Retry**.
+
+{/* TODO(screenshot): Pull request Checks tab showing a `bwv/translate-docs` workflow check and a `bwv/translate-docs/source-pr-7` group check, with repository name, avatars, and pull request number blurred */}
+
+## Từng bước thực hiện
+
+### 1. Tìm kết quả mới nhất
+
+1. **Dev hoặc Com:** Mở pull request.
+2. Chọn trạng thái bên cạnh commit mới nhất. Sau đó, mở check có tên bắt đầu bằng `bwv/`.
+3. Nếu có nhiều lần chạy cùng tên, hãy mở lần mới nhất trên commit hiện tại.
+
+Comment trạng thái trong tab **Conversation** là một cách khác để xem cùng workflow. Khi workflow đang chạy, bot sửa comment này thay vì đăng comment tiến độ mới sau mỗi bước.
+
+### 2. Đọc trạng thái
+
+| Nội dung bạn thấy                        | Ý nghĩa                                                                      | Việc cần làm                                                            |
+| ---------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| ⏳ **running**                           | Bot đang làm việc. Bước hiện tại có dấu ⏳ và các bước sau có dấu ⬜.        | Chờ comment cập nhật.                                                   |
+| ✅ **finished** hoặc check đã đạt        | Tất cả bước bắt buộc đều đã đạt.                                             | Mở và kiểm tra mọi PR kết quả được hiển thị.                            |
+| ❌ **failed**                            | Một bước bị lỗi và không còn lần thử tự động nào.                            | Đọc hàng bị lỗi và nội dung trả về, sửa nguyên nhân rồi dùng **Retry**. |
+| **finished**, kèm một PR kết quả đã đóng | Các bước đã đạt, nhưng chưa thể xuất bản vì PR kết quả trước đó đã bị đóng.  | Dùng **Recreate**, không dùng **Retry**.                                |
+| **Waiting for quota**                    | Bot đã tạm dừng và sẽ tự thử lại vào thời gian UTC được hiển thị.            | Chờ. Đừng yêu cầu chạy thêm lần nữa.                                    |
+| **Waiting for a retry**                  | Một sự cố tạm thời đã làm lần thử dừng lại. Bot vẫn còn một lần thử tự động. | Chờ đến thời gian UTC được ghi.                                         |
+
+<GitHubComment sample="status-running" author="BWV Workflows" />
+
+<GitHubComment sample="status-passed" author="BWV Workflows" />
+
+<GitHubComment
+  sample="status-held-by-closed-output-pr"
+  author="BWV Workflows"
+/>
+
+### 3. Tìm nội dung trả về của bước bị lỗi
+
+1. **Dev hoặc Com:** Mở check run `bwv/<workflow>` bị lỗi.
+2. Tìm hàng có dấu ❌. Đọc hai ô **Step** và **Notes** trước.
+3. Mở rộng **Output of _step name_** bên dưới bảng.
+4. Đọc các dòng cuối trước. Đây là phần cuối của nội dung trả về, không nhất thiết là toàn bộ nội dung.
+
+Check đã đạt sẽ hiển thị bảng hoàn chỉnh và đường dẫn đến PR kết quả nếu bot đã tạo PR đó.
+
+### 4. Làm theo gợi ý chạy lại
+
+Comment đã hoàn tất sẽ cho bạn biết cách chạy lại workflow:
+
+```text
+/bwv retry translate-docs
+```
+
+Nếu bị lỗi, comment sẽ hiển thị ô chọn **Retry**. Hãy xem [Chạy lại một tác vụ](/pull-requests/retry) trước khi dùng ô này.
+
+<GitHubComment sample="status-failed-with-retry" author="BWV Workflows" />
+
+## Điều gì xảy ra tiếp theo
+
+- Khi workflow đang chạy, bot cập nhật bước hiện tại và thời gian đã chạy.
+- Sau khi thành công, hãy kiểm tra và merge PR kết quả nếu kết quả đúng.
+- Sau lần lỗi cuối cùng, check chuyển sang màu đỏ. Comment sẽ cho phép chạy lại nếu lần chạy đó đủ điều kiện.
+- Trong lúc tự động chờ, check vẫn ở trạng thái đang chạy. Check chỉ đạt hoặc lỗi sau khi lần thử tiếp theo kết thúc.
+
+:::tip Tôi nên tin kết quả nào?
+Hãy dùng check `bwv/…` mới nhất trên commit hiện tại. Check cũ mô tả một phiên bản cũ của pull request.
+:::
+
+:::note Tại sao không có ô chọn **Retry**?
+Bot không hiển thị ô này khi tác vụ đang chạy, đang chờ tự động thử lại, đã thành công hoặc khi **Recreate** mới là thao tác đúng. Lần chạy do push kích hoạt cũng không có comment trên pull request để đặt ô chọn.
+:::
+
+:::note Tại sao không có comment trạng thái?
+Một số repository chỉ hiển thị kết quả dưới dạng check run. Hãy mở check `bwv/<workflow>` mới nhất. Check này vẫn có bảng các bước và kết quả.
+:::
+
+:::caution Nội dung trả về chỉ là phần cuối
+Khối đang thu gọn chỉ chứa phần cuối của nội dung trả về từ bước bị lỗi. Nếu phần này không giải thích được lỗi, hãy nhờ BWV Workflows maintainers kiểm tra.
+:::
