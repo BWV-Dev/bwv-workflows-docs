@@ -5,10 +5,72 @@ description: Resolve common configuration and pull request workflow problems.
 slug: /troubleshooting
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
+
 👤 Responsible: Project Leader and Dev & Com
 
-This page will collect common configuration errors, explain user-visible waiting and failure states, and identify when to ask the BWV Workflows maintainers.
+Start with the latest `bwv/…` check on the current commit. Read its summary and the BWV Workflows comment before requesting another run.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
-:::
+## Nothing ran
+
+Check these causes in order:
+
+1. **The workflow did not match.** Confirm the pull request action, base branch, head branch, and changed paths against the workflow trigger. Every configured filter must match. See [Triggers](./configuring/triggers).
+2. **The configuration exists only on the head branch.** Pull request workflows use `.bwv/workflows.yml` from the current base branch. Merge the configuration into the base before testing it. See [Your first workflow](./getting-started/first-workflow#2-merge-the-configuration-into-the-base-branch).
+3. **The pull request comes from a fork.** BWV Workflows does not run the workflow steps for fork pull requests. Move the work to a branch in the repository when it is trusted to run.
+4. **The App is not installed for the repository.** Ask the BWV Workflows maintainers to confirm installation and repository access. See [Onboard your repository](./getting-started/onboard-repository).
+
+## `bwv/config` is red
+
+Open the `bwv/config` check and read the validation message. Fix `.bwv/workflows.yml` or the referenced recipe on the base branch; changing only the pull request head does not change the trusted configuration for that pull request.
+
+Use [Editor autocomplete](./getting-started/editor-autocomplete) to catch schema errors while editing, then follow [Your first workflow](./getting-started/first-workflow) to merge and test the fix.
+
+## A step failed with permission denied
+
+Open the failed step and identify the tool or path it tried to use. Check the step or recipe's `disallowedTools` first; a matching deny rule wins. Change the tool rules only when that access is intended, then retry the failed work.
+
+See [Steps: claude, shell, uses](./configuring/steps) for step permissions and [Running something again](./pull-requests/retry) for retry actions.
+
+## Waiting for quota
+
+Wait for the automatic retry time shown in the check. Sending another Retry request does not make the wait finish sooner. If the displayed UTC time passes without an update after a reasonable delay, ask the BWV Workflows maintainers to investigate.
+
+See [Waiting for quota and other stuck states](./pull-requests/waiting) for every waiting message and the next action.
+
+## The merge was skipped
+
+Open the BWV Workflows merge-skipped comment and follow its reason. The workflow did not run because BWV Workflows could not safely confirm the merge input or source mapping. Do not use Retry until the named condition is resolved.
+
+See [When a merge is skipped or needs mapping](./pull-requests/merge-skipped).
+
+## My retry did nothing
+
+A published group is not eligible for Retry. Review its existing output pull request, or use Recreate if that pull request was closed without merging.
+
+An accepted request can also be held behind work already running. Read the tracker request line or queued check and wait for the named run to finish. See [Running something again](./pull-requests/retry) and [Waiting for quota and other stuck states](./pull-requests/waiting).
+
+## The output pull request was closed
+
+A normal run or Retry does not reopen an output pull request that was closed without merging. Use the offered **Recreate** action only when a fresh output pull request is wanted.
+
+See [Recreating a closed pull request](./pull-requests/recreate).
+
+## Editor autocomplete does not work
+
+Connect to the company network, then reopen the YAML file and check the configured schema URL. If the URL or access still fails, ask the BWV Workflows maintainers for the current `<engine-host>` value.
+
+See [Editor autocomplete](./getting-started/editor-autocomplete) for the complete setup and verification steps.
+
+## Asking the BWV Workflows maintainers for help
+
+Include these details:
+
+- The repository, such as `acme/web-app`.
+- A link to the affected pull request.
+- The exact workflow name from the `bwv/<workflow>` check.
+- The small footer line at the bottom of the check run summary: `Job … · attempt n/max · delivery …`.
+
+The footer identifies the run in the engine logs. Copy the complete line without changing its job, attempt, or delivery values.
+
+<GitHubComment sample="check-run-failed" author="BWV Workflows" />

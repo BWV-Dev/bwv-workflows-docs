@@ -7,8 +7,93 @@ slug: /configuring/many-pull-requests
 
 👤 Responsible: Project Leader
 
-This page will show how `loop` repeats a workflow and how each pass produces a separate, focused pull request.
+Use `loop` when a push can create more work than one focused pull request should contain. Each pass plans one batch, runs every step, and publishes that batch before the next pass starts.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
-:::
+For testcase generation, start with the maintained [testcase/batch recipe](../recipes/testcase-batch). Write a loop directly when the repository needs a different planner or batch action.
+
+## Workflow Summary
+
+1. [Make the plan step describe one batch](#1-make-the-plan-step-describe-one-batch).
+2. [Repeat while work remains](#2-repeat-while-work-remains).
+3. [Use a different branch for every batch](#3-use-a-different-branch-for-every-batch).
+4. [Design resumable progress](#4-design-resumable-progress).
+
+## Step-by-Step Instructions
+
+### 1. Make the plan step describe one batch
+
+👤 Responsible: Project Leader
+
+Add a plan step before the work step. Make it inspect the current Git tree and return structured JSON with:
+
+- The files in the next batch.
+- A stable, Git-safe batch identifier.
+- The amount of work left after that batch.
+
+This example delegates planning to a repository script:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: update-doc-batches
+    fetchDepth: 0
+    on:
+      push:
+        branches: [main]
+        paths: ["docs/specs/**"]
+    loop:
+      while: ${{ steps.plan.output.remaining > 0 }}
+      maxIterations: 20
+    steps:
+      - id: plan
+        name: Plan the next batch
+        shell: node scripts/plan-doc-batch.mjs
+        outputJson: true
+      - name: Update this batch
+        forEach: ${{ steps.plan.output.files }}
+        fanout: process
+        maxParallel: 2
+        claude:
+          prompt: |
+            Update the generated documentation for ${{ item }}.
+            Do not change files owned by another batch.
+          allowedTools: [Read, Write, Edit]
+    onSuccess:
+      createPullRequest:
+        branch: "bwv/docs/${{ steps.plan.output.batchId }}"
+        title: "docs: update ${{ steps.plan.output.batchId }}"
+```
+
+For example, the planner can return `{"batchId":"account-login","files":["docs/specs/account/login.md"],"remaining":3}`. Keep the script deterministic: the same Git state should produce the same plan.
+
+`loop` requires an `on.push` trigger. A pull request run has separate head and base branches, so it cannot safely cut later batches from one consistent branch.
+
+### 2. Repeat while work remains
+
+👤 Responsible: Project Leader
+
+Set `loop.while` from the plan step's output. BWV Workflows evaluates it after each pass. A truthy result starts another pass in the same working tree; a false result finishes after the current batch is published.
+
+Set `maxIterations` to a deliberate upper bound. It defaults to `20` and cannot exceed `100`. Every pass runs the workflow steps again.
+
+A loop also stops after two consecutive passes publish nothing. This protects the run when a planner reports remaining work but the steps make no Git change. Fix the planner or the work step before starting another run.
+
+### 3. Use a different branch for every batch
+
+👤 Responsible: Project Leader
+
+Make `onSuccess.createPullRequest.branch` vary with the planned batch. The example uses `${{ steps.plan.output.batchId }}`. A branch name that repeats during one run is refused because publishing the later batch would replace the earlier batch's pull request.
+
+Do not derive the identifier only from a remaining count. A new push can change that count and make a later batch reuse an earlier name. Derive it from stable batch content, such as the first planned path plus a short hash when needed.
+
+Each successful pass opens its own pull request. Reviewers can work on earlier batches while the running job plans later ones.
+
+### 4. Design resumable progress
+
+👤 Responsible: Project Leader
+
+Keep progress in Git. The planner must recompute completed and remaining work from repository files and history; BWV Workflows does not store a cursor or last-processed commit for the loop. This lets a stopped run calculate what remains instead of depending on lost process state.
+
+A push that arrives during the run does not start a second job. When the current pass appears finished, the running job checks the branch again. If the branch moved, it merges the new base commits into its working branch and runs another bounded pass.
+
+If the run reaches `maxIterations` while work remains, its published pull requests stay available. The next push or eligible retry starts a new run, and the planner recomputes the remaining work from Git. Follow [Running something again](../pull-requests/retry) when the check offers a retry.
