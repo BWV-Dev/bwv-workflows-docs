@@ -1,0 +1,134 @@
+---
+title: Truyền dữ liệu, forEach và biểu thức
+sidebar_position: 7
+description: Truyền nội dung trả về của bước vào biểu thức và công việc lặp lại.
+slug: /configuring/passing-data
+source_hash: 5995c666e2193f6e527190b7b61e1afd6f980bc2ff7a7c04046238750f5e12ea
+---
+
+👤 Phụ trách: Project Leader
+
+Đặt ID ổn định cho các bước, truyền nội dung trả về của chúng qua biểu thức và chỉ dùng `forEach` khi từng mục có thể chạy độc lập.
+
+## Tóm tắt workflow
+
+1. [Lấy nội dung trả về của một bước](#1-capture-a-step-output).
+2. [Dùng biểu thức đúng chỗ](#2-use-expressions-in-the-right-context).
+3. [Chạy song song các mục độc lập](#3-run-independent-items-in-parallel).
+4. [Chọn cách báo cáo và xuất bản](#4-choose-reporting-and-publication).
+5. [Chọn độ sâu khi clone](#5-choose-the-clone-depth).
+
+## Hướng dẫn từng bước
+
+### 1. Lấy nội dung trả về của một bước {#1-capture-a-step-output}
+
+👤 Phụ trách: Project Leader
+
+Đặt `id` cho một bước, rồi đọc kết quả bằng `${{ steps.<id>.output }}`:
+
+| Loại bước                        | Giá trị được lưu trong `output`                                     |
+| -------------------------------- | ------------------------------------------------------------------- |
+| `claude` có `outputSchema`       | Đầu ra có cấu trúc đã được đọc và khớp với schema.                  |
+| `claude` không có `outputSchema` | Nội dung trả lời cuối cùng của trợ lý.                              |
+| `shell`                          | stdout đã bỏ khoảng trắng ở hai đầu, tối đa 64 KiB cho mỗi lệnh.    |
+| `shell` có `forEach`             | Mảng các chuỗi stdout theo thứ tự của mục.                          |
+| `shell` có `outputJson: true`    | stdout được đọc thành JSON. JSON không hợp lệ sẽ làm bước thất bại. |
+
+Dùng `outputJson: true` khi bước khác cần các trường hoặc một mảng thay vì văn bản thuần:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: prepare-spec-reviews
+    fetchDepth: 0
+    statusComment: true
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - id: plan
+        name: Plan the review files
+        shell: >-
+          printf '%s\n'
+          '{"items":[{"source":"docs/specs/login.md","file":"docs/reviews/login.md"},{"source":"docs/specs/profile.md","file":"docs/reviews/profile.md"}]}'
+        outputJson: true
+      - id: review
+        name: Review each specification
+        forEach: ${{ steps.plan.output.items }}
+        fanout: process
+        maxParallel: 2
+        timeoutMinutes: 20
+        claude:
+          prompt: |
+            Read ${{ item.source }}.
+            Write the review to ${{ item.file }} and do not change other files.
+          allowedTools: [Read, Edit, Glob]
+          disallowedTools:
+            - "Edit(.bwv/**)"
+            - "Edit(.claude/**)"
+    onSuccess:
+      comment: |
+        Reviewed this plan:
+        ${{ steps.plan.output }}
+      createPullRequest:
+        branch: "bwv/spec-review/pr-${{ pr.number }}"
+        title: "docs: add specification reviews"
+```
+
+Lệnh shell thoát với mã khác 0 vẫn ghi lại nội dung trả về nhưng làm bước thất bại. Hãy để script báo cáo thoát với mã `0` khi kết quả tìm thấy là nội dung trả về hợp lệ. Chỉ dùng mã khác 0 khi chính thao tác kiểm tra bị lỗi.
+
+### 2. Dùng biểu thức đúng chỗ {#2-use-expressions-in-the-right-context}
+
+👤 Phụ trách: Project Leader
+
+Biểu thức lúc chạy dùng `${{ ... }}`. Chúng có thể đọc `owner`, `repo`, `workflow`, `loop.index`, các `steps` trước đó và ngữ cảnh sự kiện. Pull request có `pr.*`; push có `push.*`. Bên trong `forEach` còn có `item` và `index`.
+
+Bạn có thể chia nơi nhận biểu thức thành hai nhóm:
+
+| Ngữ cảnh         | Điều xảy ra                                                                                       | Trường thường dùng                  |
+| ---------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Ngữ cảnh giá trị | Trường chỉ chứa đúng một biểu thức sẽ giữ kiểu mảng, đối tượng, boolean hoặc số của biểu thức đó. | `if`, `forEach`, đầu vào của recipe |
+| Ngữ cảnh văn bản | Biểu thức trở thành văn bản trong chuỗi bao quanh.                                                | prompt, đối số, tên nhánh, tiêu đề  |
+
+`onSuccess.comment` và `createPullRequest.body` luôn là ngữ cảnh văn bản. Khi chúng chứa một đối tượng, BWV Workflows hiển thị JSON có thụt lề thay vì `[object Object]`.
+
+Biến không rõ hoặc thuộc tính bị thiếu sẽ làm bước thất bại và báo đường dẫn biểu thức. Chúng không tự biến thành giá trị rỗng.
+
+### 3. Chạy song song các mục độc lập {#3-run-independent-items-in-parallel}
+
+👤 Phụ trách: Project Leader
+
+`forEach` phải trả về một mảng. Mảng rỗng sẽ bỏ qua bước. Kiểu dữ liệu khác sẽ làm bước thất bại. `maxParallel` mặc định là 3 và nhận số nguyên dương không quá 20.
+
+Chọn chế độ fan-out của Claude:
+
+| Chế độ     | Cách hoạt động                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| `process`  | Bắt đầu một tiến trình Claude cho mỗi mục và bắt buộc tuân theo `maxParallel`.                         |
+| `subagent` | Bắt đầu một tiến trình Claude và yêu cầu nó phân việc cho các subagent; `maxParallel` là giới hạn mềm. |
+
+Bước `prompt` mặc định dùng `subagent`. Bước `skill` hoặc `command` mặc định dùng `process`. Các bước đó không được dùng `fanout: subagent`, vì slash command phải là prompt của tiến trình.
+
+Để mỗi mục ghi vào các file riêng biệt. Khi mục có trường `file` hoặc `files`, BWV Workflows từ chối đích bị trùng trước khi bắt đầu Claude. Nếu đích được mô tả theo cách khác, bạn cần tự xem lại kế hoạch.
+
+### 4. Chọn cách báo cáo và xuất bản {#4-choose-reporting-and-publication}
+
+👤 Phụ trách: Project Leader
+
+`statusComment` mặc định là `true`. Trên pull request, BWV Workflows luôn cập nhật một comment chứa bảng các bước. Chỉ đặt thành `false` khi check run đã đủ. Một lần push không gắn với pull request sẽ báo cáo qua check run `bwv/<workflow>`.
+
+`onSuccess` chạy sau khi workflow thành công và điều kiện `if` không bắt buộc của nó đạt:
+
+- `comment: true` đăng một bản tóm tắt riêng. Nếu là chuỗi, chuỗi đó sẽ được đăng. Mặc định là `false`.
+- `createPullRequest` commit các file đã thay đổi rồi tạo hoặc cập nhật pull request. Bạn phải đặt `branch` và `title`; `base`, `body`, `draft` và `labels` là tùy chọn.
+- `commitMessage` thay đổi nội dung commit dùng cho các file được xuất bản.
+
+Không cần PR kết quả khi lần chạy thành công không thay đổi file nào. Dev & Com vẫn review mọi pull request được tạo.
+
+### 5. Chọn độ sâu khi clone {#5-choose-the-clone-depth}
+
+👤 Phụ trách: Project Leader
+
+`fetchDepth` mặc định là `1`. Giữ giá trị này cho các bước chỉ cần cây file đã checkout. Đặt `fetchDepth: 0` khi một bước đọc lịch sử repository, gồm cả script hoặc lệnh gọi công cụ Claude có dùng `git log`. Bản clone độ sâu 1 không có các commit trước đó.
