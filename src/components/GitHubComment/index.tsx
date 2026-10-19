@@ -3,13 +3,28 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 
-import trackerPublished from "!!raw-loader!@site/generated/samples/tracker-published.md";
+import {
+  requireGenerated,
+  unwrapGeneratedModule,
+  type GeneratedModule,
+} from "../generatedRegistry";
 
 import styles from "./styles.module.css";
 
-const samples: Record<string, string> = {
-  "tracker-published": trackerPublished,
-};
+const sampleContext = require.context(
+  "!!raw-loader!@site/generated/samples",
+  false,
+  /\.md$/,
+);
+
+const samples = Object.fromEntries(
+  sampleContext
+    .keys()
+    .map((modulePath) => [
+      modulePath.replace(/^\.\//, "").replace(/\.md$/, ""),
+      unwrapGeneratedModule(sampleContext<GeneratedModule<string>>(modulePath)),
+    ]),
+);
 
 function DisabledInput(props: ComponentPropsWithoutRef<"input">): ReactNode {
   return <input {...props} disabled />;
@@ -22,8 +37,7 @@ export default function GitHubComment({
   sample: string;
   author: string;
 }): ReactNode {
-  const markdown = samples[sample];
-  if (!markdown) throw new Error(`Unknown generated sample: ${sample}`);
+  const markdown = requireGenerated(samples, sample, "sample");
 
   return (
     <div className={styles.comment}>

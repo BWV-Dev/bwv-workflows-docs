@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 
-import groupedRecipe from "@site/generated/recipes/translation/grouped.json";
+import {
+  requireGenerated,
+  unwrapGeneratedModule,
+  type GeneratedModule,
+} from "../generatedRegistry";
 
 import styles from "./styles.module.css";
 import { displayValue } from "./schema";
@@ -20,17 +24,27 @@ type Recipe = {
   inputs: RecipeInput[];
 };
 
-const recipes: Record<string, Recipe> = {
-  "translation/grouped": groupedRecipe,
-};
+const recipeContext = require.context(
+  "@site/generated/recipes",
+  true,
+  /\.json$/,
+);
+
+const recipes: Record<string, Recipe> = Object.fromEntries(
+  recipeContext
+    .keys()
+    .map((modulePath) => [
+      modulePath.replace(/^\.\//, "").replace(/\.json$/, ""),
+      unwrapGeneratedModule(recipeContext<GeneratedModule<Recipe>>(modulePath)),
+    ]),
+);
 
 export default function RecipeInputs({
   recipe,
 }: {
   recipe: string;
 }): ReactNode {
-  const definition = recipes[recipe];
-  if (!definition) throw new Error(`Unknown generated recipe: ${recipe}`);
+  const definition = requireGenerated(recipes, recipe, "recipe");
 
   return (
     <div className={styles.tableWrap}>

@@ -8,12 +8,13 @@
   },
   "scripts": {
     "start": "docusaurus start",
-    "build": "docusaurus build",
+    "build": "pnpm check:generated && docusaurus build",
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "check:generated": "node scripts/check-generated.mjs",
     "content-guard": "node scripts/content-guard.mjs",
     "test:content-guard": "node --test scripts/content-guard.test.mjs"
   },

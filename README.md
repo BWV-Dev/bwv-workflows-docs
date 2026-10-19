@@ -18,6 +18,7 @@ Run every local check before opening a pull request:
 ```bash
 pnpm format:check
 pnpm typecheck
+pnpm check:generated
 pnpm content-guard
 pnpm test:content-guard
 pnpm build
@@ -55,6 +56,8 @@ pnpm docs:export --out ../bwv-workflows-docs/generated --recipes <checkout>
 ```
 
 Commit the refreshed `generated/` directory and its `manifest.json` together. The manifest records the engine commit, optional recipe commit, and export time.
+
+Run `pnpm check:generated` after an export. It verifies that every literal sample and recipe key used by a documentation page exists in the refreshed output. `pnpm build` runs the same check automatically.
 
 Schema and recipe JSON are imported directly into React components at build time. Markdown tables and bot samples are imported as raw strings with Webpack's `raw-loader`, bypassing Docusaurus's MDX compilation, then rendered by `react-markdown` with `remark-gfm` and `rehype-raw`. This preserves GFM tables, task lists, and trusted generated `<details>` elements. The sample renderer replaces every checkbox input with a disabled input so documentation examples cannot be edited.
 
