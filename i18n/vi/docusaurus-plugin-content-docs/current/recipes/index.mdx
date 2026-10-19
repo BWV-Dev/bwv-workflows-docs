@@ -1,0 +1,29 @@
+---
+title: Danh mục recipe
+sidebar_position: 1
+description: Chọn recipe do BWV Workflows maintainers chăm sóc cho việc dịch, tạo testcase hoặc chạy fan-out.
+slug: /recipes
+source_hash: df42ce0b3d2fa252d5ac6dd3f60636fc34ece7817934ec645f37d2f6239987a0
+---
+
+👤 Phụ trách: Project Leader
+
+Dùng recipe chính thức khi điều kiện kích hoạt và đầu ra của nó khớp với quy trình trong repository của bạn. Ghim mỗi recipe vào SHA đầy đủ của commit trước khi merge cấu hình.
+
+| Recipe                                                                              | Chức năng                                                                                                                                | Điều kiện kích hoạt                                                                                    | Người review đầu ra                                                            |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| [translation/grouped](/recipes/translation-grouped)                                 | Dịch Markdown tiếng Nhật sang tiếng Việt, mỗi nhóm nguồn có một draft pull request, đồng thời giữ cache bản dịch đã review luôn đồng bộ. | Pull request đồng bộ đã merge, một lần push lên nhánh dịch hoặc pull request thay đổi đầu ra bản dịch. | Dev & Com review từng pull request bản dịch. BWV Workflows kiểm tra cache.     |
+| [translation/sync-cache-completeness](/recipes/translation-sync-cache-completeness) | Tìm các chỉnh sửa của người review, chỉ cập nhật cache bản dịch bị ảnh hưởng và kiểm tra mọi chỉnh sửa đã được ghi lại.                  | Workflow gọi recipe quyết định. `translation/grouped` gọi recipe này sau một lần push lên nhánh dịch.  | BWV Workflows kiểm tra cache; Dev & Com tiếp tục review pull request bản dịch. |
+| [testcase/batch](/recipes/testcase-batch)                                           | Tạo testcase từ bản dịch đã review theo từng nhóm có thể tiếp tục, rồi mở một draft pull request cho mỗi nhóm.                           | Một lần push lên nhánh đã cấu hình làm thay đổi file `.vi.md` bên dưới thư mục nguồn.                  | Dev & Com review từng pull request testcase được tạo.                          |
+| [common/command-fanout](/recipes/common-command-fanout)                             | Chạy một skill hoặc command của dự án cho mỗi mục bằng tiến trình riêng và giới hạn số tiến trình chạy song song.                        | Workflow gọi recipe quyết định.                                                                        | Người review workflow gọi recipe sẽ review đầu ra.                             |
+
+## Chọn recipe
+
+1. **Project Leader:** Chọn `translation/grouped` cho toàn bộ quy trình dịch. Đừng thêm riêng `translation/sync-cache-completeness` trừ khi bạn đang tự tạo workflow dịch.
+2. **Project Leader:** Chọn `testcase/batch` khi bản dịch đã review là nguồn để tạo testcase.
+3. **Project Leader:** Chọn `common/command-fanout` bên trong recipe của dự án khi cùng một command của dự án phải chạy độc lập cho nhiều mục.
+4. **Project Leader:** Mở trang recipe, kiểm tra các điều kiện cần có, sao chép ví dụ rồi thay `<sha-of-latest-tag>` bằng SHA đầy đủ gồm 40 ký tự của commit.
+
+:::tip
+Hãy bắt đầu với toolkit mặc định của từng recipe. Chỉ thay toolkit khi repository đã có skill hoặc script đáp ứng đầy đủ hợp đồng của toolkit.
+:::

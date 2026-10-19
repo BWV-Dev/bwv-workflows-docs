@@ -1,0 +1,130 @@
+---
+title: translation/sync-cache-completeness
+sidebar_position: 3
+description: Đồng bộ mọi chỉnh sửa bản dịch đã review vào cache và kiểm tra tính đầy đủ.
+slug: /recipes/translation-sync-cache-completeness
+source_hash: 9d5517388a162f3df43b85d42266c0157a8c5598abc9169d81502c750965aad9
+---
+
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
+👤 Phụ trách: Project Leader
+
+Dùng step recipe này khi bạn đang tạo workflow dịch tùy chỉnh cho phép người review sửa file `.vi.md`. Recipe tìm các bản dịch thay đổi sau cache `.vi.json`, liệt kê mọi chỉnh sửa đã review, chạy một tiến trình đồng bộ cache cho mỗi tài liệu bị ảnh hưởng rồi kiểm tra từng chỉnh sửa đã có trong cache.
+
+:::note
+`translation/grouped` đã gọi recipe này. Đừng thêm phần bọc bên dưới khi bạn dùng `translation/grouped`, trừ khi bạn thực sự cần một workflow đồng bộ cache khác.
+:::
+
+## Nội dung người dùng thấy trên pull request
+
+Workflow gọi recipe quyết định khi nào bước này chạy và cách xuất bản thay đổi. Trong ví dụ dưới đây, người review push chỉnh sửa lên nhánh dịch. BWV Workflows chỉ cập nhật các cache `.vi.json` bị ảnh hưởng, kiểm tra chúng rồi commit thay đổi cache trở lại cùng nhánh pull request.
+
+Dev & Com có thể đọc kết quả trong [check run và comment trạng thái](../pull-requests/read-checks-status). Nếu bước thất bại, hãy sửa lỗi tài liệu hoặc cache được báo trước khi làm theo [Chạy lại một tác vụ](../pull-requests/retry).
+
+## Điều kiện cần có
+
+Chuẩn bị repository đích trước khi thêm step recipe này:
+
+- Giữ file nguồn tiếng Nhật cùng đầu ra `.vi.md` và `.vi.json` tương ứng trong các cây thư mục ổn định.
+- Thêm bảng thuật ngữ Markdown chứa thuật ngữ và quy tắc chia đoạn của dự án dùng để tạo bản dịch.
+- Đảm bảo mỗi bản dịch ghi đường dẫn và commit nguồn, còn mỗi cache giữ phần bọc thông tin. Recipe dịch mặc định ghi cả hai.
+- Chạy workflow gọi recipe với `fetchDepth: 0`. Các check về độ lệch và chỉnh sửa sẽ so sánh lịch sử Git.
+- Dành riêng `.bwv/vi-cache-edits/` cho kế hoạch tạm được tạo trong lúc chạy. Đừng commit thư mục đó.
+- Bảo vệ nhánh đích để chỉ thay đổi cache đã review và kiểm tra mới được merge.
+- Không dùng khoảng trắng trong đường dẫn nguồn, đầu ra và tài liệu.
+
+## Thêm workflow
+
+Tạo `.bwv/workflows.yml` trên nhánh đích. Ví dụ này theo dõi các nhánh dịch do recipe grouped tạo:
+
+```yaml
+version: 1
+
+workflows:
+  - name: sync-reviewed-translation-caches
+    fetchDepth: 0
+    on:
+      push:
+        branches: ["bwv/translate/**"]
+        paths: ["docs_vn/specs/**/*.vi.md"]
+    steps:
+      - id: cache
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@<sha-of-latest-tag>
+        with:
+          sourceRoot: docs/specs
+          outputRoot: docs_vn/specs
+          glossary: docs/glossary.md
+          model: sonnet
+    onSuccess:
+      if: ${{ steps.cache_drift.output.drifted > 0 }}
+      commitMessage: "chore(bwv): sync reviewed translation caches"
+      createPullRequest:
+        branch: ${{ push.branch }}
+        base: main
+        title: "chore(vi): sync reviewed translation caches"
+        draft: true
+        labels: ["bwv-automation"]
+```
+
+ID `cache` của nơi gọi thêm tiền tố vào bước `drift` lồng nhau thành `cache_drift`. Giữ tiền tố đó trong biểu thức `onSuccess.if`.
+
+### Lấy SHA của tag mới nhất
+
+Thay `<tag>` bằng release tag mới nhất:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
+```
+
+Nếu `type` trả về là `tag`, hãy mở tag có chú thích:
+
+```bash
+gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
+```
+
+Hoặc kiểm tra tag bằng Git:
+
+```bash
+recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
+git ls-remote --tags "$recipe_url" \
+  "refs/tags/<tag>" "refs/tags/<tag>^{}"
+```
+
+Dùng dòng `^{}` khi có; nếu không, dùng dòng của tag. SHA đầy đủ cố định phiên bản recipe đã review. `@v1` có thể di chuyển mà repository của bạn không có thay đổi nào.
+
+## Tham khảo đầu vào được tạo tự động
+
+<RecipeInputs recipe="translation/sync-cache-completeness" />
+
+## Giải thích đầu vào
+
+| Đầu vào      | Ý nghĩa                                                                                                                                       | Ví dụ              |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `sourceRoot` | Thư mục gốc của các file nguồn `.md` tiếng Nhật.                                                                                              | `docs/specs`       |
+| `outputRoot` | Thư mục gốc chứa bản dịch `.vi.md` và cache `.vi.json` có cùng cấu trúc.                                                                      | `docs_vn/specs`    |
+| `glossary`   | File Markdown chứa thuật ngữ dự án và quy tắc khớp đoạn nguồn với đoạn dịch.                                                                  | `docs/glossary.md` |
+| `model`      | Model mà skill đồng bộ cache sử dụng.                                                                                                         | `sonnet`           |
+| `toolkit`    | Phần thay thế đầy đủ cho skill đồng bộ cache, công cụ kiểm tra độ lệch và công cụ kiểm tra kế hoạch sửa được bảo vệ. Bỏ qua để dùng mặc định. | Bỏ qua             |
+
+## Vấn đề thường gặp
+
+### Workflow thất bại trước khi đồng bộ cache
+
+Xác nhận đã đặt `fetchDepth: 0` và nguồn, bản dịch, bảng thuật ngữ cùng thông tin nguồn đều tồn tại. Recipe dừng trước khi xuất bản nếu không thể tạo kế hoạch chỉnh sửa đầy đủ.
+
+### Bước kiểm tra báo thiếu chỉnh sửa
+
+Công cụ đồng bộ cache chưa ghi mọi đoạn đã review bên dưới văn bản nguồn tương ứng. Hãy sửa công cụ tùy chỉnh hoặc cache. Đừng sửa bản dịch chỉ để check đạt.
+
+### Workflow báo có thay đổi bên ngoài cache
+
+Bước đồng bộ chỉ được thay đổi các file `.vi.json` bị lệch. Hãy bỏ các thay đổi không liên quan và đảm bảo công cụ `syncCache` tùy chỉnh không sửa file bản dịch hoặc workflow.
+
+### Thư mục kế hoạch tạm đã được Git theo dõi
+
+Xóa `.bwv/vi-cache-edits/` khỏi repository. Recipe tạo và xóa các kế hoạch được bảo vệ tại đó trong mỗi lần chạy.
+
+### Điều kiện thành công không tìm thấy `cache_drift`
+
+Để biểu thức khớp với ID của bước gọi recipe. Nếu bạn đổi tên `id: cache`, hãy đổi cả tiền tố trong `steps.cache_drift.output.drifted`.
