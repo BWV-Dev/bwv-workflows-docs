@@ -10,10 +10,10 @@ import recipeSchema from "@site/generated/schema/recipe-v1.schema.json";
 
 👤 Responsible: Project Leader
 
-This page will provide the complete generated field reference for recipe version 1, including recipe inputs and reusable steps.
+Use recipe version 1 to package a reusable set of workflows or steps. A local recipe lives below `.bwv/recipes/` and starts with `apiVersion: 1`. A remote recipe uses the same format in its recipe repository.
 
-:::note Work in progress
-The placeholder schema below proves the generated reference pipeline. A later export will replace it.
-:::
+BWV Workflows reads a local recipe from the same trusted base-branch commit as `.bwv/workflows.yml`. For a remote recipe, the full SHA in `uses:` selects the trusted commit.
+
+Read [Recipes and toolkits](../configuring/recipes-and-toolkits) before authoring a recipe. Then use this generated reference for input types, recipe expressions, workflow recipes, and step recipes. A recipe must have exactly one body: `workflows` or `steps`.
 
 <SchemaReference schema={recipeSchema} />
