@@ -3,7 +3,7 @@ title: Bảo vệ nhánh
 sidebar_position: 2
 description: Thêm các quy tắc bảo vệ nhánh cần thiết để thay đổi workflow an toàn.
 slug: /getting-started/protect-branches
-source_hash: 2149201e40b785340697aaa8c9b748b7c267035b3418d4dce0d0a31d9e4c71b8
+source_hash: 26adf4edb91453826fbad2b411c625b7deaec0637e3d8dae855999fc5539331d
 ---
 
 👤 Phụ trách: Project Leader
@@ -53,6 +53,10 @@ Kiểm tra lại mỗi khi `.bwv/workflows.yml` thêm hoặc thay đổi mẫu n
 ![Biểu mẫu GitHub để thêm quy tắc bảo vệ nhánh kiểu cũ](/img/screenshots/protect-branches-new-rule.png)
 
 _Nhập mẫu tên nhánh trước khi bật các thiết lập bảo vệ bắt buộc._
+
+:::warning Kiểm tra việc GitHub áp dụng quy tắc
+Với repository riêng tư, GitHub chỉ áp dụng bảo vệ nhánh khi tổ chức dùng GitHub Team hoặc Enterprise Cloud. Nếu GitHub báo các quy tắc sẽ không được áp dụng, hãy báo cho BWV Workflows maintainers trước khi bật bất kỳ trigger nào.
+:::
 
 ### 3. Bật các cài đặt được khuyến nghị
 
