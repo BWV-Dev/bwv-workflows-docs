@@ -19,6 +19,7 @@ Run every local check before opening a pull request:
 pnpm format:check
 pnpm typecheck
 pnpm check:generated
+pnpm test:generated
 pnpm check:i18n
 pnpm test:i18n
 pnpm content-guard
@@ -69,7 +70,7 @@ The build precheck rejects missing Vietnamese pages. A translator working on a p
 
 ## Refresh generated content
 
-Generated schemas, command tables, recipe metadata, and rendered samples live under `generated/` at the repository root. Never edit these files by hand. From the private engine checkout, run:
+Generated schemas, command tables, recipe metadata, and rendered samples live under `generated/` at the repository root. Never edit the exported files by hand; the docs-owned `generated/.exclude` file described below is not exported. From the private engine checkout, run:
 
 ```bash
 pnpm docs:export --out ../bwv-workflows-docs/generated --recipes <checkout>
@@ -77,7 +78,9 @@ pnpm docs:export --out ../bwv-workflows-docs/generated --recipes <checkout>
 
 Commit the refreshed `generated/` directory and its `manifest.json` together. The manifest records the engine commit, optional recipe commit, and export time.
 
-Run `pnpm check:generated` after an export. It verifies that every literal sample and recipe key used by a documentation page exists in the refreshed output. `pnpm build` runs the same check automatically.
+The demo recipe `testcase/batch` is intentionally excluded from the public wiki. `generated/.exclude` is owned by this documentation repository and lists its generated file. After every export, remove any listed file that the exporter recreated.
+
+Run `pnpm check:generated` after an export. It verifies that every literal sample and recipe key used by a documentation page exists in the refreshed output, and fails with a clear message if an excluded file returned. `pnpm build` runs the same check automatically.
 
 Schema and recipe JSON are imported directly into React components at build time. Markdown tables and bot samples are imported as raw strings with Webpack's `raw-loader`, bypassing Docusaurus's MDX compilation, then rendered by `react-markdown` with `remark-gfm` and `rehype-raw`. This preserves GFM tables, task lists, and trusted generated `<details>` elements. The sample renderer replaces every checkbox input with a disabled input so documentation examples cannot be edited.
 

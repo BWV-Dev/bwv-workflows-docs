@@ -9,7 +9,7 @@ slug: /configuring/many-pull-requests
 
 Use `loop` when a push can create more work than one focused pull request should contain. Each pass plans one batch, runs every step, and publishes that batch before the next pass starts.
 
-For testcase generation, start with the maintained [testcase/batch recipe](../recipes/testcase-batch). Write a loop directly when the repository needs a different planner or batch action.
+Suppose the fake repository `acme/web-app` updates many generated documentation files after a push. The workflow below uses a repository-owned planner to split that work into focused batches.
 
 ## Workflow Summary
 

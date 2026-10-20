@@ -3,14 +3,14 @@ title: Nhiều pull request từ một lần chạy
 sidebar_position: 6
 description: Lặp lại workflow và xuất bản một pull request gọn, đúng trọng tâm sau mỗi lượt.
 slug: /configuring/many-pull-requests
-source_hash: 0018b9265ca90f2739bfe33f402e107e89ba27888d98938a88567305a368784a
+source_hash: 347cd646f7b8996e8afbc9715c80476320e73d04bdd3ea6f55446971cb0c4707
 ---
 
 👤 Phụ trách: Project Leader
 
 Dùng `loop` khi một lần push có thể tạo ra nhiều việc hơn mức nên đưa vào một pull request gọn, đúng trọng tâm. Mỗi lượt sẽ lập kế hoạch cho một nhóm việc, chạy mọi bước rồi xuất bản nhóm đó trước khi bắt đầu lượt tiếp theo.
 
-Nếu bạn tạo testcase, hãy bắt đầu với [recipe testcase/batch](../recipes/testcase-batch) do BWV Workflows maintainers chăm sóc. Chỉ tự viết vòng lặp khi repository cần cách lập kế hoạch hoặc xử lý nhóm việc khác.
+Giả sử repository giả `acme/web-app` cập nhật nhiều file tài liệu được tạo sau một lần push. Workflow bên dưới dùng bộ lập kế hoạch của repository để chia công việc đó thành các nhóm gọn, đúng trọng tâm.
 
 ## Tóm tắt workflow
 

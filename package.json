@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "check:generated": "node scripts/check-generated.mjs",
+    "test:generated": "node --test scripts/check-generated.test.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "content-guard": "node scripts/content-guard.mjs",
     "test:content-guard": "node --test scripts/content-guard.test.mjs",
