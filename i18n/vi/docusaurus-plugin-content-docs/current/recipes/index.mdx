@@ -3,12 +3,12 @@ title: Danh mục recipe
 sidebar_position: 1
 description: Chọn recipe do BWV Workflows maintainers chăm sóc cho việc dịch hoặc chạy fan-out.
 slug: /recipes
-source_hash: 50d6690088fe425a06ca0e8987ff58fc5e51b783dddb667e4bd47cdd5882f51b
+source_hash: 59eaf274210725f096cca703e307ec575fdebb2040f622457841bf0f68eeb6d1
 ---
 
 👤 Phụ trách: Project Leader
 
-Dùng recipe chính thức khi điều kiện kích hoạt và đầu ra của nó khớp với quy trình trong repository của bạn. Ghim mỗi recipe vào SHA đầy đủ của commit trước khi merge cấu hình.
+Dùng recipe chính thức khi điều kiện kích hoạt và đầu ra của nó khớp với quy trình trong repository của bạn. Recipe dùng chung chỉ đến từ `BWV-Dev/bwv-workflows-recipes` và dùng `@v1` theo mặc định.
 
 | Recipe                                                                              | Chức năng                                                                                                                                | Điều kiện kích hoạt                                                                                    | Người review đầu ra                                                            |
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
@@ -20,7 +20,7 @@ Dùng recipe chính thức khi điều kiện kích hoạt và đầu ra của n
 
 1. **Project Leader:** Chọn `translation/grouped` cho toàn bộ quy trình dịch. Đừng thêm riêng `translation/sync-cache-completeness` trừ khi bạn đang tự tạo workflow dịch.
 2. **Project Leader:** Chọn `common/command-fanout` bên trong recipe của dự án khi cùng một command của dự án phải chạy độc lập cho nhiều mục.
-3. **Project Leader:** Mở trang recipe, kiểm tra các điều kiện cần có, sao chép ví dụ rồi thay `<sha-of-latest-tag>` bằng SHA đầy đủ gồm 40 ký tự của commit.
+3. **Project Leader:** Mở trang recipe, kiểm tra các điều kiện cần có rồi sao chép toàn bộ dòng `uses` kết thúc bằng `@v1`.
 
 :::tip
 Hãy bắt đầu với toolkit mặc định của từng recipe. Chỉ thay toolkit khi repository đã có skill hoặc script đáp ứng đầy đủ hợp đồng của toolkit.

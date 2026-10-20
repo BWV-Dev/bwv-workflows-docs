@@ -53,7 +53,7 @@ workflows:
           printf '%s\n' '{"files":[{"args":"docs/specs/login.md"},{"args":"docs/specs/profile.md"}]}'
         outputJson: true
       - id: review
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@<sha-of-latest-tag>
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@v1
         with:
           id: document
           items: ${{ steps.plan.output.files }}
@@ -68,31 +68,7 @@ workflows:
             run: { command: review-doc }
 ```
 
-Replace the fixed planning output with your repository's planner. Keep `items` as one runtime expression so it resolves to the array rather than text.
-
-### Get the SHA of the latest tag
-
-Replace `<tag>` with the latest release tag:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
-```
-
-If the returned `type` is `tag`, peel the annotated tag:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
-```
-
-Or inspect the tag with Git:
-
-```bash
-recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
-git ls-remote --tags "$recipe_url" \
-  "refs/tags/<tag>" "refs/tags/<tag>^{}"
-```
-
-Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+Replace the fixed planning output with your repository's planner. Keep `items` as one runtime expression so it resolves to the array rather than text, and keep the official `@v1` reference shown above.
 
 ## Generated input reference
 

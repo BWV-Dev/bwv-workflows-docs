@@ -148,7 +148,8 @@ what the step executes.
 
 👤 Responsible: Project Leader
 
-Use `uses` to insert the `steps` from a local or remote step recipe:
+Use `uses` to insert the `steps` from a local recipe or an official shared
+recipe:
 
 ```yaml title=".bwv/workflows.yml"
 version: 1
@@ -172,8 +173,8 @@ runtime. A step-recipe caller may set `id`, `name`, `if`, and `with`; the
 recipe's emitted steps own `forEach`, `fanout`, `maxParallel`,
 `continueOnError`, and `timeoutMinutes`.
 
-See [Recipes and toolkits](./recipes-and-toolkits) before adding a remote
-source.
+See [Recipes and toolkits](./recipes-and-toolkits) before calling an official
+shared recipe.
 
 ### 4. Control failures, conditions, and timeouts
 

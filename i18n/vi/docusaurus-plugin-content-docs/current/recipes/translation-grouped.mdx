@@ -3,7 +3,7 @@ title: translation/grouped
 sidebar_position: 2
 description: Dịch Markdown tiếng Nhật theo nhóm nguồn và giữ cache đã review luôn đồng bộ.
 slug: /recipes/translation-grouped
-source_hash: bee85498fd1a20b19a5c613ed449fdecc71a742a134048b786b9e2f2d0698206
+source_hash: a59af087e76f7f6a0f849fecd8640cab4121dddc24d7ceab81742d702ddbdf33
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -44,7 +44,7 @@ version: 1
 
 workflows:
   - name: translate-specs
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@<sha-of-latest-tag>
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@v1
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -57,31 +57,7 @@ workflows:
       maxFilesPerGroup: 3
 ```
 
-Recipe tự quản lý các điều kiện kích hoạt và dùng toolkit mặc định khi bạn bỏ qua `toolkit`.
-
-### Lấy SHA của tag mới nhất
-
-Thay `<tag>` bằng release tag mới nhất:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
-```
-
-Nếu `type` trả về là `commit`, dùng `sha` của nó. Nếu là `tag`, hãy mở tag có chú thích rồi dùng SHA của commit được trả về tại đây:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
-```
-
-Bạn cũng có thể kiểm tra cả tag và commit đã mở của nó bằng Git:
-
-```bash
-recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
-git ls-remote --tags "$recipe_url" \
-  "refs/tags/<tag>" "refs/tags/<tag>^{}"
-```
-
-Dùng dòng `^{}` cho tag có chú thích. Nếu không có dòng đó, dùng dòng của tag. SHA đầy đủ cố định phiên bản recipe đã review. `@v1` có thể di chuyển mà repository của bạn không có thay đổi nào.
+Recipe tự quản lý các điều kiện kích hoạt và dùng toolkit mặc định khi bạn bỏ qua `toolkit`. Giữ tham chiếu chính thức `@v1` như ví dụ trên.
 
 ## Tham khảo đầu vào được tạo tự động
 

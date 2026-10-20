@@ -7,7 +7,7 @@ slug: /recipes
 
 👤 Responsible: Project Leader
 
-Use an official recipe when its trigger and output match the process in your repository. Pin every recipe to a full commit SHA before you merge the configuration.
+Use an official recipe when its trigger and output match the process in your repository. Shared recipes come only from `BWV-Dev/bwv-workflows-recipes` and use `@v1` by default.
 
 | Recipe                                                                              | What it does                                                                                                                             | Trigger                                                                                                        | Who reviews the output                                                                       |
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -19,7 +19,7 @@ Use an official recipe when its trigger and output match the process in your rep
 
 1. **Project Leader:** Choose `translation/grouped` for the complete translation process. Do not add `translation/sync-cache-completeness` separately unless you are building your own translation workflow.
 2. **Project Leader:** Choose `common/command-fanout` inside a project recipe when the same project command must run independently for several items.
-3. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and replace `<sha-of-latest-tag>` with a full 40-character commit SHA.
+3. **Project Leader:** Open the recipe page, check its prerequisites, and copy the complete `uses` line ending in `@v1`.
 
 :::tip
 Start with each recipe's default toolkit. Override a toolkit only when your repository already has skills or scripts that meet the complete toolkit contract.

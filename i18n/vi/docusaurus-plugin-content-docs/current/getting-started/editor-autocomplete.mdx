@@ -3,7 +3,7 @@ title: Tự động gợi ý trong editor
 sidebar_position: 4
 description: Kết nối schema của workflow với gợi ý YAML trong editor.
 slug: /getting-started/editor-autocomplete
-source_hash: 776faca11ebc2678bf9a2eac0dfad373564f4e44014d8a9256dba840e21df988
+source_hash: d2d26fb8cdfb8c75a9f1cb8a84a0ee3f1b1bd0cfcd2c4b9b3791c765b7819039
 ---
 
 import Tabs from "@theme/Tabs";
@@ -64,7 +64,7 @@ Thêm comment này vào dòng đầu tiên của mọi file recipe:
 apiVersion: 1
 ```
 
-Dùng schema `recipe-v1` cho recipe cục bộ và recipe nằm trong một repository recipe.
+Dùng schema `recipe-v1` cho recipe cục bộ trong `.bwv/recipes/`.
 
   </TabItem>
   <TabItem value="settings" label="Cài đặt VS Code">
@@ -75,10 +75,7 @@ Tạo hoặc cập nhật `.vscode/settings.json` trong repository:
 {
   "yaml.schemas": {
     "https://<engine-host>/schemas/workflows.json": ".bwv/workflows.yml",
-    "https://<engine-host>/schemas/recipe-v1.json": [
-      "recipes/**/*.yml",
-      ".bwv/recipes/*.yml"
-    ]
+    "https://<engine-host>/schemas/recipe-v1.json": ".bwv/recipes/**/*.yml"
   }
 }
 ```

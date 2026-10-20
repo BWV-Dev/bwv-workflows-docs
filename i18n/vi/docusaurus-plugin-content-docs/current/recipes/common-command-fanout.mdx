@@ -3,7 +3,7 @@ title: common/command-fanout
 sidebar_position: 5
 description: Chạy một skill hoặc command của dự án cho mỗi mục với số tiến trình song song có giới hạn.
 slug: /recipes/common-command-fanout
-source_hash: c1736c7616ad2a87840d43400e5dbaed047361d191cac0e5dec87a294d224a68
+source_hash: 0a8d4e2349d7574962e5f97c998c7238286e72886e381f3aca66a0fbf24acdef
 ---
 
 import { RecipeInputs } from "@site/src/components/GeneratedReference";
@@ -54,7 +54,7 @@ workflows:
           printf '%s\n' '{"files":[{"args":"docs/specs/login.md"},{"args":"docs/specs/profile.md"}]}'
         outputJson: true
       - id: review
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@<sha-of-latest-tag>
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@v1
         with:
           id: document
           items: ${{ steps.plan.output.files }}
@@ -69,31 +69,7 @@ workflows:
             run: { command: review-doc }
 ```
 
-Thay nội dung trả về cố định của bước lập kế hoạch bằng bộ lập kế hoạch của repository. Giữ `items` là một biểu thức lúc chạy duy nhất để nó trả về mảng thay vì văn bản.
-
-### Lấy SHA của tag mới nhất
-
-Thay `<tag>` bằng release tag mới nhất:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
-```
-
-Nếu `type` trả về là `tag`, hãy mở tag có chú thích:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
-```
-
-Hoặc kiểm tra tag bằng Git:
-
-```bash
-recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
-git ls-remote --tags "$recipe_url" \
-  "refs/tags/<tag>" "refs/tags/<tag>^{}"
-```
-
-Dùng dòng `^{}` khi có; nếu không, dùng dòng của tag. SHA đầy đủ cố định phiên bản recipe đã review. `@v1` có thể di chuyển mà repository của bạn không có thay đổi nào.
+Thay nội dung trả về cố định của bước lập kế hoạch bằng bộ lập kế hoạch của repository. Giữ `items` là một biểu thức lúc chạy duy nhất để nó trả về mảng thay vì văn bản, đồng thời giữ tham chiếu chính thức `@v1` như ví dụ trên.
 
 ## Tham khảo đầu vào được tạo tự động
 

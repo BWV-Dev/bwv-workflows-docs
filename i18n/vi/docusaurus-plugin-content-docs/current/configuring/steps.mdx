@@ -3,7 +3,7 @@ title: "Các bước: claude, shell, uses"
 sidebar_position: 2
 description: Chọn và cấu hình các loại bước được workflow hỗ trợ.
 slug: /configuring/steps
-source_hash: f3177a11d0bcf188733fc51dfc3f39f3bab76aaa7293964e134e2bc5cbbd5c33
+source_hash: 8db162f533e174352c9cc84d99062e6b2246e154813456b3a9362dc5d653e070
 ---
 
 👤 Phụ trách: Project Leader
@@ -124,7 +124,7 @@ Bước `shell` trực tiếp chạy nội dung repository từ commit đã chec
 
 👤 Phụ trách: Project Leader
 
-Dùng `uses` để chèn `steps` từ step recipe cục bộ hoặc từ xa:
+Dùng `uses` để chèn `steps` từ step recipe cục bộ hoặc recipe chính thức dùng chung:
 
 ```yaml title=".bwv/workflows.yml"
 version: 1
@@ -145,7 +145,7 @@ workflows:
 
 Recipe được mở rộng trong lúc tải cấu hình. Không còn bước `uses` nào khi chạy. Nơi gọi step recipe có thể đặt `id`, `name`, `if` và `with`; các bước do recipe tạo ra tự quản lý `forEach`, `fanout`, `maxParallel`, `continueOnError` và `timeoutMinutes`.
 
-Xem [Recipe và toolkit](./recipes-and-toolkits) trước khi thêm nguồn từ xa.
+Xem [Recipe và toolkit](./recipes-and-toolkits) trước khi gọi recipe chính thức dùng chung.
 
 ### 4. Kiểm soát lỗi, điều kiện và thời gian chờ {#4-control-failures-conditions-and-timeouts}
 

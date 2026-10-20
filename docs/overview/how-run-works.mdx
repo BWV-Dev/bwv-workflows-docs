@@ -74,8 +74,8 @@ request, the run ends after reporting its result.
 :::important The target branch controls executable workflow content
 For a pull request run, BWV Workflows reads `.bwv/workflows.yml`, `.claude/`
 skills and commands, and local recipes from the pull request's base branch.
-That configuration also chooses the source and ref for any remote recipes. The
-pull request head supplies only the content to work on.
+That configuration also chooses any official shared recipes and their `@v1`
+references. The pull request head supplies only the content to work on.
 
 For a push run, the pushed branch is both the target branch and the content
 being worked on.

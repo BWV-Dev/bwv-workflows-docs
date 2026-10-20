@@ -3,7 +3,7 @@ title: translation/sync-cache-completeness
 sidebar_position: 3
 description: Đồng bộ mọi chỉnh sửa bản dịch đã review vào cache và kiểm tra tính đầy đủ.
 slug: /recipes/translation-sync-cache-completeness
-source_hash: 77b4a7133e1ddd74fd2591d1b78fac3532ed3e9ef1d2f23e2f152d76a215fcc6
+source_hash: 999de0749ead80255b9dd25ccfe6c174dc50eb22706cfc6616166561c2cbfdc4
 ---
 
 import { RecipeInputs } from "@site/src/components/GeneratedReference";
@@ -50,7 +50,7 @@ workflows:
         paths: ["docs_vn/specs/**/*.vi.md"]
     steps:
       - id: cache
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@<sha-of-latest-tag>
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@v1
         with:
           sourceRoot: docs/specs
           outputRoot: docs_vn/specs
@@ -67,31 +67,7 @@ workflows:
         labels: ["bwv-automation"]
 ```
 
-ID `cache` của nơi gọi thêm tiền tố vào bước `drift` lồng nhau thành `cache_drift`. Giữ tiền tố đó trong biểu thức `onSuccess.if`.
-
-### Lấy SHA của tag mới nhất
-
-Thay `<tag>` bằng release tag mới nhất:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
-```
-
-Nếu `type` trả về là `tag`, hãy mở tag có chú thích:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
-```
-
-Hoặc kiểm tra tag bằng Git:
-
-```bash
-recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
-git ls-remote --tags "$recipe_url" \
-  "refs/tags/<tag>" "refs/tags/<tag>^{}"
-```
-
-Dùng dòng `^{}` khi có; nếu không, dùng dòng của tag. SHA đầy đủ cố định phiên bản recipe đã review. `@v1` có thể di chuyển mà repository của bạn không có thay đổi nào.
+ID `cache` của nơi gọi thêm tiền tố vào bước `drift` lồng nhau thành `cache_drift`. Giữ tiền tố đó trong biểu thức `onSuccess.if` và giữ tham chiếu chính thức `@v1` như ví dụ trên.
 
 ## Tham khảo đầu vào được tạo tự động
 

@@ -43,7 +43,7 @@ version: 1
 
 workflows:
   - name: translate-specs
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@<sha-of-latest-tag>
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@v1
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -56,31 +56,7 @@ workflows:
       maxFilesPerGroup: 3
 ```
 
-The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted.
-
-### Get the SHA of the latest tag
-
-Replace `<tag>` with the latest release tag:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
-```
-
-If the returned `type` is `commit`, use its `sha`. If it is `tag`, peel the annotated tag and use the commit SHA returned here:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
-```
-
-You can also inspect both the tag and its peeled commit with Git:
-
-```bash
-recipe_url=$(gh repo view BWV-Dev/bwv-workflows-recipes --json url --jq '.url')
-git ls-remote --tags "$recipe_url" \
-  "refs/tags/<tag>" "refs/tags/<tag>^{}"
-```
-
-Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted. Keep the official `@v1` reference shown above.
 
 ## Generated input reference
 

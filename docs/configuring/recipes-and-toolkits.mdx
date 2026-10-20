@@ -1,19 +1,19 @@
 ---
 title: Recipes and toolkits
 sidebar_position: 3
-description: Reuse maintained workflow steps and pin every source by commit SHA.
+description: Reuse official shared recipes or recipes kept in your repository.
 slug: /configuring/recipes-and-toolkits
 ---
 
 👤 Responsible: Project Leader
 
-Reuse a local recipe or an approved remote recipe instead of copying its
-steps. Pin every remote recipe to the exact commit you reviewed.
+Use an official shared recipe instead of copying maintained steps. When a
+recipe is specific to one repository, keep it local under `.bwv/recipes/`.
 
 ## Workflow Summary
 
 1. [Use a local recipe](#1-use-a-local-recipe).
-2. [Pin a remote recipe](#2-pin-a-remote-recipe).
+2. [Use an official shared recipe](#2-use-an-official-shared-recipe).
 3. [Choose or replace a toolkit](#3-choose-or-replace-a-toolkit).
 4. [Read configuration errors](#4-read-configuration-errors).
 
@@ -49,52 +49,7 @@ local recipe paths must stay inside `.bwv/recipes/`.
 Commit the recipe before testing. BWV Workflows reads it from the same trusted
 commit as `.bwv/workflows.yml`.
 
-### 2. Pin a remote recipe
-
-👤 Responsible: Project Leader
-
-A remote recipe uses this form:
-
-```text
-<owner>/<repo>/<path>.yml@<ref>
-```
-
-For example, an official recipe starts with
-`BWV-Dev/bwv-workflows-recipes/recipes/` and ends with a full 40-character
-commit SHA. Open the [Recipe catalog](/recipes), choose a recipe, and copy its
-complete `uses` example.
-
-Ask the BWV Workflows maintainers to approve every remote source during
-[repository onboarding](../getting-started/onboard-repository). A workflow
-file cannot add a source to the approved list or grant the App access to it.
-
-Get the commit behind the release tag before merging the configuration. First
-inspect the tag object:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
-```
-
-If its `type` is `commit`, use the returned `sha`. If its `type` is `tag`, peel
-the annotated tag and use this result:
-
-```bash
-gh api repos/BWV-Dev/bwv-workflows-recipes/git/tags/<tag-object-sha> --jq '.object.sha'
-```
-
-Replace the recipe's `@<sha-of-latest-tag>` placeholder with that full SHA.
-A full SHA keeps the reviewed recipe unchanged; a branch or movable tag can
-select different content without a change in your repository.
-
-### 3. Choose or replace a toolkit
-
-👤 Responsible: Project Leader
-
-A toolkit is a recipe input that maps the operations a recipe needs to skills,
-commands, or scripts. During recipe expansion, it replaces `claude.run` and
-`$[[ toolkit.<key> ]]` placeholders with those concrete entries.
-
-This local step recipe declares a default toolkit:
+Create the matching local recipe:
 
 ```yaml title=".bwv/recipes/review-specs.yml"
 apiVersion: 1
@@ -118,30 +73,52 @@ steps:
     shell: $[[ toolkit.verify ]] $[[ inputs.source ]]
 ```
 
+This example expects `.claude/skills/review-specs/SKILL.md` and
+`.bwv/scripts/check-specs.sh` to exist on the same base-branch commit.
+
+### 2. Use an official shared recipe
+
+👤 Responsible: Project Leader
+
+All shared recipes come from `BWV-Dev/bwv-workflows-recipes`. Copy the complete
+`uses` line from the [Recipe catalog](/recipes). For example:
+
+```text
+BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@v1
+```
+
+Use `@v1` by default. A full commit SHA also works when a project needs to
+freeze a version.
+
+### 3. Choose or replace a toolkit
+
+👤 Responsible: Project Leader
+
+A toolkit is a recipe input that maps the operations a recipe needs to skills,
+commands, or scripts. During recipe expansion, it replaces `claude.run` and
+`$[[ toolkit.<key> ]]` placeholders with those concrete entries.
+
+The local step recipe above declares a default toolkit. Official shared
+recipes can also provide a default toolkit.
+
 Use the default when it meets the project. To override it, pass the complete
 toolkit in `with`; an override replaces the whole set rather than merging one
 key at a time. Every named skill, command, and script must exist at the trusted
 commit.
 
-Toolkit script paths run from the commit where their toolkit entry was
-checked, not from the pull request's working tree. Inside a script, load a
-helper relative to the script itself, for example
+Toolkit script paths run from the recipe that declares them, not from the pull
+request's working tree. Inside a local script, load a helper relative to the
+script itself, for example
 `. "$(dirname "$0")/lib.sh"`. A path relative to the current working directory
 would read the checked-out branch instead.
-
-Remote skill frontmatter may contain only `name`, `description`, `when_to_use`,
-`argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`,
-`version`, and `license`; any other key is refused so the step's own tool and
-model settings remain authoritative. Remote toolkit commands are not
-supported; use a project command override or the remote recipe's skill.
 
 ### 4. Read configuration errors
 
 👤 Responsible: Project Leader
 
 BWV Workflows expands recipes before a workflow runs. Missing inputs, unknown
-`with` keys, missing toolkit files, invalid remote sources, and errors in
-nested recipes are configuration errors.
+`with` keys, missing toolkit files, invalid official recipe references, and
+errors in nested recipes are configuration errors.
 
 For an open pull request or push, open the check named `bwv/config`. Its
 **Invalid workflow config** summary identifies the recipe and the failing node.

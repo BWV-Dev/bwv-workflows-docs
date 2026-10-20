@@ -12,31 +12,23 @@ engine configuration are maintainer tasks.
 
 ## Workflow Summary
 
-1. [Choose the repository and recipe sources](#1-choose-the-repository-and-recipe-sources).
+1. [Choose the repository](#1-choose-the-repository).
 2. [Send the onboarding request](#2-send-the-onboarding-request).
 3. [Wait for maintainer setup](#3-wait-for-maintainer-setup).
 4. [Verify the GitHub App](#4-verify-the-github-app).
 
 ## Step-by-Step Instructions
 
-### 1. Choose the repository and recipe sources
+### 1. Choose the repository
 
 👤 Responsible: Project Leader
 
-Collect these values:
+Collect the target repository name as `<owner>/<repo>`, for example
+`acme/web-app`.
 
-- The target repository as `<owner>/<repo>`, for example `acme/web-app`.
-- Every remote repository that will supply recipes.
-- `None` when the workflow uses only direct steps or recipes stored in
-  `.bwv/recipes/` in the target repository.
-
-Name `BWV-Dev/bwv-workflows-recipes` when you plan to use an official recipe.
-List any other approved source by its full `<owner>/<repo>` name.
-
-:::tip Start with the sources you need
-A YAML change cannot grant the App access to a recipe source or widen the
-approved sources. Ask the BWV Workflows maintainers before referencing another
-source.
+:::tip Choose where repository-specific recipes live
+Shared recipes come from `BWV-Dev/bwv-workflows-recipes`. When a recipe is
+specific to this repository, store it under `.bwv/recipes/` instead.
 :::
 
 ### 2. Send the onboarding request
@@ -47,12 +39,10 @@ Send the BWV Workflows maintainers a request in this format:
 
 ```text
 Repository: acme/web-app
-Recipe sources:
-- BWV-Dev/bwv-workflows-recipes
 ```
 
-Use `Recipe sources: None` when no remote source is required. Do not send
-tokens, App credentials, or installation links.
+The request only needs the repository name. Do not send tokens, App
+credentials, or installation links.
 
 ### 3. Wait for maintainer setup
 
@@ -63,12 +53,10 @@ The maintainers:
 1. Confirm that the target repository can use BWV Workflows.
 2. Install or extend the **BWV Workflows** GitHub App installation for the
    target repository.
-3. Make each approved remote recipe source visible to that installation and
-   allow it in the service configuration.
+3. Make the official shared recipe repository available to that installation.
 4. Confirm when the repository is ready for a workflow file.
 
-Wait for that confirmation before adding `.bwv/workflows.yml`. A recipe source
-that the installation cannot read will fail configuration validation.
+Wait for that confirmation before adding `.bwv/workflows.yml`.
 
 ### 4. Verify the GitHub App
 
