@@ -1,0 +1,88 @@
+---
+title: Khi Dev & Com báo vấn đề
+sidebar_position: 1
+description: Kiểm tra các kết quả BWV Workflows ít gặp mà Dev & Com báo lại.
+slug: /troubleshooting/dev-com-reports
+source_hash: 3645a58bb7898610560193fcbac7f77af71b99ebb96d101e366f02c392d698ba
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+
+👤 Phụ trách: Project Leader
+
+Dùng trang này sau khi Dev & Com đã làm theo [Làm việc với BWV Workflows trên PR](/pull-requests) và báo một kết quả không có trong hướng dẫn đó. Hãy xin liên kết PR và tên check `bwv/…` chính xác trước khi thay đổi workflow.
+
+## Bắt đầu từ kết quả hiện tại
+
+Mở commit mới nhất và tìm các báo cáo sau:
+
+- `bwv/<workflow>` tóm tắt workflow.
+- `bwv/<workflow>/<group>` báo kết quả của một nhóm nguồn.
+- Comment trạng thái hiển thị một workflow. Tracker **BWV source groups** hiển thị mọi nhóm của workflow có chia nhóm.
+
+![Một check workflow và một check nhóm nguồn trong trang Checks của PR](/img/screenshots/read-checks-status-workflow-group.png)
+
+Dùng check mới nhất trên commit hiện tại. Khi có lỗi, đọc bước ❌ và mở rộng đầu ra của bước. Phần được hiển thị là đoạn cuối của đầu ra. Hãy nhờ BWV Workflows maintainers kiểm tra nếu đoạn đó không có nguyên nhân.
+
+Tracker **planned** trước khi merge chỉ là bản xem trước: chưa có bước nào chạy, chưa có nhánh nào được push và chưa có PR kết quả nào được mở. Bot tính lại các nhóm từ kết quả merge. Hãy kiểm tra tracker **published** khi tìm nguyên nhân.
+
+## Yêu cầu chạy lại chưa bắt đầu
+
+Dev & Com dùng ô **Retry** được cung cấp hoặc `/bwv retry [name]`. Với vai trò Project Leader, bạn cũng có thể mở check run `bwv/<workflow>` hoặc `bwv/<workflow>/<group>` bị lỗi rồi chọn **Re-run**. Check của workflow chạy lại mọi nhóm mà tracker còn cho phép. Check của nhóm chỉ chạy lại nhóm đó.
+
+![Hành động Re-run trên check nhóm nguồn bị lỗi](/img/screenshots/retry-check-rerun.png)
+
+Đọc câu trả lời của bot trước khi yêu cầu lần nữa:
+
+| Câu trả lời              | Ý nghĩa                                                             |
+| ------------------------ | ------------------------------------------------------------------- |
+| **queued** hoặc **held** | Yêu cầu đã được chấp nhận và đang chờ phần việc hiện tại chạy xong. |
+| **already covered**      | Phần việc đang chờ đã bao gồm yêu cầu này.                          |
+| **running now**          | Workflow hoặc nhóm đó đang chạy; hãy chờ kết quả.                   |
+| **running since …**      | Yêu cầu tiếp theo đã bắt đầu chạy.                                  |
+
+Mỗi luồng công việc chỉ có một lần chạy tại một thời điểm. Bot có thể giữ một yêu cầu tiếp theo và hiển thị check run ở trạng thái queued. Đừng gửi thêm yêu cầu khi phần việc đã được chấp nhận vẫn đang chờ.
+
+Nhóm đã xuất bản PR kết quả không thể chạy lại. Ô Retry của nhóm không còn và `/bwv retry <group>` bị từ chối. Chạy lại một nhóm đã xuất bản sẽ không chạy gì cả. Hãy review PR kết quả hiện có hoặc tạo lại nếu PR đã bị đóng mà chưa merge.
+
+## PR kết quả đã bị đóng
+
+Đóng PR kết quả mà chưa merge được xem là một quyết định. Lần chạy bình thường hoặc Retry sẽ để PR ở trạng thái đóng. Dev & Com có thể chọn **Recreate** hoặc dùng `/bwv recreate <group|workflow>`. PR kết quả của workflow có nhóm còn có hành động **Recreate PR** trên check run `bwv/<workflow>/<group>`.
+
+![Hành động Recreate PR trên check nhóm nguồn đã hoàn tất](/img/screenshots/recreate-check-button.png)
+
+Hành động này chỉ hợp lệ khi PR được nêu vẫn đóng và chưa merge. Nếu PR đã được mở lại, merge hoặc thay thế, hãy quay lại tracker và làm theo dòng hiện tại.
+
+PR thay thế dùng cùng nhánh kết quả. Một người có thể push commit review lên nhánh của PR kết quả đang mở. Ở lần cập nhật sau, BWV Workflows hoặc thêm phần việc mà vẫn giữ commit đầu nhánh hiện tại, hoặc dừng nếu thay commit đầu nhánh sẽ làm mất commit của một người. Khi tạo lại, nếu commit đầu nhánh là của người khác và cần bị thay thế, bot chặn trước khi workflow chạy. Hãy giữ lại mọi thay đổi cần thiết, rồi xóa nhánh hoặc đổi `onSuccess.createPullRequest.branch` trước khi yêu cầu Dev & Com tạo lại.
+
+Đồng thời kiểm tra nhánh đích (base branch):
+
+- ✅ **already on** nghĩa là mọi đầu ra mong đợi đã có trên nhánh đích. Không còn gì để xuất bản.
+- ⏸️ **outputs partly on** nghĩa là chỉ một số đầu ra đã có. Xử lý các file được nêu trên nhánh đích, rồi chạy lại hoặc tạo lại theo hành động được cung cấp.
+
+## Lần merge bị bỏ qua hoặc một nhóm cần chọn nguồn
+
+<GitHubComment sample="merge-skipped" author="BWV Workflows" />
+
+**merge workflows did not run** nghĩa là BWV Workflows không thể xác định an toàn input của lần merge. Đọc danh sách **Skipped**, xử lý điều kiện được nêu rồi comment `/bwv retry` trên PR đã merge. Nếu cùng lý do xuất hiện lại, hãy gửi PR và chi tiết check run cho BWV Workflows maintainers.
+
+<GitHubComment
+  sample="translation-tracker-needs-mapping"
+  author="BWV Workflows"
+/>
+
+**needs mapping** nghĩa là có nhiều hơn một PR nguồn có thể sở hữu thay đổi. So sánh các PR ứng viên và chọn PR sở hữu thay đổi đó. Sau đó, sao chép command mà tracker hiển thị:
+
+```text
+/bwv provenance <sha>=<pr>
+```
+
+Dùng commit và số PR từ tracker. Command lưu lựa chọn rồi kiểm tra lại lần merge. Đừng đoán khi các ứng viên chưa rõ; hãy hỏi BWV Workflows maintainers.
+
+## Một check đang chờ
+
+**Waiting for quota** cùng _Retrying automatically around HH:MM UTC_ là quá trình tự động. Đừng bảo Dev & Com chọn **Retry**. Comment trạng thái, tracker và check run sẽ cập nhật khi lần thử tiếp tục.
+
+**Waiting for a retry** nghĩa là lỗi hạ tầng tạm thời vẫn còn một lần thử tự động. Nếu không còn lần thử, check thất bại với **Infrastructure error**. Hãy báo cho BWV Workflows maintainers khi thời gian thử lại đã qua một khoảng hợp lý mà chưa có cập nhật, check queued vẫn còn sau khi lần chạy được nêu đã xong, hoặc kết quả cuối là **Infrastructure error**.
+
+Gửi kèm PR bị ảnh hưởng, tên check chính xác và dòng cuối phần tóm tắt check: `Job … · attempt n/max · delivery …`.

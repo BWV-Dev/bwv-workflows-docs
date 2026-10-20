@@ -1,0 +1,75 @@
+---
+title: Working on a pull request
+sidebar_position: 4
+description: Read BWV Workflows results, review output pull requests, retry failures, and recreate closed work.
+slug: /pull-requests
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+
+👤 Responsible: Dev & Com
+
+Use this guide when BWV Workflows comments on a pull request. You only need to read the result, review and merge an output pull request, retry a failure, or recreate an output pull request that was closed by mistake. For any other result, tell your Project Leader.
+
+## 1. Read the result
+
+Open the pull request where BWV Workflows reported the run. Read the latest BWV Workflows comment. Depending on the workflow, this is a status comment for one workflow or a **BWV source groups** tracker with one row per group. The latest `bwv/…` check on the current commit shows the same result and the failed step output when you need it.
+
+Before the pull request is merged, the bot only lists what it will do. Nothing has run yet, so there is nothing for you to do in BWV Workflows. After merge, wait for the comment to update, then use this table:
+
+| You see                                                           | It means                                                        | You do                                                        |
+| ----------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------- |
+| 🔄 **running**                                                    | The bot is working.                                             | Wait for the comment to update.                               |
+| ✅ `#N`                                                           | The output pull request was published.                          | Open it, review it, and merge it when it is ready.            |
+| ❌ **failed**                                                     | A step failed and no automatic attempt remains.                 | Fix the reported problem, then retry.                         |
+| `#N (closed)`                                                     | The output pull request was closed without a merge.             | Recreate it if it was closed by mistake.                      |
+| **Waiting for quota** · _Retrying automatically around HH:MM UTC_ | The bot has paused for the quota and scheduled another attempt. | Do nothing. The bot retries by itself; do not tick **Retry**. |
+| Anything else                                                     | Your Project Leader needs to check the less common result.      | Tell your Project Leader.                                     |
+
+These are the comments for the running, published, failed, and closed results shown above:
+
+<GitHubComment sample="status-running" author="BWV Workflows" />
+
+<GitHubComment sample="translation-tracker-published" author="BWV Workflows" />
+
+<GitHubComment
+  sample="translation-tracker-failed-with-retry"
+  author="BWV Workflows"
+/>
+
+<GitHubComment
+  sample="translation-tracker-closed-output-pr"
+  author="BWV Workflows"
+/>
+
+## 2. Review and merge the output pull request
+
+Open every output pull request linked as `#N`. Review it with your project's normal process. Dev checks the technical changes. Com checks meaning, terminology, and completeness when the output is a translation.
+
+Make corrections on the output pull request when needed. You may push review commits directly to its branch. On a later update, BWV Workflows either appends work that already contains the current branch tip or, if replacing that tip would discard a person's commit, stops instead of overwriting it.
+
+When the result is correct and approvals are complete, merge the output pull request using your project's usual merge process. A published group is already finished from BWV Workflows' point of view. Do not retry it: a retry of a group that already has an output pull request runs nothing.
+
+## 3. Retry a failure
+
+Retry only after you have fixed the cause shown in the failed step. Use either of these two ways:
+
+1. Open the BWV Workflows status comment or tracker. Expand **Actions** when it is present, then tick **Retry** for the failed workflow or group.
+2. Add `/bwv retry` as a pull request comment to retry everything currently eligible, or add `/bwv retry <name>` to retry the workflow or group whose exact name appears in the comment.
+
+The bot unticks an accepted box and updates the comment as the new run starts. For a command, its 👍 reaction confirms that it accepted the request. Send the request once, then wait for the result.
+
+![The Retry checkbox in an expanded BWV Workflows tracker](/img/screenshots/retry-tracker-checkbox.png)
+
+![A bwv retry command with a thumbs-up reaction from BWV Workflows](/img/screenshots/retry-command-reaction.png)
+
+## 4. Recreate a closed output pull request
+
+Recreate only when `#N (closed)` refers to an output pull request that was closed without merging and you want a fresh one. Use either of these two ways:
+
+1. Open the BWV Workflows status comment or tracker. Expand **Actions** when it is present, then tick **Recreate** for the closed output pull request.
+2. Add `/bwv recreate <name>` as a comment on the source or sync pull request. Use the exact workflow or group name shown by the bot.
+
+Recreate opens a new output pull request; it does not reopen the old one. Review and merge the new pull request in the normal way.
+
+![The Recreate checkbox in an expanded BWV Workflows tracker](/img/screenshots/recreate-tracker-checkbox.png)

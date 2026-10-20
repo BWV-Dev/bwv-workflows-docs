@@ -1,0 +1,87 @@
+---
+title: When Dev & Com report a problem
+sidebar_position: 1
+description: Diagnose uncommon BWV Workflows results reported by Dev & Com.
+slug: /troubleshooting/dev-com-reports
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+
+👤 Responsible: Project Leader
+
+Use this page after Dev & Com have followed [Working on a pull request](/pull-requests) and brought you a result that is not covered there. Ask for the pull request link and the exact `bwv/…` check before changing the workflow.
+
+## Start with the current result
+
+Open the latest commit and find these reports:
+
+- `bwv/<workflow>` summarizes the workflow.
+- `bwv/<workflow>/<group>` reports one source group.
+- The status comment shows one workflow. A **BWV source groups** tracker shows every group from a grouped workflow.
+
+![A workflow check and a source-group check in the pull request Checks view](/img/screenshots/read-checks-status-workflow-group.png)
+
+Use the latest check on the current commit. In a failure, read the ❌ step and expand its output. The displayed output is the end of that step's output, so ask the BWV Workflows maintainers to investigate when it does not contain the cause.
+
+A **planned** tracker before merge is advisory: no step ran, no branch was pushed, and no output pull request was opened. The bot recomputes the groups from the merge result. The **published** tracker is the result to diagnose.
+
+## A retry did not start
+
+Dev & Com use the offered **Retry** box or `/bwv retry [name]`. As Project Leader, you can also open a failed `bwv/<workflow>` or `bwv/<workflow>/<group>` check run and select **Re-run**. The workflow check retries every group the tracker still offers; the group check targets only that group.
+
+![The Re-run action on a failed source-group check](/img/screenshots/retry-check-rerun.png)
+
+Read the bot's answer before asking again:
+
+| Answer                 | Meaning                                                         |
+| ---------------------- | --------------------------------------------------------------- |
+| **queued** or **held** | The request was accepted behind work that is still running.     |
+| **already covered**    | Work already waiting includes this request.                     |
+| **running now**        | That workflow or group is already running; wait for its result. |
+| **running since …**    | The requested follow-up has started.                            |
+
+Only one run of the same lane proceeds at a time. The bot may hold one follow-up behind it and show a queued check run. Do not submit another request while the accepted work is waiting.
+
+A group that already published an output pull request is not retryable. Its Retry box is gone, and `/bwv retry <group>` refuses it. A retry of a published group runs nothing. Review the existing output pull request, or recreate it if it was closed without a merge.
+
+## An output pull request was closed
+
+Closing an output pull request without merging is treated as a decision. An ordinary run or Retry leaves it closed. Dev & Com can tick **Recreate** or use `/bwv recreate <group|workflow>`. A grouped output pull request also has a **Recreate PR** action on its `bwv/<workflow>/<group>` check run.
+
+![The Recreate PR action on a completed source-group check](/img/screenshots/recreate-check-button.png)
+
+The action is valid only while the named pull request is still closed and unmerged. If it was reopened, merged, or already replaced, return to the tracker and use its current row.
+
+The replacement uses the same output branch. A person may push review commits to an open output pull request branch. On a later update, BWV Workflows either appends work that already contains the current branch tip or, if replacing that tip would discard a person's commit, stops instead of overwriting it. During recreation, a branch whose tip contains someone else's commit is blocked before the workflow work runs. Preserve any needed changes, then delete the branch or change `onSuccess.createPullRequest.branch` before asking Dev & Com to recreate again.
+
+Also check the base branch:
+
+- ✅ **already on** means every expected output is already there. Nothing is left to publish.
+- ⏸️ **outputs partly on** means only some expected outputs are there. Resolve the listed files on the base branch, then retry or recreate as offered.
+
+## A merge was skipped or a group needs mapping
+
+<GitHubComment sample="merge-skipped" author="BWV Workflows" />
+
+**merge workflows did not run** means BWV Workflows could not safely identify the merge input. Read the **Skipped** list, resolve the stated condition, then comment `/bwv retry` on the merged pull request. If the same reason returns, send the pull request and check-run details to the BWV Workflows maintainers.
+
+<GitHubComment
+  sample="translation-tracker-needs-mapping"
+  author="BWV Workflows"
+/>
+
+**needs mapping** means more than one source pull request could own a source change. Compare the candidate pull requests and choose the one that owns the change. Then copy the command shown by the tracker:
+
+```text
+/bwv provenance <sha>=<pr>
+```
+
+Use the commit and pull request number from the tracker. The command records that decision and rechecks the merge. Do not guess when the candidates are unclear; ask the BWV Workflows maintainers.
+
+## A check is waiting
+
+**Waiting for quota** with _Retrying automatically around HH:MM UTC_ is automatic. Do not ask Dev & Com to tick **Retry**. The status comment, tracker, and check run update when the attempt resumes.
+
+**Waiting for a retry** means a temporary infrastructure problem has another automatic attempt. If no attempt remains, the check fails with **Infrastructure error**. Escalate to the BWV Workflows maintainers when the displayed retry time has passed by a reasonable delay, a queued check remains after the run it names has finished, or the final result is **Infrastructure error**.
+
+Include the affected pull request, exact check name, and the footer from the check summary: `Job … · attempt n/max · delivery …`.
