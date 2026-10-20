@@ -3,7 +3,7 @@ title: Làm việc với BWV Workflows trên PR
 sidebar_position: 4
 description: Đọc kết quả, review PR kết quả, chạy lại phần bị lỗi và tạo lại PR đã đóng.
 slug: /pull-requests
-source_hash: d14e62b0086f9c1677b279cfef06dd1b5e1b25c558437e33aca3c87b3e822887
+source_hash: 046c5e4b069da7624d0b35d5e8d1283d80be85728361645d6fdf7ffab5e0cd66
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -14,7 +14,7 @@ Dùng hướng dẫn này khi BWV Workflows comment trên một pull request (PR
 
 ## 1. Đọc kết quả
 
-Mở PR nơi BWV Workflows báo kết quả. Đọc comment mới nhất của BWV Workflows. Tùy workflow, đây là comment trạng thái cho một workflow hoặc comment theo dõi **BWV source groups** với một dòng cho mỗi nhóm. Check `bwv/…` mới nhất trên commit hiện tại cho biết cùng một kết quả và có đầu ra của bước bị lỗi khi bạn cần xem.
+Mở PR nơi BWV Workflows báo kết quả. Đọc comment mới nhất của BWV Workflows. Tùy workflow, đây là comment trạng thái cho một workflow hoặc comment theo dõi **BWV source groups** với một dòng cho mỗi nhóm.
 
 Trước khi PR được merge, bot chỉ liệt kê việc nó sẽ làm. Chưa có bước nào chạy, nên bạn chưa cần làm gì trong BWV Workflows. Sau khi merge, chờ comment cập nhật rồi dùng bảng này:
 
@@ -47,13 +47,13 @@ Dưới đây là các comment tương ứng với trạng thái running, publis
 
 Mở mọi PR kết quả được dẫn bằng `#N`. Review theo quy trình bình thường của dự án. Dev kiểm tra thay đổi kỹ thuật. Com kiểm tra ý nghĩa, thuật ngữ và độ đầy đủ khi đầu ra là bản dịch.
 
-Sửa trực tiếp trên PR kết quả khi cần. Bạn có thể push commit review lên nhánh của PR đó. Ở lần cập nhật sau, BWV Workflows hoặc thêm phần việc mà vẫn giữ commit đầu nhánh hiện tại, hoặc dừng nếu thay commit đầu nhánh sẽ làm mất commit của một người.
+Sửa trực tiếp trên PR kết quả khi cần. Bạn có thể push commit thẳng lên nhánh của PR đó. BWV Workflows không bao giờ ghi đè commit của bạn.
 
-Khi kết quả đã đúng và đủ phê duyệt, hãy merge PR kết quả theo quy trình thường dùng của dự án. Với BWV Workflows, một nhóm đã xuất bản là đã xong. Đừng chạy lại nhóm đó: chạy lại một nhóm đã có PR kết quả sẽ không chạy gì cả.
+Khi kết quả đã đúng và đủ phê duyệt, hãy merge PR kết quả theo quy trình thường dùng của dự án. Đừng chạy lại nhóm đã có PR kết quả, vì không còn gì để chạy.
 
 ## 3. Chạy lại khi có lỗi
 
-Chỉ chạy lại sau khi bạn đã sửa nguyên nhân trong bước bị lỗi. Dùng một trong đúng hai cách sau:
+Chỉ chạy lại sau khi bạn đã sửa nguyên nhân trong bước bị lỗi. Có hai cách:
 
 1. Mở comment trạng thái hoặc tracker của BWV Workflows. Mở rộng **Actions** nếu có, rồi chọn **Retry** cho workflow hoặc nhóm bị lỗi.
 2. Comment `/bwv retry` trên PR để chạy lại mọi phần việc hiện đủ điều kiện, hoặc comment `/bwv retry <name>` để chạy lại workflow hay nhóm có tên chính xác như trong comment của bot.
@@ -66,7 +66,7 @@ Bot bỏ dấu chọn ở ô đã chấp nhận và cập nhật comment khi l�
 
 ## 4. Tạo lại PR kết quả đã đóng
 
-Chỉ tạo lại khi `#N (closed)` là PR kết quả đã bị đóng mà chưa merge và bạn muốn có một PR mới. Dùng một trong đúng hai cách sau:
+Chỉ tạo lại khi `#N (closed)` là PR kết quả đã bị đóng mà chưa merge và bạn muốn có một PR mới. Có hai cách:
 
 1. Mở comment trạng thái hoặc tracker của BWV Workflows. Mở rộng **Actions** nếu có, rồi chọn **Recreate** cho PR kết quả đã đóng.
 2. Comment `/bwv recreate <name>` trên PR nguồn hoặc PR đồng bộ. Dùng đúng tên workflow hoặc nhóm mà bot hiển thị.
