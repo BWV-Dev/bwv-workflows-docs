@@ -96,4 +96,4 @@ Keep progress in Git. The planner must recompute completed and remaining work fr
 
 A push that arrives during the run does not start a second job. When the current pass appears finished, the running job checks the branch again. If the branch moved, it merges the new base commits into its working branch and runs another bounded pass.
 
-If the run reaches `maxIterations` while work remains, its published pull requests stay available. The next push or eligible retry starts a new run, and the planner recomputes the remaining work from Git. Follow [Running something again](../pull-requests/retry) when the check offers a retry.
+If the run reaches `maxIterations` while work remains, its published pull requests stay available. The next push or eligible retry starts a new run, and the planner recomputes the remaining work from Git. Send Dev & Com to [Working on a pull request](../pull-requests) when the comment offers a retry.

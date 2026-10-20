@@ -3,7 +3,7 @@ title: translation/sync-cache-completeness
 sidebar_position: 3
 description: Đồng bộ mọi chỉnh sửa bản dịch đã review vào cache và kiểm tra tính đầy đủ.
 slug: /recipes/translation-sync-cache-completeness
-source_hash: 9d5517388a162f3df43b85d42266c0157a8c5598abc9169d81502c750965aad9
+source_hash: 77b4a7133e1ddd74fd2591d1b78fac3532ed3e9ef1d2f23e2f152d76a215fcc6
 ---
 
 import { RecipeInputs } from "@site/src/components/GeneratedReference";
@@ -20,7 +20,7 @@ Dùng step recipe này khi bạn đang tạo workflow dịch tùy chỉnh cho ph
 
 Workflow gọi recipe quyết định khi nào bước này chạy và cách xuất bản thay đổi. Trong ví dụ dưới đây, người review push chỉnh sửa lên nhánh dịch. BWV Workflows chỉ cập nhật các cache `.vi.json` bị ảnh hưởng, kiểm tra chúng rồi commit thay đổi cache trở lại cùng nhánh pull request.
 
-Dev & Com có thể đọc kết quả trong [check run và comment trạng thái](../pull-requests/read-checks-status). Nếu bước thất bại, hãy sửa lỗi tài liệu hoặc cache được báo trước khi làm theo [Chạy lại một tác vụ](../pull-requests/retry).
+Dev & Com có thể đọc kết quả trong [Làm việc với BWV Workflows trên PR](../pull-requests). Nếu bước thất bại, hãy sửa lỗi tài liệu hoặc cache được báo trước khi chạy lại như hướng dẫn tại đó.
 
 ## Điều kiện cần có
 

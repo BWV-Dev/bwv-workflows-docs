@@ -19,7 +19,7 @@ Use this step recipe when you are building a custom translation workflow that le
 
 The calling workflow decides when this step runs and how it publishes changes. In the example below, a reviewer pushes an edit to a translation branch. BWV Workflows updates only the affected `.vi.json` caches, verifies them, and commits the cache changes back to the same pull request branch.
 
-Dev & Com can read the result in [the check run and status comment](../pull-requests/read-checks-status). If it fails, fix the reported document or cache problem before following [Running something again](../pull-requests/retry).
+Dev & Com can read the result in [Working on a pull request](../pull-requests). If it fails, fix the reported document or cache problem before retrying as described there.
 
 ## Prerequisites
 

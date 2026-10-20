@@ -3,7 +3,7 @@ title: common/command-fanout
 sidebar_position: 5
 description: Chạy một skill hoặc command của dự án cho mỗi mục với số tiến trình song song có giới hạn.
 slug: /recipes/common-command-fanout
-source_hash: 9c3077e7e7dc82aa42d83aa4d35cdfd5a13b99b4b90efb035235306775cd17b2
+source_hash: c1736c7616ad2a87840d43400e5dbaed047361d191cac0e5dec87a294d224a68
 ---
 
 import { RecipeInputs } from "@site/src/components/GeneratedReference";
@@ -20,7 +20,7 @@ Dùng step recipe này bên trong workflow hoặc recipe của dự án khi mộ
 
 Người dùng thấy check `bwv/<workflow>` và comment trạng thái của workflow gọi recipe. Bước fan-out hiển thị như một bước của workflow, còn các tiến trình cho từng mục chạy độc lập. PR kết quả, nếu có, do workflow gọi recipe tạo ra chứ không phải recipe này.
 
-Hướng dẫn người review đọc [check run và comment trạng thái](../pull-requests/read-checks-status). Sau khi sửa một mục, dùng cách chạy lại được mô tả trong [Chạy lại một tác vụ](../pull-requests/retry).
+Hướng dẫn người review đọc [Làm việc với BWV Workflows trên PR](../pull-requests). Sau khi sửa một mục, dùng cách chạy lại được mô tả tại đó.
 
 ## Điều kiện cần có
 

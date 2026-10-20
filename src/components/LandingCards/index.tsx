@@ -33,7 +33,7 @@ const cards: Card[] = [
       id: "landingCards.pullRequest.description",
       message: "Read results, retry a run, and recreate closed work.",
     }),
-    to: "/pull-requests/read-checks-status",
+    to: "/pull-requests",
     icon: "✓",
   },
   {

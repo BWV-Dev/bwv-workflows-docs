@@ -1,14 +1,14 @@
 ---
 title: Khắc phục sự cố và câu hỏi thường gặp
 sidebar_position: 7
-description: Xử lý các lỗi cấu hình và workflow pull request thường gặp.
+description: Xử lý các lỗi cấu hình và lần chạy BWV Workflows thường gặp.
 slug: /troubleshooting
-source_hash: 40ee836177beaf9cdda736e8378c71a0cf2af1e4bbbfa88e98adc9e661850b9b
+source_hash: 1803533c3f59ab73005512d0a0594dfbdb5c48689bc8e14f4952ff0c9a22e0a2
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
 
-👤 Phụ trách: Project Leader và Dev & Com
+👤 Phụ trách: Project Leader
 
 Bắt đầu với check `bwv/…` mới nhất trên commit hiện tại. Đọc phần tóm tắt và comment của BWV Workflows trước khi yêu cầu chạy lại.
 
@@ -31,31 +31,13 @@ Dùng [Tự động gợi ý trong editor](./getting-started/editor-autocomplete
 
 Mở bước đã thất bại và xác định tool hoặc đường dẫn mà bước đó cố dùng. Kiểm tra `disallowedTools` của bước hoặc recipe trước; quy tắc từ chối khớp sẽ được ưu tiên. Chỉ thay đổi quy tắc về tool khi bạn thực sự muốn cấp quyền truy cập đó, rồi chạy lại phần việc thất bại.
 
-Xem [Các bước: claude, shell, uses](./configuring/steps) để biết quyền của bước và [Chạy lại một tác vụ](./pull-requests/retry) để biết các cách chạy lại.
+Xem [Các bước: claude, shell, uses](./configuring/steps) để biết quyền của bước. Sau khi sửa nguyên nhân, hãy hướng dẫn Dev & Com đọc [Làm việc với BWV Workflows trên PR](./pull-requests) để chạy lại.
 
-## Đang chờ hạn mức
+## Khi Dev & Com báo vấn đề
 
-Chờ đến thời gian tự động chạy lại hiển thị trong check. Gửi thêm yêu cầu **Retry** (Chạy lại) không làm thời gian chờ kết thúc sớm hơn. Nếu thời gian UTC hiển thị đã qua một khoảng hợp lý mà vẫn không có cập nhật, hãy nhờ BWV Workflows maintainers kiểm tra.
+Hãy bắt đầu từ kết quả họ nhìn thấy, không bắt đầu bằng việc đổi cấu hình. Dùng [Khi Dev & Com báo vấn đề](./troubleshooting/dev-com-reports) để kiểm tra hành động trên check run, yêu cầu đã được chấp nhận nhưng vẫn đang chờ, PR kết quả đã đóng, lần merge bị bỏ qua, việc chọn nguồn, thời gian chờ hạn mức và các lần thử lại do lỗi hạ tầng.
 
-Xem [Chờ hạn mức và các trạng thái bị kẹt khác](./pull-requests/waiting) để biết từng thông báo chờ và hành động tiếp theo.
-
-## Lần merge bị bỏ qua
-
-Mở comment merge-skipped của BWV Workflows và làm theo lý do trong đó. Workflow không chạy vì BWV Workflows không thể xác nhận an toàn input của lần merge hoặc chọn đúng nguồn. Không dùng **Retry** cho đến khi điều kiện được nêu đã được xử lý.
-
-Xem [Khi một lần merge bị bỏ qua hoặc cần chọn nguồn](./pull-requests/merge-skipped).
-
-## Yêu cầu retry của tôi không làm gì
-
-Một nhóm đã được xuất bản không đủ điều kiện để **Retry**. Hãy review PR kết quả hiện có, hoặc dùng **Recreate** (Tạo lại) nếu pull request đó đã đóng mà chưa merge.
-
-Một yêu cầu đã được chấp nhận cũng có thể phải chờ phần việc đang chạy. Đọc dòng yêu cầu trong comment theo dõi (tracker) hoặc check đang xếp hàng, rồi đợi lần chạy được nêu hoàn tất. Xem [Chạy lại một tác vụ](./pull-requests/retry) và [Chờ hạn mức và các trạng thái bị kẹt khác](./pull-requests/waiting).
-
-## PR kết quả đã bị đóng
-
-Một lần chạy thông thường hoặc **Retry** không mở lại PR kết quả đã đóng mà chưa merge. Chỉ dùng hành động **Recreate** được cung cấp khi bạn muốn có một PR kết quả mới.
-
-Xem [Tạo lại pull request đã đóng](./pull-requests/recreate).
+Sau khi xử lý nguyên nhân hoặc xác định đúng hành động, hãy hướng dẫn Dev & Com quay lại [Làm việc với BWV Workflows trên PR](./pull-requests).
 
 ## Tự động gợi ý trong editor không hoạt động
 

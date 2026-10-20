@@ -1,13 +1,13 @@
 ---
 title: Troubleshooting and FAQ
 sidebar_position: 7
-description: Resolve common configuration and pull request workflow problems.
+description: Resolve common BWV Workflows configuration and run problems.
 slug: /troubleshooting
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
 
-👤 Responsible: Project Leader and Dev & Com
+👤 Responsible: Project Leader
 
 Start with the latest `bwv/…` check on the current commit. Read its summary and the BWV Workflows comment before requesting another run.
 
@@ -30,31 +30,13 @@ Use [Editor autocomplete](./getting-started/editor-autocomplete) to catch schema
 
 Open the failed step and identify the tool or path it tried to use. Check the step or recipe's `disallowedTools` first; a matching deny rule wins. Change the tool rules only when that access is intended, then retry the failed work.
 
-See [Steps: claude, shell, uses](./configuring/steps) for step permissions and [Running something again](./pull-requests/retry) for retry actions.
+See [Steps: claude, shell, uses](./configuring/steps) for step permissions. After fixing the cause, send Dev & Com to [Working on a pull request](./pull-requests) for the retry action.
 
-## Waiting for quota
+## When Dev & Com report a problem
 
-Wait for the automatic retry time shown in the check. Sending another Retry request does not make the wait finish sooner. If the displayed UTC time passes without an update after a reasonable delay, ask the BWV Workflows maintainers to investigate.
+Start with the result they see, not with a configuration change. Use [When Dev & Com report a problem](./troubleshooting/dev-com-reports) to diagnose check-run actions, accepted requests that are still waiting, closed output pull requests, merge skips, source mapping, quota waits, and infrastructure retries.
 
-See [Waiting for quota and other stuck states](./pull-requests/waiting) for every waiting message and the next action.
-
-## The merge was skipped
-
-Open the BWV Workflows merge-skipped comment and follow its reason. The workflow did not run because BWV Workflows could not safely confirm the merge input or source mapping. Do not use Retry until the named condition is resolved.
-
-See [When a merge is skipped or needs mapping](./pull-requests/merge-skipped).
-
-## My retry did nothing
-
-A published group is not eligible for Retry. Review its existing output pull request, or use Recreate if that pull request was closed without merging.
-
-An accepted request can also be held behind work already running. Read the tracker request line or queued check and wait for the named run to finish. See [Running something again](./pull-requests/retry) and [Waiting for quota and other stuck states](./pull-requests/waiting).
-
-## The output pull request was closed
-
-A normal run or Retry does not reopen an output pull request that was closed without merging. Use the offered **Recreate** action only when a fresh output pull request is wanted.
-
-See [Recreating a closed pull request](./pull-requests/recreate).
+Send Dev & Com back to [Working on a pull request](./pull-requests) after you have resolved the cause or identified the correct action.
 
 ## Editor autocomplete does not work
 

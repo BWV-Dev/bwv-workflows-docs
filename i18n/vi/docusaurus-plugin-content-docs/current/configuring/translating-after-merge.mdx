@@ -3,7 +3,7 @@ title: Dịch tài liệu sau khi merge
 sidebar_position: 5
 description: Gom tài liệu nguồn đã merge thành nhóm để dịch.
 slug: /configuring/translating-after-merge
-source_hash: c64484e755c245d9d5cb2d128ff38ffa0f349e41b9ac24bc01539b041a59dfac
+source_hash: 820b949cadcc6443c81effee12adfce40cc3914adf306c41f33fac8d658304a6
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -105,7 +105,7 @@ Repository tự chọn phần còn lại của không gian tên nhánh. Ví dụ
 
 ### 4. Hiểu giai đoạn bản xem trước và merge {#4-understand-preview-and-merge-phases}
 
-👤 Phụ trách: Project Leader và Dev & Com
+👤 Phụ trách: Project Leader
 
 Trước khi merge, BWV Workflows tự đăng tracker dự kiến. Bản xem trước gom nhóm theo nhánh đích và nhánh nguồn hiện tại, nhưng không chạy bước, push nhánh hay mở PR kết quả.
 
@@ -113,4 +113,4 @@ Trước khi merge, BWV Workflows tự đăng tracker dự kiến. Bản xem tr�
 
 Sau khi pull request đồng bộ được merge, BWV Workflows tính lại các nhóm từ kết quả merge. Kết quả tại lúc merge là kết quả chính thức. Cùng một tracker chuyển từ **planned** (đã lên kế hoạch) sang **running** (đang chạy), rồi sang **published** (đã xuất bản).
 
-Người review dùng tracker để mở PR kết quả, xem lỗi và yêu cầu chạy lại khi đủ điều kiện. Hãy hướng dẫn Dev & Com đọc [Comment theo dõi bản dịch](../pull-requests/translation-tracker) thay vì ghi lại các thao tác đó trong file workflow.
+Người review dùng tracker để mở PR kết quả, xem lỗi và yêu cầu chạy lại khi đủ điều kiện. Hãy hướng dẫn Dev & Com đọc [Làm việc với BWV Workflows trên PR](../pull-requests) thay vì ghi lại các thao tác đó trong file workflow.

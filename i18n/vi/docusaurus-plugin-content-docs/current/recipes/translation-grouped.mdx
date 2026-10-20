@@ -3,7 +3,7 @@ title: translation/grouped
 sidebar_position: 2
 description: Dịch Markdown tiếng Nhật theo nhóm nguồn và giữ cache đã review luôn đồng bộ.
 slug: /recipes/translation-grouped
-source_hash: f3a534a5a9e129d99e7415774d3f4bfced9483adb84c2672fa62aac25522e605
+source_hash: bee85498fd1a20b19a5c613ed449fdecc71a742a134048b786b9e2f2d0698206
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -17,11 +17,11 @@ Recipe cũng giữ file cache khớp với câu chữ mà người review sửa 
 
 ## Nội dung người dùng thấy trên pull request
 
-Trước khi pull request đồng bộ được merge, BWV Workflows thêm [comment theo dõi bản dịch (tracker)](../pull-requests/translation-tracker) dự kiến. Sau khi merge, cùng tracker đó hiển thị từng nhóm nguồn và pull request được tạo cho nhóm.
+Trước khi pull request đồng bộ được merge, BWV Workflows thêm một comment theo dõi (tracker) dự kiến. Sau khi merge, cùng tracker đó hiển thị từng nhóm nguồn và PR được tạo cho nhóm. Dev & Com đọc tracker theo [Làm việc với BWV Workflows trên PR](../pull-requests).
 
 <GitHubComment sample="translation-tracker-published" author="BWV Workflows" />
 
-Mỗi pull request được tạo đều là draft. Dev & Com review Markdown tiếng Việt ở đó, rồi làm theo [Chạy lại một tác vụ](../pull-requests/retry), [Tạo lại pull request đã đóng](../pull-requests/recreate) hoặc [Khi merge bị bỏ qua hoặc cần chọn nguồn](../pull-requests/merge-skipped) nếu tracker đưa ra hành động tương ứng.
+Mỗi PR được tạo đều là draft. Dev & Com review Markdown tiếng Việt ở đó, rồi làm theo [Làm việc với BWV Workflows trên PR](../pull-requests). Project Leader dùng [Khi Dev & Com báo vấn đề](../troubleshooting/dev-com-reports) cho kết quả tracker ít gặp.
 
 ## Điều kiện cần có
 
@@ -110,11 +110,11 @@ Kiểm tra pull request đã được merge từ `sourceBranch` vào `syncBase` 
 
 ### Một nhóm thất bại vì thiếu đầu ra
 
-Mở check run và xem file được nêu tên. Mỗi nguồn phải tạo cả bản dịch `.vi.md` có cùng cấu trúc và cache `.vi.json`. Sửa nguồn, bảng thuật ngữ hoặc toolkit tùy chỉnh, rồi làm theo [Chạy lại một tác vụ](../pull-requests/retry).
+Mở check run và xem file được nêu tên. Mỗi nguồn phải tạo cả bản dịch `.vi.md` có cùng cấu trúc và cache `.vi.json`. Sửa nguồn, bảng thuật ngữ hoặc toolkit tùy chỉnh, rồi hướng dẫn Dev & Com đọc [Làm việc với BWV Workflows trên PR](../pull-requests).
 
 ### Tracker báo một phần đầu ra đã nằm trên nhánh đích
 
-Đừng chạy lại ngay. Trước tiên, xử lý các file đầu ra được liệt kê trên nhánh đích. Sau đó, dùng hành động mà [comment theo dõi bản dịch](../pull-requests/translation-tracker) đưa ra.
+Đừng chạy lại ngay. Trước tiên, xử lý các file đầu ra được liệt kê trên nhánh đích. Sau đó, dùng [Khi Dev & Com báo vấn đề](../troubleshooting/dev-com-reports) để chọn hành động tiếp theo.
 
 ### Check cache thất bại sau khi người review sửa
 

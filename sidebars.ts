@@ -44,19 +44,7 @@ const sidebars: SidebarsConfig = {
         "configuring/second-repository",
       ],
     },
-    {
-      type: "category",
-      label: "Guides — Working on a pull request",
-      collapsed: false,
-      items: [
-        "pull-requests/read-checks-status",
-        "pull-requests/translation-tracker",
-        "pull-requests/retry",
-        "pull-requests/recreate",
-        "pull-requests/merge-skipped",
-        "pull-requests/waiting",
-      ],
-    },
+    "pull-requests/index",
     {
       type: "category",
       label: "Reference",

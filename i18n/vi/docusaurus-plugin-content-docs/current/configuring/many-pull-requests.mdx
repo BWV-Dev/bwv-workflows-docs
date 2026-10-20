@@ -3,7 +3,7 @@ title: Nhiều pull request từ một lần chạy
 sidebar_position: 6
 description: Lặp lại workflow và xuất bản một pull request gọn, đúng trọng tâm sau mỗi lượt.
 slug: /configuring/many-pull-requests
-source_hash: 347cd646f7b8996e8afbc9715c80476320e73d04bdd3ea6f55446971cb0c4707
+source_hash: 15da4a1e63171a04a8fc1a896c8154aed6587ce76316c0ceb426d034463b1415
 ---
 
 👤 Phụ trách: Project Leader
@@ -97,4 +97,4 @@ Lưu tiến độ trong Git. Bước lập kế hoạch phải tính lại việ
 
 Một lần push đến trong lúc đang chạy sẽ không bắt đầu job thứ hai. Khi lượt hiện tại có vẻ đã xong, job đang chạy sẽ kiểm tra lại nhánh. Nếu nhánh đã thay đổi, job merge các commit mới từ nhánh đích vào nhánh làm việc rồi chạy thêm một lượt có giới hạn.
 
-Nếu lần chạy đạt `maxIterations` khi vẫn còn việc, các pull request đã xuất bản vẫn được giữ nguyên. Lần push tiếp theo hoặc lần chạy lại đủ điều kiện sẽ bắt đầu một lần chạy mới. Bước lập kế hoạch sẽ tính lại việc còn lại từ Git. Làm theo [Chạy lại một tác vụ](../pull-requests/retry) khi check cho phép chạy lại (retry).
+Nếu lần chạy đạt `maxIterations` khi vẫn còn việc, các pull request đã xuất bản vẫn được giữ nguyên. Lần push tiếp theo hoặc lần chạy lại đủ điều kiện sẽ bắt đầu một lần chạy mới. Bước lập kế hoạch sẽ tính lại việc còn lại từ Git. Hãy hướng dẫn Dev & Com đọc [Làm việc với BWV Workflows trên PR](../pull-requests) khi comment cho phép chạy lại (retry).

@@ -16,11 +16,11 @@ The recipe also keeps cache files aligned with wording that reviewers edit on a 
 
 ## What users see on the pull request
 
-Before the sync pull request merges, BWV Workflows adds a planned [translation tracker](../pull-requests/translation-tracker). After the merge, the same tracker shows each source group and its generated pull request.
+Before the sync pull request merges, BWV Workflows adds a planned tracker. After the merge, the same tracker shows each source group and its generated pull request. Dev & Com read it with [Working on a pull request](../pull-requests).
 
 <GitHubComment sample="translation-tracker-published" author="BWV Workflows" />
 
-Each generated pull request is a draft. Dev & Com review the Vietnamese Markdown there, then follow [Running something again](../pull-requests/retry), [Recreating a closed pull request](../pull-requests/recreate), or [When a merge is skipped or needs mapping](../pull-requests/merge-skipped) when the tracker offers an action.
+Each generated pull request is a draft. Dev & Com review the Vietnamese Markdown there, then follow [Working on a pull request](../pull-requests). Project Leaders use [When Dev & Com report a problem](../troubleshooting/dev-com-reports) for less common tracker results.
 
 ## Prerequisites
 
@@ -109,11 +109,11 @@ Check that the pull request merged from `sourceBranch` into `syncBase` and chang
 
 ### A group fails with missing outputs
 
-Open the check run and inspect the named file. Every source must produce both the mirrored `.vi.md` translation and `.vi.json` cache. Fix the source, glossary, or custom toolkit, then follow [Running something again](../pull-requests/retry).
+Open the check run and inspect the named file. Every source must produce both the mirrored `.vi.md` translation and `.vi.json` cache. Fix the source, glossary, or custom toolkit, then send Dev & Com to [Working on a pull request](../pull-requests).
 
 ### The tracker says outputs are partly on the base branch
 
-Do not retry immediately. Resolve the listed output files on the base branch first, then use the action offered by the [translation tracker](../pull-requests/translation-tracker).
+Do not retry immediately. Resolve the listed output files on the base branch first, then use [When Dev & Com report a problem](../troubleshooting/dev-com-reports) to choose the next action.
 
 ### The cache check fails after a review edit
 
