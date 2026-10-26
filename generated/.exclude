@@ -1,2 +1,3 @@
 # Docs-owned generated files that must not be published.
 recipes/testcase/batch.json
+recipes/translation/translate-step.json

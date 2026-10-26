@@ -1,6 +1,5 @@
 {
   "path": "recipes/translation/sync-cache-completeness.yml",
-  "description": "List every reviewer edit, run the caller's cache-sync command with its existing arguments, and verify the cache learned every edit before anything is published.",
   "inputs": [
     {
       "name": "sourceRoot",

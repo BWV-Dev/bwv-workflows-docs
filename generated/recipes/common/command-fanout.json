@@ -1,6 +1,5 @@
 {
   "path": "recipes/common/command-fanout.yml",
-  "description": "Run one skill or command once per item, each in its own agent process. For a project recipe that wants the shape without writing it out; the caller supplies what runs through `toolkit`.",
   "inputs": [
     {
       "name": "id",

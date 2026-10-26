@@ -354,6 +354,36 @@
                                         "$ref": "#/$defs/recipePlaceholder"
                                       }
                                     ]
+                                  },
+                                  "manual": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "branches": {
+                                            "anyOf": [
+                                              {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "branches"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
                                   }
                                 },
                                 "additionalProperties": false
@@ -894,6 +924,24 @@
                                       },
                                       {
                                         "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "summary": {
+                                    "type": "string"
+                                  },
+                                  "closed": {
+                                    "default": "skip",
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "skip",
+                                          "redo"
+                                        ]
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
                                       }
                                     ]
                                   }

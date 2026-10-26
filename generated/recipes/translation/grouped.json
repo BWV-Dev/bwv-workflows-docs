@@ -1,6 +1,5 @@
 {
   "path": "recipes/translation/grouped.yml",
-  "description": "Translate Japanese Markdown documents into Vietnamese one source pull request at a time after a merged sync pull request, keep the reviewed translation cache in sync on the bot's branches, and gate pull requests on that cache.",
   "inputs": [
     {
       "name": "sourceRoot",

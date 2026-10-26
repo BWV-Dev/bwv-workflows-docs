@@ -1,0 +1,73 @@
+{
+  "path": "recipes/translation/backfill.yml",
+  "inputs": [
+    {
+      "name": "sourceRoot",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "outputRoot",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "glossary",
+      "type": "path",
+      "required": true
+    },
+    {
+      "name": "branches",
+      "type": "array",
+      "required": true
+    },
+    {
+      "name": "branchPrefix",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": false,
+      "default": "sonnet"
+    },
+    {
+      "name": "batchSize",
+      "type": "number",
+      "required": false,
+      "default": 10
+    },
+    {
+      "name": "maxParallel",
+      "type": "number",
+      "required": false,
+      "default": 3
+    },
+    {
+      "name": "maxIterations",
+      "type": "number",
+      "required": false,
+      "default": 10
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": false,
+      "default": {
+        "translate": {
+          "skill": "translate-doc"
+        },
+        "checkOutputs": {
+          "script": "scripts/check-group-outputs.sh"
+        },
+        "plan": {
+          "script": "scripts/plan-translation-backfill.mjs"
+        },
+        "finalize": {
+          "script": "scripts/finalize-translation-batch.mjs"
+        }
+      }
+    }
+  ]
+}

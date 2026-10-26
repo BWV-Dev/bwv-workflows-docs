@@ -142,6 +142,22 @@
                       "branches"
                     ],
                     "additionalProperties": false
+                  },
+                  "manual": {
+                    "type": "object",
+                    "properties": {
+                      "branches": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "branches"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "additionalProperties": false
@@ -422,6 +438,17 @@
                     "type": "integer",
                     "exclusiveMinimum": 0,
                     "maximum": 100
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "closed": {
+                    "default": "skip",
+                    "type": "string",
+                    "enum": [
+                      "skip",
+                      "redo"
+                    ]
                   }
                 },
                 "required": [
