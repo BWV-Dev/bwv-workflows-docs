@@ -5,9 +5,11 @@ description: Repeat a workflow and publish one focused pull request per pass.
 slug: /configuring/many-pull-requests
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
+
 👤 Responsible: Project Leader
 
-Use `loop` when a push can create more work than one focused pull request should contain. Each pass plans one batch, runs every step, and publishes that batch before the next pass starts.
+Use `loop` when a push or manual request can create more work than one focused pull request should contain. Each pass plans one batch, runs every step, and publishes that batch before the next pass starts.
 
 Suppose the fake repository `acme/web-app` updates many generated documentation files after a push. The workflow below uses a repository-owned planner to split that work into focused batches.
 
@@ -16,7 +18,7 @@ Suppose the fake repository `acme/web-app` updates many generated documentation 
 1. [Make the plan step describe one batch](#1-make-the-plan-step-describe-one-batch).
 2. [Repeat while work remains](#2-repeat-while-work-remains).
 3. [Use a different branch for every batch](#3-use-a-different-branch-for-every-batch).
-4. [Design resumable progress](#4-design-resumable-progress).
+4. [Resume from pending batches](#4-resume-from-pending-batches).
 
 ## Step-by-Step Instructions
 
@@ -44,6 +46,7 @@ workflows:
     loop:
       while: ${{ steps.plan.output.remaining > 0 }}
       maxIterations: 20
+      closed: skip
     steps:
       - id: plan
         name: Plan the next batch
@@ -66,7 +69,7 @@ workflows:
 
 For example, the planner can return `{"batchId":"account-login","files":["docs/specs/account/login.md"],"remaining":3}`. Keep the script deterministic: the same Git state should produce the same plan.
 
-`loop` requires an `on.push` trigger. A pull request run has separate head and base branches, so it cannot safely cut later batches from one consistent branch.
+`loop` requires an `on.push` or `on.manual` trigger. A pull request run has separate head and base branches, so it cannot safely cut later batches from one consistent branch.
 
 ### 2. Repeat while work remains
 
@@ -88,12 +91,23 @@ Do not derive the identifier only from a remaining count. A new push can change 
 
 Each successful pass opens its own pull request. Reviewers can work on earlier batches while the running job plans later ones.
 
-### 4. Design resumable progress
+### 4. Resume from pending batches
 
 👤 Responsible: Project Leader
 
-Keep progress in Git. The planner must recompute completed and remaining work from repository files and history; BWV Workflows does not store a cursor or last-processed commit for the loop. This lets a stopped run calculate what remains instead of depending on lost process state.
+Keep progress in Git. The planner must recompute completed and remaining work from repository files and history; BWV Workflows does not store a cursor or last-processed commit for the loop.
+
+Before the first pass of every run, BWV Workflows loads the workflow's pending batch pull requests into its private work branch. Open batches are always loaded. Merged batches are already on the base branch. This lets a run that stopped halfway continue from its published batches instead of repeating them.
+
+`loop.closed` controls closed, unmerged batches:
+
+- Keep `closed: skip`, the default, to load them and treat their files as completed.
+- Set `closed: redo` to leave them out and let the planner select their files again.
+
+For a manually triggered loop with `closed: skip`, the hub lists closed batches and shows `/bwv recreate #N`. Comment that command in the same conversation to stop loading that closed batch and let the planner create a replacement. The command has no effect with `closed: redo` because those files are already eligible again.
+
+<GitHubComment sample="manual-run-hub" author="BWV Workflows" />
 
 A push that arrives during the run does not start a second job. When the current pass appears finished, the running job checks the branch again. If the branch moved, it merges the new base commits into its working branch and runs another bounded pass.
 
-If the run reaches `maxIterations` while work remains, its published pull requests stay available. The next push or eligible retry starts a new run, and the planner recomputes the remaining work from Git. Send Dev & Com to [Working on a pull request](../pull-requests) when the comment offers a retry.
+If the run reaches `maxIterations` while work remains, its published pull requests stay available. The next push or manual request starts a new run, loads pending batches, and recomputes the remaining work from Git. Send Dev & Com to [Working on a pull request](../pull-requests) when the comment offers an action.

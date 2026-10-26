@@ -1,9 +1,11 @@
 ---
 title: Triggers
 sidebar_position: 1
-description: Start workflows from pull request and push events.
+description: Start workflows from pull request, push, and manual events.
 slug: /configuring/triggers
 ---
+
+import GitHubComment from "@site/src/components/GitHubComment";
 
 👤 Responsible: Project Leader
 
@@ -14,8 +16,9 @@ every branch that controls a run before enabling its trigger.
 
 1. [Configure a pull request trigger](#1-configure-a-pull-request-trigger).
 2. [Configure a push trigger](#2-configure-a-push-trigger).
-3. [Use both triggers when needed](#3-use-both-triggers-when-needed).
-4. [Merge configuration changes before testing](#4-merge-configuration-changes-before-testing).
+3. [Configure a manual trigger](#3-configure-a-manual-trigger).
+4. [Combine triggers when needed](#4-combine-triggers-when-needed).
+5. [Merge configuration changes before testing](#5-merge-configuration-changes-before-testing).
 
 ## Step-by-Step Instructions
 
@@ -117,12 +120,43 @@ Protect every matching push branch. A push run executes repository content
 from the pushed commit, so that branch must require the same review as other
 code that controls automation. See [Protect your branches](../getting-started/protect-branches).
 
-### 3. Use both triggers when needed
+### 3. Configure a manual trigger
 
 👤 Responsible: Project Leader
 
-Put `pull_request` and `push` under the same `on` block when either event
-should start the same steps:
+Use `on.manual` when a person should start one named workflow from an issue or pull request conversation:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: rebuild-search-index
+    on:
+      manual:
+        branches: [main, "release/*"]
+    steps:
+      - name: Rebuild the search index
+        shell: printf '%s\n' "Rebuild the index for this branch"
+```
+
+A person with repository write access can comment:
+
+```text
+/bwv run rebuild-search-index on main
+```
+
+`branches` is required. Omit `on <branch>` only when the workflow accepts exactly one literal branch name. Include the branch when the list has several entries or a glob.
+
+The conversation receives a manual-run hub comment. The requested branch tip receives the `bwv/<workflow>` check run. The hub links the check and shows the final result:
+
+<GitHubComment sample="manual-run-hub" author="BWV Workflows" />
+
+A manual request shares the branch's push lane. A push run and a manual run on the same branch never run at the same time; the later request waits and then uses the current branch tip. The worker checks again that the workflow still declares `on.manual` and that the branch still matches before it starts.
+
+### 4. Combine triggers when needed
+
+👤 Responsible: Project Leader
+
+Put more than one trigger under the same `on` block when those events should start the same steps:
 
 ```yaml title=".bwv/workflows.yml"
 version: 1
@@ -141,10 +175,9 @@ workflows:
         shell: ./.bwv/scripts/check-specs.sh docs/specs
 ```
 
-At least one of the two trigger kinds is required. When both are present, each
-event is matched only against its own trigger block.
+At least one of `pull_request`, `push`, or `manual` is required. When several are present, each event is matched only against its own trigger block.
 
-### 4. Merge configuration changes before testing
+### 5. Merge configuration changes before testing
 
 👤 Responsible: Project Leader
 
@@ -156,6 +189,8 @@ update a separate pull request to test them.
 For a push run, BWV Workflows reads the configuration from the pushed commit
 on the target branch. A new push trigger therefore starts applying after the
 configuration reaches a branch matched by `on.push.branches`.
+
+For a manual run, BWV Workflows reads the configuration from the requested branch tip. A new manual trigger starts applying after the configuration reaches a branch matched by `on.manual.branches`.
 
 See [Your first workflow](../getting-started/first-workflow) for a complete
 merge-and-test sequence.

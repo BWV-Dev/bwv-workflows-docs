@@ -35,6 +35,7 @@ const sidebars: SidebarsConfig = {
           items: [
             "recipes/translation-grouped",
             "recipes/translation-sync-cache-completeness",
+            "recipes/translation-backfill",
             "recipes/common-command-fanout",
           ],
         },

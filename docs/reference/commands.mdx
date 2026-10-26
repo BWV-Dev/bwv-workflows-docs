@@ -7,12 +7,12 @@ slug: /reference/commands
 
 import { Commands } from "@site/src/components/GeneratedReference";
 
-👤 Responsible: Dev & Com
+👤 Responsible: Project Leader and Dev & Com
 
-Type a command as a new line in the **Conversation** tab of the pull request. Start the line with `/bwv`; text that only mentions or quotes a command does not run it.
+Type a command as a new line in an issue or pull request conversation. Start the line with `/bwv`; text that only mentions or quotes a command does not run it. Use `/bwv run` only for a workflow that the Project Leader configured with `on.manual`; the other commands act on a pull request result.
 
 BWV Workflows carries out commands only for a user with write access to the repository. An unsupported command may return the command list, but it does not run workflow work. Do not edit an older comment into a command; add a new comment.
 
-Use the exact syntax in the generated table. See [Working on a pull request](../pull-requests) for retry and recreate, and [When Dev & Com report a problem](../troubleshooting/dev-com-reports) for provenance and uncommon results.
+Use the exact syntax in the generated table. See [Triggers](../configuring/triggers) for manual runs, [Working on a pull request](../pull-requests) for retry and recreate, and [When Dev & Com report a problem](../troubleshooting/dev-com-reports) for provenance and uncommon results.
 
 <Commands />

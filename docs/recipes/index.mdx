@@ -12,14 +12,16 @@ Use an official recipe when its trigger and output match the process in your rep
 | Recipe                                                                              | What it does                                                                                                                             | Trigger                                                                                                        | Who reviews the output                                                                       |
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | [translation/grouped](/recipes/translation-grouped)                                 | Translates Japanese Markdown into Vietnamese, one source group per draft pull request, and keeps the reviewed translation cache aligned. | A merged sync pull request, a push to a translation branch, or a pull request that changes translation output. | Dev & Com review each translation pull request. BWV Workflows verifies its cache.            |
+| [translation/backfill](/recipes/translation-backfill)                               | Translates documents that existed before the normal translation workflow was enabled, one manual batch pull request at a time.           | A person starts it with `/bwv run`.                                                                            | Dev & Com review each batch pull request.                                                    |
 | [translation/sync-cache-completeness](/recipes/translation-sync-cache-completeness) | Finds reviewer edits, updates only the affected translation caches, and verifies that every edit was recorded.                           | The calling workflow decides. `translation/grouped` calls it after a push to a translation branch.             | BWV Workflows verifies the cache; Dev & Com continue reviewing the translation pull request. |
 | [common/command-fanout](/recipes/common-command-fanout)                             | Runs one project skill or command for every item, with separate processes and bounded parallelism.                                       | The calling workflow decides.                                                                                  | The reviewers of the calling workflow review its output.                                     |
 
 ## Choose a recipe
 
 1. **Project Leader:** Choose `translation/grouped` for the complete translation process. Do not add `translation/sync-cache-completeness` separately unless you are building your own translation workflow.
-2. **Project Leader:** Choose `common/command-fanout` inside a project recipe when the same project command must run independently for several items.
-3. **Project Leader:** Open the recipe page, check its prerequisites, and copy the complete `uses` line ending in `@v1`.
+2. **Project Leader:** Add `translation/backfill` when documents already existed before the grouped translation process was enabled.
+3. **Project Leader:** Choose `common/command-fanout` inside a project recipe when the same project command must run independently for several items.
+4. **Project Leader:** Open the recipe page, check its prerequisites, and copy the complete `uses` line ending in `@v1`.
 
 :::tip
 Start with each recipe's default toolkit. Override a toolkit only when your repository already has skills or scripts that meet the complete toolkit contract.

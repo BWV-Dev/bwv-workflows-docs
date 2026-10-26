@@ -1,0 +1,114 @@
+---
+title: translation/backfill
+sidebar_position: 4
+description: Manually translate documents that existed before the normal translation workflow was enabled.
+slug: /recipes/translation-backfill
+---
+
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
+👤 Responsible: Project Leader
+
+Use this workflow recipe to create the first Vietnamese translation of documents that already exist. Start it manually. Each pass selects untranslated documents, translates them in parallel, and opens one draft batch pull request.
+
+## Workflow Summary
+
+1. [Prepare the repository](#1-prepare-the-repository).
+2. [Add the workflow](#2-add-the-workflow).
+3. [Start the backfill](#3-start-the-backfill).
+4. [Continue after a stop](#4-continue-after-a-stop).
+
+## Step-by-Step Instructions
+
+### 1. Prepare the repository
+
+👤 Responsible: Project Leader
+
+- Keep the Japanese Markdown sources under one folder, such as `docs/specs`.
+- Choose a mirrored output folder, such as `docs_vn/specs`.
+- Add a Markdown glossary, such as `docs/glossary.md`.
+- Use the same branch prefix as `translation/grouped` so its cache-sync workflow covers backfill branches.
+- Ask the BWV Workflows maintainers to make `BWV-Dev/bwv-workflows-recipes` available to the repository.
+
+The default recipe writes one `.vi.md` translation and one `.vi.json` cache for every source document.
+
+### 2. Add the workflow
+
+👤 Responsible: Project Leader
+
+Add this caller to `.bwv/workflows.yml` on the branch that will receive the batch pull requests:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: translation-backfill
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/backfill.yml@v1
+    with:
+      sourceRoot: docs/specs
+      outputRoot: docs_vn/specs
+      glossary: docs/glossary.md
+      branches: [main]
+      branchPrefix: bwv/translate
+      batchSize: 10
+      maxParallel: 3
+      maxIterations: 10
+```
+
+Keep the official `@v1` reference shown above. The recipe workflow is named `<caller>/backfill`, so this example creates `translation-backfill/backfill`.
+
+### 3. Start the backfill
+
+👤 Responsible: Project Leader
+
+Open an issue or pull request conversation and comment:
+
+```text
+/bwv run translation-backfill/backfill
+```
+
+The branch may be omitted because `branches` contains one literal name. Add `on <branch>` when the recipe accepts several branches or a glob.
+
+Read the manual-run hub in that conversation. It links the `bwv/translation-backfill/backfill` check and lists each published batch pull request. Send each batch to Dev & Com for normal review and merge.
+
+### 4. Continue after a stop
+
+👤 Responsible: Project Leader
+
+Progress lives in Git. A later run loads open batches and, by default, closed batches before planning more documents. It does not translate those documents again.
+
+If a closed batch should be replaced, copy its `/bwv recreate #N` command from the hub. The next run stops loading that batch, plans its unfinished documents again, and opens a new pull request for the next completed batch.
+
+If the run waits for quota, do nothing. A completed batch is published before the wait. The automatic retry loads that batch and continues with the remaining documents.
+
+## Generated input reference
+
+<RecipeInputs recipe="translation/backfill" />
+
+## Inputs explained
+
+| Input           | Meaning                                                                                                      | Example            |
+| --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------ |
+| `sourceRoot`    | Root folder of the Japanese `.md` source tree.                                                               | `docs/specs`       |
+| `outputRoot`    | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                        | `docs_vn/specs`    |
+| `glossary`      | Markdown file containing project terms and translation rules.                                                | `docs/glossary.md` |
+| `branches`      | Branches on which people may start the workflow and against which batch pull requests are opened.            | `[main]`           |
+| `branchPrefix`  | Prefix for deterministic backfill batch branches.                                                            | `bwv/translate`    |
+| `model`         | Model used by each translation process.                                                                      | `sonnet`           |
+| `batchSize`     | Documents planned for one batch pull request. Defaults to `10`; maximum `20`.                                | `10`               |
+| `maxParallel`   | Translation processes allowed at once. Defaults to `3`; maximum `20`.                                        | `3`                |
+| `maxIterations` | Maximum batches attempted in one run. Defaults to `10`; maximum `100`.                                       | `10`               |
+| `toolkit`       | Complete replacement for the translation, output check, planner, and finalizer. Omit it to use the defaults. | Omitted            |
+
+## Common problems
+
+### The command says the workflow is not manually runnable
+
+Confirm that the requested branch matches `branches` and that the workflow configuration has reached that branch. Use the full recipe workflow name: `translation-backfill/backfill`.
+
+### A document is missing from a batch
+
+The planner selects only source documents without a translation in the current work tree. Check whether the `.vi.md` output already exists or a pending batch already contains it.
+
+### A batch publishes fewer documents than planned
+
+The finalizer keeps only documents whose translation and cache both pass the output check. Read the failed step, fix the source, glossary, or custom toolkit, then start another run.

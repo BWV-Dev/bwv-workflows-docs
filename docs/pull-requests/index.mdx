@@ -70,6 +70,8 @@ Recreate only when `#N (closed)` refers to an output pull request that was close
 1. Open the BWV Workflows status comment or tracker. Expand **Actions** when it is present, then tick **Recreate** for the closed output pull request.
 2. Add `/bwv recreate <name>` as a comment on the source or sync pull request. Use the exact workflow or group name shown by the bot.
 
+If a manual-run hub lists a closed loop batch, use the same comment action: copy the `/bwv recreate #N` command shown beside that batch.
+
 Recreate opens a new output pull request; it does not reopen the old one. Review and merge the new pull request in the normal way.
 
 ![The Recreate checkbox in an expanded BWV Workflows tracker](/img/screenshots/recreate-tracker-checkbox.png)

@@ -52,6 +52,8 @@ Closing an output pull request without merging is treated as a decision. An ordi
 
 The action is valid only while the named pull request is still closed and unmerged. If it was reopened, merged, or already replaced, return to the tracker and use its current row.
 
+For a manually triggered loop, the hub shows `/bwv recreate #N` beside each loaded closed batch. Run that command in the same conversation. With the default `loop.closed: skip`, the next run stops loading that batch so the planner can select its unfinished files again; with `closed: redo`, closed batches are already eligible and the command has no effect.
+
 The replacement uses the same output branch. A person may push review commits to an open output pull request branch. On a later update, BWV Workflows either appends work that already contains the current branch tip or, if replacing that tip would discard a person's commit, stops instead of overwriting it. During recreation, a branch whose tip contains someone else's commit is blocked before the workflow work runs. Preserve any needed changes, then delete the branch or change `onSuccess.createPullRequest.branch` before asking Dev & Com to recreate again.
 
 Also check the base branch:
@@ -80,7 +82,9 @@ Use the commit and pull request number from the tracker. The command records tha
 
 ## A check is waiting
 
-**Waiting for quota** with _Retrying automatically around HH:MM UTC_ is automatic. Do not ask Dev & Com to tick **Retry**. The status comment, tracker, and check run update when the attempt resumes.
+**Waiting for quota** with _Retrying automatically around HH:MM UTC_ is automatic. Do not ask Dev & Com to tick **Retry**. A pass or group that finished before the stop is published first and remains linked in the report. The automatic retry resumes the remaining work and skips that published output.
+
+<GitHubComment sample="check-run-waiting-for-quota" author="BWV Workflows" />
 
 **Waiting for a retry** means a temporary infrastructure problem has another automatic attempt. If no attempt remains, the check fails with **Infrastructure error**. Escalate to the BWV Workflows maintainers when the displayed retry time has passed by a reasonable delay, a queued check remains after the run it names has finished, or the final result is **Infrastructure error**.
 
