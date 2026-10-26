@@ -50,6 +50,17 @@ export function readSourceHash(value) {
   return undefined;
 }
 
+export async function configuredLocales(root) {
+  const source = normalizeLf(
+    await readFile(path.join(root, "docusaurus.config.ts")),
+  );
+  const match = source.match(/\blocales:\s*\[([^\]]*)\]/u);
+  if (!match) {
+    throw new Error("Could not read i18n.locales from docusaurus.config.ts");
+  }
+  return [...match[1].matchAll(/["']([^"']+)["']/gu)].map((entry) => entry[1]);
+}
+
 export async function checkI18n(root, { missingOnly = false } = {}) {
   const docsRoot = path.join(root, DOCS_DIRECTORY);
   const viRoot = path.join(root, VI_DOCS_DIRECTORY);
@@ -110,18 +121,16 @@ async function main() {
   }
 
   const missingOnly = args.includes("--missing-only");
-  const allowMissing = process.env.I18N_ALLOW_MISSING === "1";
+  const locales = await configuredLocales(process.cwd());
+  if (!locales.includes("vi")) {
+    console.log("[check-i18n] Skipped: Vietnamese locale is not enabled.");
+    return;
+  }
   const result = await checkI18n(process.cwd(), { missingOnly });
 
   if (result.missing.length > 0) {
     list("Missing Vietnamese page(s):", result.missing);
-    if (allowMissing) {
-      console.warn(
-        "[check-i18n] I18N_ALLOW_MISSING=1: allowing missing pages for this local build only.",
-      );
-    } else {
-      process.exitCode = 1;
-    }
+    process.exitCode = 1;
   }
 
   if (!missingOnly && result.invalid.length > 0) {

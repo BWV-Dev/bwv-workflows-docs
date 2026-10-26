@@ -14,7 +14,7 @@ const config: Config = {
   noIndex: true,
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "vi"],
+    locales: ["en"],
     localeConfigs: {
       en: {
         label: "English",
@@ -84,7 +84,6 @@ const config: Config = {
           label: "Reference",
           position: "left",
         },
-        { type: "localeDropdown", position: "right" },
         { type: "search", position: "right" },
       ],
     },

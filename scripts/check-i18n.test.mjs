@@ -6,6 +6,7 @@ import test from "node:test";
 
 import {
   checkI18n,
+  configuredLocales,
   normalizeLf,
   readSourceHash,
   sourceHash,
@@ -35,6 +36,15 @@ test("reads source_hash only from front matter", () => {
   const hash = "a".repeat(64);
   assert.equal(readSourceHash(`---\nsource_hash: ${hash}\n---\nText`), hash);
   assert.equal(readSourceHash(`Text\nsource_hash: ${hash}`), undefined);
+});
+
+test("reads the enabled locales from the Docusaurus configuration", async (t) => {
+  const root = await fixture(t);
+  await writeFile(
+    path.join(root, "docusaurus.config.ts"),
+    'export default { i18n: { locales: ["en"] } };\n',
+  );
+  assert.deepEqual(await configuredLocales(root), ["en"]);
 });
 
 test("reports missing and stale Vietnamese pages", async (t) => {
