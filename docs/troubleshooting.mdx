@@ -47,8 +47,9 @@ different route instead of waiting for approval.
 Change the tool rules only when that access is intended. Use
 `permissionDenials: warn` only when a later deterministic gate verifies the
 output. A warned denial appears on the step row as
-`⚠️ Claude was denied Bash ×2; continued (permissionDenials: warn)`. A non-zero
-Claude CLI exit still fails the step.
+`⚠️ Claude was denied Bash ×2; continued (permissionDenials: warn)`. The Notes
+cell renders that text as a code span. A non-zero Claude CLI exit still fails
+the step.
 
 See [Steps: claude, shell, uses](./configuring/steps) for step permissions. After fixing the cause, send Dev & Com to [Working on a pull request](./pull-requests) for the retry action.
 

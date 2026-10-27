@@ -250,6 +250,15 @@
                           "exclusiveMinimum": 0,
                           "maximum": 9007199254740991
                         },
+                        "permissionDenials": {
+                          "default": "fail",
+                          "description": "Chooses whether a denied Claude tool fails the step or only adds a warning; defaults to fail.",
+                          "type": "string",
+                          "enum": [
+                            "fail",
+                            "warn"
+                          ]
+                        },
                         "claude": {
                           "type": "object",
                           "properties": {
