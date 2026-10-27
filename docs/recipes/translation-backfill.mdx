@@ -28,6 +28,7 @@ Use this workflow recipe to create the first Vietnamese translation of documents
 - Choose a mirrored output folder, such as `docs_vn/specs`.
 - Add a Markdown glossary, such as `docs/glossary.md`.
 - Use the same branch prefix as `translation/grouped` so its cache-sync workflow covers backfill branches.
+- Use a BWV Workflows engine release that supports `ignorePaths` without negated `!` globs. The current translation recipe uses that path-filter contract.
 - Ask the BWV Workflows maintainers to make `BWV-Dev/bwv-workflows-recipes` available to the repository.
 
 The default recipe writes one `.vi.md` translation and one `.vi.json` cache for every source document.
@@ -42,7 +43,7 @@ Add this caller to `.bwv/workflows.yml` on the branch that will receive the batc
 version: 1
 workflows:
   - name: translation-backfill
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/backfill.yml@v1
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/backfill.yml@translation/v1
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -54,7 +55,7 @@ workflows:
       maxIterations: 10
 ```
 
-Keep the official `@v1` reference shown above. The recipe workflow is named `<caller>/backfill`, so this example creates `translation-backfill/backfill`.
+Keep the official `@translation/v1` reference shown above. The recipe workflow is named `<caller>/backfill`, so this example creates `translation-backfill/backfill`.
 
 ### 3. Start the backfill
 
@@ -86,18 +87,33 @@ If the run waits for quota, do nothing. A completed batch is published before th
 
 ## Inputs explained
 
-| Input           | Meaning                                                                                                      | Example            |
-| --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------ |
-| `sourceRoot`    | Root folder of the Japanese `.md` source tree.                                                               | `docs/specs`       |
-| `outputRoot`    | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                        | `docs_vn/specs`    |
-| `glossary`      | Markdown file containing project terms and translation rules.                                                | `docs/glossary.md` |
-| `branches`      | Branches on which people may start the workflow and against which batch pull requests are opened.            | `[main]`           |
-| `branchPrefix`  | Prefix for deterministic backfill batch branches.                                                            | `bwv/translate`    |
-| `model`         | Model used by each translation process.                                                                      | `sonnet`           |
-| `batchSize`     | Documents planned for one batch pull request. Defaults to `10`; maximum `20`.                                | `10`               |
-| `maxParallel`   | Translation processes allowed at once. Defaults to `3`; maximum `20`.                                        | `3`                |
-| `maxIterations` | Maximum batches attempted in one run. Defaults to `10`; maximum `100`.                                       | `10`               |
-| `toolkit`       | Complete replacement for the translation, output check, planner, and finalizer. Omit it to use the defaults. | Omitted            |
+| Input            | Meaning                                                                                                      | Example                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| `sourceRoot`     | Root folder of the Japanese `.md` source tree.                                                               | `docs/specs`                |
+| `outputRoot`     | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                        | `docs_vn/specs`             |
+| `glossary`       | Markdown file containing project terms and translation rules.                                                | `docs/glossary.md`          |
+| `exclude`        | Source globs omitted from planning and translation. Defaults to `[".git/**"]`; a supplied list replaces it.  | `["docs/specs/archive/**"]` |
+| `branches`       | Branches on which people may start the workflow and against which batch pull requests are opened.            | `[main]`                    |
+| `branchPrefix`   | Prefix for deterministic backfill batch branches.                                                            | `bwv/translate`             |
+| `model`          | Model used by each translation process.                                                                      | `sonnet`                    |
+| `batchSize`      | Documents planned for one batch pull request. Defaults to `10`; maximum `20`.                                | `10`                        |
+| `maxParallel`    | Translation processes allowed at once. Defaults to `3`; maximum `20`.                                        | `3`                         |
+| `timeoutMinutes` | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                           | `40`                        |
+| `maxTurns`       | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                               | `40`                        |
+| `maxBudgetUsd`   | Per-document, per-attempt runaway guard. Defaults to `6`.                                                    | `6`                         |
+| `allowedTools`   | Complete tool list for each translation. Omit it to use the maintained default.                              | Omitted                     |
+| `maxIterations`  | Maximum batches attempted in one run. Defaults to `10`; maximum `100`.                                       | `10`                        |
+| `toolkit`        | Complete replacement for the translation, output check, planner, and finalizer. Omit it to use the defaults. | Omitted                     |
+
+`exclude` patterns are repository-relative globs. If you supply the input,
+include `.git/**` yourself when you want to retain the default sentinel.
+
+:::caution Tool overrides replace the whole list
+`allowedTools` replaces the complete default. Keep `Bash(jq empty:*)` so the
+translation skill can validate cache JSON with `jq empty`. Never add broad
+`Bash`: under `permissionMode: acceptEdits`, it can bypass path restrictions
+expressed through `disallowedTools`. Add only narrow `Bash(<command>:*)` rules.
+:::
 
 ## Common problems
 

@@ -49,10 +49,11 @@ workflows:
         paths: ["docs_vn/specs/**/*.vi.md"]
     steps:
       - id: cache
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@v1
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@translation/v1
         with:
           sourceRoot: docs/specs
           outputRoot: docs_vn/specs
+          exclude: [".git/**"]
           glossary: docs/glossary.md
           model: sonnet
     onSuccess:
@@ -66,7 +67,7 @@ workflows:
         labels: ["bwv-automation"]
 ```
 
-The `cache` caller ID prefixes the nested `drift` step as `cache_drift`. Keep that prefix in the `onSuccess.if` expression and keep the official `@v1` reference shown above.
+The `cache` caller ID prefixes the nested `drift` step as `cache_drift`. Keep that prefix in the `onSuccess.if` expression and keep the official `@translation/v1` reference shown above.
 
 ## Generated input reference
 
@@ -74,13 +75,29 @@ The `cache` caller ID prefixes the nested `drift` step as `cache_drift`. Keep th
 
 ## Inputs explained
 
-| Input        | Meaning                                                                                                                                        | Example            |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `sourceRoot` | Root folder of the original Japanese `.md` files.                                                                                              | `docs/specs`       |
-| `outputRoot` | Root folder containing mirrored `.vi.md` translations and `.vi.json` caches.                                                                   | `docs_vn/specs`    |
-| `glossary`   | Markdown file containing project terms and rules for matching source and translation segments.                                                 | `docs/glossary.md` |
-| `model`      | Model used by the cache-sync skill.                                                                                                            | `sonnet`           |
-| `toolkit`    | Complete replacement for the default cache-sync skill, drift checker, and protected edit-plan checker. Omit it to use the maintained defaults. | Omitted            |
+| Input            | Meaning                                                                                                                                        | Example            |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `sourceRoot`     | Root folder of the original Japanese `.md` files.                                                                                              | `docs/specs`       |
+| `outputRoot`     | Root folder containing mirrored `.vi.md` translations and `.vi.json` caches.                                                                   | `docs_vn/specs`    |
+| `exclude`        | Required source globs whose translations and caches are not checked or synchronized.                                                           | `[".git/**"]`      |
+| `glossary`       | Markdown file containing project terms and rules for matching source and translation segments.                                                 | `docs/glossary.md` |
+| `model`          | Model used by the cache-sync skill.                                                                                                            | `sonnet`           |
+| `timeoutMinutes` | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                                                             | `40`               |
+| `maxTurns`       | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                                                                 | `40`               |
+| `maxBudgetUsd`   | Per-document, per-attempt runaway guard. Defaults to `6`.                                                                                      | `6`                |
+| `allowedTools`   | Complete tool list for each cache synchronization. Omit it to use the maintained default.                                                      | Omitted            |
+| `toolkit`        | Complete replacement for the default cache-sync skill, drift checker, and protected edit-plan checker. Omit it to use the maintained defaults. | Omitted            |
+
+`exclude` patterns are repository-relative globs. This lower-level step recipe
+requires the list explicitly; use `[".git/**"]` when you have no other source
+exclusions.
+
+:::caution Tool overrides replace the whole list
+`allowedTools` replaces the complete default. Keep `Bash(jq empty:*)` so the
+cache-sync skill can validate cache JSON with `jq empty`. Never add broad
+`Bash`: under `permissionMode: acceptEdits`, it can bypass path restrictions
+expressed through `disallowedTools`. Add only narrow `Bash(<command>:*)` rules.
+:::
 
 ## Common problems
 
