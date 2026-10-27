@@ -105,8 +105,8 @@ If the run waits for quota, do nothing. A completed batch is published before th
 | `maxIterations`  | Maximum batches attempted in one run. Defaults to `10`; maximum `100`.                                       | `10`                        |
 | `toolkit`        | Complete replacement for the translation, output check, planner, and finalizer. Omit it to use the defaults. | Omitted                     |
 
-`exclude` patterns are repository-relative globs. If you supply the input,
-include `.git/**` yourself when you want to retain the default sentinel.
+`exclude` patterns are repository-relative globs. A supplied list replaces the
+default and must not be empty; omit the input to exclude nothing.
 
 :::caution Tool overrides replace the whole list
 `allowedTools` replaces the complete default. Keep `Bash(jq empty:*)` so the

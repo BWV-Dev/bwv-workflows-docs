@@ -84,8 +84,8 @@ The recipe owns its triggers and uses its default toolkit when `toolkit` is omit
 | `syncCacheAllowedTools` | Complete tool list for each cache synchronization. Omit it to use the maintained default.                                                  | Omitted                     |
 | `toolkit`               | Complete replacement for the default translation, cache-sync, output-check, and drift-check tools. Omit it to use the maintained defaults. | Omitted                     |
 
-`exclude` patterns are repository-relative globs. If you supply the input,
-include `.git/**` yourself when you want to retain the default sentinel.
+`exclude` patterns are repository-relative globs. A supplied list replaces the
+default and must not be empty; omit the input to exclude nothing.
 
 :::caution Tool overrides replace the whole list
 Both tool inputs replace their complete defaults. Keep `Bash(jq empty:*)` so
