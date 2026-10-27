@@ -63,6 +63,15 @@ Every configured filter must pass:
 Branch and path entries are glob patterns. Paths are repository-relative and
 include dotfiles when the glob matches them.
 
+Do not start a `paths` or `ignorePaths` entry with `!`. Both fields reject
+negated globs. Put exclusions in `ignorePaths` without `!`; `paths` entries are
+alternatives, not an ordered GitHub Actions pattern list.
+
+`ignorePaths` may be used without `paths`. In that case every changed file is
+initially in scope, and the workflow runs when at least one changed file is not
+ignored. BWV Workflows reads the pull request's changed-file list to make this
+decision.
+
 Use a merged-close trigger for work that must start only after a pull request
 lands:
 

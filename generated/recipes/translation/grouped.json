@@ -4,49 +4,116 @@
     {
       "name": "sourceRoot",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Repository-relative root of Japanese Markdown source files."
     },
     {
       "name": "outputRoot",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Repository-relative root for mirrored Vietnamese Markdown translations and JSON caches."
     },
     {
       "name": "glossary",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Markdown file containing project terminology and translation rules."
+    },
+    {
+      "name": "exclude",
+      "type": "array",
+      "required": false,
+      "default": [
+        ".git/**"
+      ],
+      "description": "Repository-relative globs of source documents to leave out of translation and cache checks."
     },
     {
       "name": "syncBase",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Base branch that receives the merged sync pull request and generated translation pull requests."
     },
     {
       "name": "sourceBranch",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Head branch whose merged pull request into syncBase starts translation."
     },
     {
       "name": "gateBases",
       "type": "array",
-      "required": true
+      "required": true,
+      "description": "Pull request base branches on which translation caches must remain synchronized."
     },
     {
       "name": "branchPrefix",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Prefix for generated translation branches."
     },
     {
       "name": "model",
       "type": "string",
       "required": false,
-      "default": "sonnet"
+      "default": "sonnet",
+      "description": "Model used by translation and cache-synchronization skills."
     },
     {
       "name": "maxFilesPerGroup",
       "type": "number",
       "required": false,
-      "default": 3
+      "default": 3,
+      "description": "Maximum source files in a group and maximum concurrent translations for that group."
+    },
+    {
+      "name": "timeoutMinutes",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Time limit in minutes for each document's translation or cache sync, per attempt."
+    },
+    {
+      "name": "maxTurns",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Maximum Claude turns for each document's translation or cache sync, per attempt."
+    },
+    {
+      "name": "maxBudgetUsd",
+      "type": "number",
+      "required": false,
+      "default": 6,
+      "description": "Runaway guard in USD (API list price) for each document's translation or cache sync, per attempt."
+    },
+    {
+      "name": "allowedTools",
+      "type": "array",
+      "required": false,
+      "default": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Bash(git log:*)",
+        "Bash(git diff:*)",
+        "Bash(jq empty:*)"
+      ],
+      "description": "Claude tools of the translate step; replaces the whole default list. Keep Bash(jq empty:*) and add only narrow Bash(<command>:*) rules."
+    },
+    {
+      "name": "syncCacheAllowedTools",
+      "type": "array",
+      "required": false,
+      "default": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Bash(jq empty:*)"
+      ],
+      "description": "Claude tools of the cache-sync step; replaces the whole default list. Keep Bash(jq empty:*) and add only narrow Bash(<command>:*) rules."
     },
     {
       "name": "toolkit",
@@ -65,7 +132,8 @@
         "checkDrift": {
           "script": "scripts/check-cache-drift.sh"
         }
-      }
+      },
+      "description": "Complete replacement for the default translation, cache-sync, output-check, and drift-check tools."
     }
   ]
 }

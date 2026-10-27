@@ -31,6 +31,7 @@ Prepare the target repository before adding the recipe:
 - Add a Markdown glossary, such as `docs/glossary.md`, with project terminology and translation rules. Project rules in this file take priority over the recipe's generic rules.
 - Use a sync branch, such as `docs-sync`, and merge it into the sync base, such as `main`, through a pull request.
 - Protect the sync base and every gate branch so reviewed output cannot bypass the required checks.
+- Use a BWV Workflows engine release that supports `ignorePaths` without negated `!` globs. The current translation recipe uses that path-filter contract.
 - Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
 - Keep spaces out of the configured paths and document paths. The recipe passes these paths as separate command arguments.
 
@@ -43,7 +44,7 @@ version: 1
 
 workflows:
   - name: translate-specs
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@v1
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@translation/v1
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -56,7 +57,7 @@ workflows:
       maxFilesPerGroup: 3
 ```
 
-The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted. Keep the official `@v1` reference shown above.
+The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted. Keep the official `@translation/v1` reference shown above.
 
 ## Generated input reference
 
@@ -64,18 +65,34 @@ The recipe owns its triggers and uses its default toolkit when `toolkit` is omit
 
 ## Inputs explained
 
-| Input              | Meaning                                                                                                                                    | Example             |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
-| `sourceRoot`       | Root folder of the Japanese `.md` source tree.                                                                                             | `docs/specs`        |
-| `outputRoot`       | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                                                      | `docs_vn/specs`     |
-| `glossary`         | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`  |
-| `syncBase`         | Base branch that receives the merged sync pull request and generated translation pull requests.                                            | `main`              |
-| `sourceBranch`     | Head branch of the sync pull request. A merge from this branch into `syncBase` starts grouping.                                            | `docs-sync`         |
-| `gateBases`        | Pull request base branches on which translation and cache changes must pass the cache-in-sync check.                                       | `[main, docs-sync]` |
-| `branchPrefix`     | Prefix for generated translation branches. BWV Workflows adds the sync pull request and group identifiers.                                 | `bwv/translate`     |
-| `model`            | Model used by the translation and cache-sync skills.                                                                                       | `sonnet`            |
-| `maxFilesPerGroup` | Maximum source files in one group and maximum translations run at the same time for that group.                                            | `3`                 |
-| `toolkit`          | Complete replacement for the default translation, cache-sync, output-check, and drift-check tools. Omit it to use the maintained defaults. | Omitted             |
+| Input                   | Meaning                                                                                                                                    | Example                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| `sourceRoot`            | Root folder of the Japanese `.md` source tree.                                                                                             | `docs/specs`                |
+| `outputRoot`            | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                                                      | `docs_vn/specs`             |
+| `glossary`              | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`          |
+| `exclude`               | Source globs omitted from translation and cache checks. Defaults to `[".git/**"]`; a supplied list replaces that sentinel.                 | `["docs/specs/archive/**"]` |
+| `syncBase`              | Base branch that receives the merged sync pull request and generated translation pull requests.                                            | `main`                      |
+| `sourceBranch`          | Head branch of the sync pull request. A merge from this branch into `syncBase` starts grouping.                                            | `docs-sync`                 |
+| `gateBases`             | Pull request base branches on which translation and cache changes must pass the cache-in-sync check.                                       | `[main, docs-sync]`         |
+| `branchPrefix`          | Prefix for generated translation branches. BWV Workflows adds the sync pull request and group identifiers.                                 | `bwv/translate`             |
+| `model`                 | Model used by the translation and cache-sync skills.                                                                                       | `sonnet`                    |
+| `maxFilesPerGroup`      | Maximum source files in one group and maximum translations run at the same time for that group.                                            | `3`                         |
+| `timeoutMinutes`        | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                                                         | `40`                        |
+| `maxTurns`              | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                                                             | `40`                        |
+| `maxBudgetUsd`          | Per-document, per-attempt runaway guard. Defaults to `6`.                                                                                  | `6`                         |
+| `allowedTools`          | Complete tool list for each translation. Omit it to use the maintained default.                                                            | Omitted                     |
+| `syncCacheAllowedTools` | Complete tool list for each cache synchronization. Omit it to use the maintained default.                                                  | Omitted                     |
+| `toolkit`               | Complete replacement for the default translation, cache-sync, output-check, and drift-check tools. Omit it to use the maintained defaults. | Omitted                     |
+
+`exclude` patterns are repository-relative globs. A supplied list replaces the
+default and must not be empty; omit the input to exclude nothing.
+
+:::caution Tool overrides replace the whole list
+Both tool inputs replace their complete defaults. Keep `Bash(jq empty:*)` so
+the skills can validate cache JSON with `jq empty`. Never add broad `Bash`:
+under `permissionMode: acceptEdits`, it can bypass path restrictions expressed
+through `disallowedTools`. Add only narrow `Bash(<command>:*)` rules.
+:::
 
 ## Common problems
 

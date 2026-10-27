@@ -14,6 +14,16 @@
           "type": "string",
           "default": "sonnet"
         },
+        "effort": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
         "maxTurns": {
           "type": "integer",
           "exclusiveMinimum": 0,
@@ -100,13 +110,15 @@
                       "paths": {
                         "type": "array",
                         "items": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^(?!!)"
                         }
                       },
                       "ignorePaths": {
                         "type": "array",
                         "items": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^(?!!)"
                         }
                       }
                     },
@@ -128,13 +140,15 @@
                       "paths": {
                         "type": "array",
                         "items": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^(?!!)"
                         }
                       },
                       "ignorePaths": {
                         "type": "array",
                         "items": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^(?!!)"
                         }
                       }
                     },
@@ -225,6 +239,16 @@
                             },
                             "model": {
                               "type": "string"
+                            },
+                            "effort": {
+                              "type": "string",
+                              "enum": [
+                                "low",
+                                "medium",
+                                "high",
+                                "xhigh",
+                                "max"
+                              ]
                             },
                             "allowedTools": {
                               "type": "array",
@@ -523,7 +547,8 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1
+                      "minLength": 1,
+                      "pattern": "^(?!!)"
                     }
                   },
                   "ignorePaths": {
@@ -531,7 +556,8 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "minLength": 1
+                      "minLength": 1,
+                      "pattern": "^(?!!)"
                     }
                   },
                   "sourceRoot": {
