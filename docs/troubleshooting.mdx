@@ -24,6 +24,12 @@ Check these causes in order:
 
 Open the `bwv/config` check and read the validation message. Fix `.bwv/workflows.yml` or the referenced recipe on the base branch; changing only the pull request head does not change the trusted configuration for that pull request.
 
+When a remote recipe is not found, the message shows the path BWV Workflows
+tried in the source repository. For example, a missing
+`BWV-Dev/bwv-workflows-recipes/translation/missing@translation/v1` reference
+reports `recipes/translation/missing.yml`. Check that this file exists at the
+named ref.
+
 Use [Editor autocomplete](./getting-started/editor-autocomplete) to catch schema errors while editing, then follow [Your first workflow](./getting-started/first-workflow) to merge and test the fix.
 
 ## A step failed with permission denied
@@ -54,5 +60,7 @@ Include these details:
 - The small footer line at the bottom of the check run summary: `Job … · attempt n/max · delivery …`.
 
 The footer identifies the run in the engine logs. Copy the complete line without changing its job, attempt, or delivery values.
+
+When the problem comes from a shared recipe, you can also open an issue or a pull request in `BWV-Dev/bwv-workflows-recipes`. See [Report a problem or contribute a fix](/recipes#report-a-problem-or-contribute-a-fix).
 
 <GitHubComment sample="check-run-failed" author="BWV Workflows" />

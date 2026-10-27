@@ -23,8 +23,10 @@ recipe is specific to one repository, keep it local under `.bwv/recipes/`.
 
 👤 Responsible: Project Leader
 
-Store project recipes under `.bwv/recipes/`. Reference a recipe from
-`.bwv/workflows.yml` with a path that starts with `./.bwv/recipes/`:
+The local `uses` syntax is `./.bwv/recipes/<name>`. It reads the file
+`.bwv/recipes/<name>.yml` from the project. For example, reference
+`.bwv/recipes/review-specs.yml` from `.bwv/workflows.yml` as
+`./.bwv/recipes/review-specs`:
 
 ```yaml title=".bwv/workflows.yml"
 version: 1
@@ -37,14 +39,15 @@ workflows:
         paths: ["docs/specs/**"]
     steps:
       - name: Review the changed specifications
-        uses: ./.bwv/recipes/review-specs.yml
+        uses: ./.bwv/recipes/review-specs
         with:
           source: docs/specs
 ```
 
 A workflow recipe is used from the `workflows` list. A step recipe is used
-inside `steps`, as above. Recipes may use a sibling such as `./check.yml`, but
-local recipe paths must stay inside `.bwv/recipes/`.
+inside `steps`, as above. Inside a recipe, use `./check` to reference the
+sibling file `check.yml`. Local recipe paths must stay inside
+`.bwv/recipes/`.
 
 Commit the recipe before testing. BWV Workflows reads it from the same trusted
 commit as `.bwv/workflows.yml`.
@@ -84,8 +87,13 @@ All shared recipes come from `BWV-Dev/bwv-workflows-recipes`. Copy the complete
 `uses` line from the [Recipe catalog](/recipes). For example:
 
 ```text
-BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@common/v1
+BWV-Dev/bwv-workflows-recipes/common/command-fanout@common/v1
 ```
+
+The remote syntax is `<owner>/<repo>/<family>/<name>@<ref>`. BWV Workflows
+reads that reference from `recipes/<family>/<name>.yml` in the source
+repository at `<ref>`. A repository that authors or hosts shared recipes must
+therefore keep them under its `recipes/` directory.
 
 Each recipe family is versioned independently. Use `@translation/v1` for
 stable translation recipes and `@common/v1` for stable common recipes. The

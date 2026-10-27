@@ -89,7 +89,7 @@ const config: Config = {
     },
     footer: {
       style: "light",
-      copyright: `Copyright © ${new Date().getFullYear()} BWV Workflows.`,
+      copyright: `© ${new Date().getFullYear()} Briswell VietNam Co., Ltd.`,
     },
   },
 };

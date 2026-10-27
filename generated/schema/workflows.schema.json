@@ -4,17 +4,21 @@
   "properties": {
     "version": {
       "type": "number",
-      "const": 1
+      "const": 1,
+      "description": "Selects version 1 of the workflows configuration format."
     },
     "defaults": {
+      "description": "Provides default Claude and timeout settings for workflow steps.",
       "default": {},
       "type": "object",
       "properties": {
         "model": {
+          "description": "Sets the default Claude model; the runtime default is `sonnet`.",
           "type": "string",
           "default": "sonnet"
         },
         "effort": {
+          "description": "Sets the default Claude reasoning effort.",
           "type": "string",
           "enum": [
             "low",
@@ -25,18 +29,21 @@
           ]
         },
         "maxTurns": {
+          "description": "Sets the default maximum Claude turns; the runtime default is 30.",
           "type": "integer",
           "exclusiveMinimum": 0,
           "maximum": 9007199254740991,
           "default": 30
         },
         "timeoutMinutes": {
+          "description": "Sets the default step timeout in minutes; the runtime default is 20.",
           "type": "integer",
           "exclusiveMinimum": 0,
           "maximum": 9007199254740991,
           "default": 20
         },
         "permissionMode": {
+          "description": "Sets the default Claude permission mode; the runtime default is `acceptEdits`.",
           "type": "string",
           "enum": [
             "default",
@@ -48,6 +55,7 @@
           "default": "acceptEdits"
         },
         "maxBudgetUsd": {
+          "description": "Sets the default maximum API budget for Claude steps.",
           "type": "number",
           "exclusiveMinimum": 0
         }
@@ -64,12 +72,14 @@
             "properties": {
               "name": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "description": "Sets the unique workflow name."
               },
               "on": {
                 "type": "object",
                 "properties": {
                   "pull_request": {
+                    "description": "Configures pull request events that run the workflow.",
                     "type": "object",
                     "properties": {
                       "types": {
@@ -77,6 +87,7 @@
                           "opened",
                           "synchronize"
                         ],
+                        "description": "Selects pull request actions and defaults to opened and synchronize.",
                         "minItems": 1,
                         "type": "array",
                         "items": {
@@ -95,12 +106,15 @@
                         "type": "array",
                         "items": {
                           "type": "string"
-                        }
+                        },
+                        "description": "Matches the pull request base branch against these globs."
                       },
                       "merged": {
+                        "description": "Matches closed pull requests by whether they were merged.",
                         "type": "boolean"
                       },
                       "head": {
+                        "description": "Matches the pull request head branch against these globs.",
                         "minItems": 1,
                         "type": "array",
                         "items": {
@@ -108,6 +122,7 @@
                         }
                       },
                       "paths": {
+                        "description": "Runs only when pull request changes include a matching path.",
                         "type": "array",
                         "items": {
                           "type": "string",
@@ -115,6 +130,7 @@
                         }
                       },
                       "ignorePaths": {
+                        "description": "Excludes matching pull request paths from trigger matching.",
                         "type": "array",
                         "items": {
                           "type": "string",
@@ -128,6 +144,7 @@
                     "additionalProperties": false
                   },
                   "push": {
+                    "description": "Configures push events that run the workflow.",
                     "type": "object",
                     "properties": {
                       "branches": {
@@ -135,9 +152,11 @@
                         "type": "array",
                         "items": {
                           "type": "string"
-                        }
+                        },
+                        "description": "Matches the pushed branch against these globs."
                       },
                       "paths": {
+                        "description": "Advises push matching by changed path, but an incomplete file list runs the workflow.",
                         "type": "array",
                         "items": {
                           "type": "string",
@@ -145,6 +164,7 @@
                         }
                       },
                       "ignorePaths": {
+                        "description": "Advises push matching by excluded path, but an incomplete file list runs the workflow.",
                         "type": "array",
                         "items": {
                           "type": "string",
@@ -158,6 +178,7 @@
                     "additionalProperties": false
                   },
                   "manual": {
+                    "description": "Configures branches on which the workflow may be started manually.",
                     "type": "object",
                     "properties": {
                       "branches": {
@@ -165,7 +186,8 @@
                         "type": "array",
                         "items": {
                           "type": "string"
-                        }
+                        },
+                        "description": "Allows manual runs on branches matching these globs."
                       }
                     },
                     "required": [
@@ -174,7 +196,8 @@
                     "additionalProperties": false
                   }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "description": "Configures the events that run this workflow."
               },
               "steps": {
                 "minItems": 1,
@@ -185,19 +208,24 @@
                       "type": "object",
                       "properties": {
                         "id": {
+                          "description": "Assigns an identifier used to read this step's output.",
                           "type": "string",
                           "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
                         },
                         "name": {
+                          "description": "Sets the display name of the step.",
                           "type": "string"
                         },
                         "if": {
+                          "description": "Runs the step only when this runtime expression is truthy.",
                           "type": "string"
                         },
                         "forEach": {
+                          "description": "Runs the step once for each item in the resolved array.",
                           "type": "string"
                         },
                         "fanout": {
+                          "description": "Chooses one Claude process with subagents or separate processes for forEach items.",
                           "type": "string",
                           "enum": [
                             "subagent",
@@ -206,15 +234,18 @@
                         },
                         "maxParallel": {
                           "default": 3,
+                          "description": "Requests at most this many parallel forEach items, defaulting to 3 with a maximum of 20.",
                           "type": "integer",
                           "exclusiveMinimum": 0,
                           "maximum": 20
                         },
                         "continueOnError": {
                           "default": false,
+                          "description": "Allows later steps to run when this step fails; defaults to false.",
                           "type": "boolean"
                         },
                         "timeoutMinutes": {
+                          "description": "Overrides the maximum number of minutes this step may run.",
                           "type": "integer",
                           "exclusiveMinimum": 0,
                           "maximum": 9007199254740991
@@ -223,24 +254,31 @@
                           "type": "object",
                           "properties": {
                             "prompt": {
+                              "description": "Provides the prompt for Claude.",
                               "type": "string"
                             },
                             "promptFile": {
+                              "description": "Reads the Claude prompt from a repository-relative file.",
                               "type": "string"
                             },
                             "skill": {
+                              "description": "Runs a project skill by name as the Claude prompt.",
                               "type": "string"
                             },
                             "command": {
+                              "description": "Runs a project slash command by name as the Claude prompt.",
                               "type": "string"
                             },
                             "args": {
+                              "description": "Passes arguments to the selected skill or command.",
                               "type": "string"
                             },
                             "model": {
+                              "description": "Selects the Claude model for this step.",
                               "type": "string"
                             },
                             "effort": {
+                              "description": "Overrides the reasoning effort for this step.",
                               "type": "string",
                               "enum": [
                                 "low",
@@ -251,18 +289,21 @@
                               ]
                             },
                             "allowedTools": {
+                              "description": "Lists tools Claude may use, but does not restrict file edits when permissionMode is `acceptEdits`.",
                               "type": "array",
                               "items": {
                                 "type": "string"
                               }
                             },
                             "disallowedTools": {
+                              "description": "Denies listed tools or scoped operations and still applies under permissionMode `acceptEdits`.",
                               "type": "array",
                               "items": {
                                 "type": "string"
                               }
                             },
                             "permissionMode": {
+                              "description": "Sets how Claude handles tool permissions for this step.",
                               "type": "string",
                               "enum": [
                                 "default",
@@ -273,18 +314,22 @@
                               ]
                             },
                             "maxTurns": {
+                              "description": "Limits the number of agentic turns Claude may take.",
                               "type": "integer",
                               "exclusiveMinimum": 0,
                               "maximum": 9007199254740991
                             },
                             "maxBudgetUsd": {
+                              "description": "Stops the Claude invocation when this API budget limit is reached.",
                               "type": "number",
                               "exclusiveMinimum": 0
                             },
                             "appendSystemPrompt": {
+                              "description": "Appends instructions to Claude's system prompt.",
                               "type": "string"
                             },
                             "outputSchema": {
+                              "description": "Requires Claude to return structured output matching this JSON Schema.",
                               "type": "object",
                               "propertyNames": {
                                 "type": "string"
@@ -292,31 +337,38 @@
                               "additionalProperties": {}
                             }
                           },
-                          "additionalProperties": false
+                          "additionalProperties": false,
+                          "description": "Configures a Claude invocation using exactly one prompt, prompt file, skill, or command."
                         }
                       },
                       "required": [
                         "claude"
                       ],
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "description": "Runs a Claude prompt, skill, or command."
                     },
                     {
                       "type": "object",
                       "properties": {
                         "id": {
+                          "description": "Assigns an identifier used to read this step's output.",
                           "type": "string",
                           "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
                         },
                         "name": {
+                          "description": "Sets the display name of the step.",
                           "type": "string"
                         },
                         "if": {
+                          "description": "Runs the step only when this runtime expression is truthy.",
                           "type": "string"
                         },
                         "forEach": {
+                          "description": "Runs the step once for each item in the resolved array.",
                           "type": "string"
                         },
                         "fanout": {
+                          "description": "Chooses one Claude process with subagents or separate processes for forEach items.",
                           "type": "string",
                           "enum": [
                             "subagent",
@@ -325,50 +377,61 @@
                         },
                         "maxParallel": {
                           "default": 3,
+                          "description": "Requests at most this many parallel forEach items, defaulting to 3 with a maximum of 20.",
                           "type": "integer",
                           "exclusiveMinimum": 0,
                           "maximum": 20
                         },
                         "continueOnError": {
                           "default": false,
+                          "description": "Allows later steps to run when this step fails; defaults to false.",
                           "type": "boolean"
                         },
                         "timeoutMinutes": {
+                          "description": "Overrides the maximum number of minutes this step may run.",
                           "type": "integer",
                           "exclusiveMinimum": 0,
                           "maximum": 9007199254740991
                         },
                         "shell": {
                           "type": "string",
-                          "minLength": 1
+                          "minLength": 1,
+                          "description": "Runs this shell command in the workflow working directory."
                         },
                         "outputJson": {
                           "default": false,
+                          "description": "Parses stdout as JSON instead of returning it as text; defaults to false.",
                           "type": "boolean"
                         }
                       },
                       "required": [
                         "shell"
                       ],
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "description": "Runs a shell command and returns its stdout."
                     },
                     {
                       "type": "object",
                       "properties": {
                         "id": {
+                          "description": "Assigns an identifier used to read this step's output.",
                           "type": "string",
                           "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
                         },
                         "name": {
+                          "description": "Sets the display name of the step.",
                           "type": "string"
                         },
                         "if": {
+                          "description": "Runs the step only when this runtime expression is truthy.",
                           "type": "string"
                         },
                         "forEach": {
+                          "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                           "type": "string"
                         },
                         "fanout": {
+                          "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                           "type": "string",
                           "enum": [
                             "subagent",
@@ -376,14 +439,17 @@
                           ]
                         },
                         "maxParallel": {
+                          "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                           "type": "integer",
                           "exclusiveMinimum": 0,
                           "maximum": 20
                         },
                         "continueOnError": {
+                          "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                           "type": "boolean"
                         },
                         "timeoutMinutes": {
+                          "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                           "type": "integer",
                           "exclusiveMinimum": 0,
                           "maximum": 9007199254740991
@@ -391,12 +457,14 @@
                         "uses": {
                           "type": "string",
                           "minLength": 1,
+                          "description": "Names the local or remote step recipe to expand at this position.",
                           "not": {
                             "pattern": "^[^@]*@(?:[rR][eE][fF][sS]|[pP][uU][lL][lL]|[gG][hH]-[rR][eE][aA][dD][oO][nN][lL][yY]-[qQ][uU][eE][uU][eE])/"
                           }
                         },
                         "with": {
                           "default": {},
+                          "description": "Supplies declared input values to the step recipe.",
                           "type": "object",
                           "propertyNames": {
                             "type": "string"
@@ -407,32 +475,39 @@
                       "required": [
                         "uses"
                       ],
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "description": "Expands a step recipe into one or more workflow steps."
                     }
                   ]
-                }
+                },
+                "description": "Lists the steps to run in order."
               },
               "fetchDepth": {
                 "default": 1,
+                "description": "Sets the clone depth to 1 by default, or 0 for full history.",
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
               },
               "context": {
                 "default": [],
+                "description": "Unpacks additional git-submodule repositories into the worktree.",
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "submodule": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Names the repository-relative git submodule path whose pinned commit supplies this context."
                     },
                     "repo": {
                       "type": "string",
-                      "pattern": "^[A-Za-z0-9._-]+\\/[A-Za-z0-9._-]+$"
+                      "pattern": "^[A-Za-z0-9._-]+\\/[A-Za-z0-9._-]+$",
+                      "description": "Names the context repository as `owner/name`."
                     },
                     "require": {
                       "default": [],
+                      "description": "Lists paths that must exist after the context repository is unpacked.",
                       "type": "array",
                       "items": {
                         "type": "string"
@@ -443,31 +518,38 @@
                     "submodule",
                     "repo"
                   ],
-                  "additionalProperties": false
+                  "additionalProperties": false,
+                  "description": "Adds a repository pinned by a git submodule as workflow context."
                 }
               },
               "statusComment": {
                 "default": true,
+                "description": "Maintains one pull request status comment as steps finish; defaults to true.",
                 "type": "boolean"
               },
               "loop": {
+                "description": "Repeats all steps while its condition is true and requires on.push or on.manual.",
                 "type": "object",
                 "properties": {
                   "while": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "Repeats all steps while this runtime expression stays truthy."
                   },
                   "maxIterations": {
                     "default": 20,
+                    "description": "Limits the loop to 20 iterations by default and at most 100.",
                     "type": "integer",
                     "exclusiveMinimum": 0,
                     "maximum": 100
                   },
                   "summary": {
+                    "description": "Renders a summary for each published loop batch.",
                     "type": "string"
                   },
                   "closed": {
                     "default": "skip",
+                    "description": "Skips source work from closed batches by default or redoes it when set to `redo`.",
                     "type": "string",
                     "enum": [
                       "skip",
@@ -481,38 +563,48 @@
                 "additionalProperties": false
               },
               "onSuccess": {
+                "description": "Controls publication after the workflow succeeds.",
                 "type": "object",
                 "properties": {
                   "if": {
+                    "description": "Publishes successful changes only when this expression is truthy.",
                     "type": "string"
                   },
                   "commitMessage": {
                     "default": "chore(bwv): automated update",
+                    "description": "Sets the publication commit message.",
                     "type": "string"
                   },
                   "createPullRequest": {
+                    "description": "Configures a pull request for successful workflow changes.",
                     "type": "object",
                     "properties": {
                       "branch": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "description": "Names the branch to create or update with workflow changes."
                       },
                       "base": {
+                        "description": "Sets the pull request base branch instead of the run target branch.",
                         "type": "string"
                       },
                       "title": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "description": "Sets the pull request title."
                       },
                       "body": {
+                        "description": "Sets the pull request body after runtime expressions are rendered.",
                         "type": "string"
                       },
                       "draft": {
                         "default": false,
+                        "description": "Creates the pull request as a draft when true; defaults to false.",
                         "type": "boolean"
                       },
                       "labels": {
                         "default": [],
+                        "description": "Adds these labels to the pull request and defaults to none.",
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -527,6 +619,7 @@
                   },
                   "comment": {
                     "default": false,
+                    "description": "Posts a success comment when true or uses the rendered string as its body; defaults to false.",
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -540,6 +633,7 @@
                 "additionalProperties": false
               },
               "sourcePrGrouping": {
+                "description": "Groups selected files by their last source pull request or direct commit.",
                 "type": "object",
                 "properties": {
                   "paths": {
@@ -549,9 +643,11 @@
                       "type": "string",
                       "minLength": 1,
                       "pattern": "^(?!!)"
-                    }
+                    },
+                    "description": "Selects the required source-file scope used to form source pull request groups."
                   },
                   "ignorePaths": {
+                    "description": "Excludes matching files from source pull request grouping.",
                     "minItems": 1,
                     "type": "array",
                     "items": {
@@ -561,6 +657,7 @@
                     }
                   },
                   "sourceRoot": {
+                    "description": "Sets the source directory that the `rel` output-template value is relative to.",
                     "type": "string",
                     "minLength": 1
                   },
@@ -570,10 +667,12 @@
                     "items": {
                       "type": "string",
                       "minLength": 1
-                    }
+                    },
+                    "description": "Lists required output path templates for each source file before a group can publish."
                   },
                   "maxFilesPerGroup": {
                     "default": 3,
+                    "description": "Splits groups above this file count and defaults to 3.",
                     "type": "integer",
                     "exclusiveMinimum": 0,
                     "maximum": 9007199254740991
@@ -591,24 +690,28 @@
               "on",
               "steps"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Defines an inline workflow with its own triggers and steps."
           },
           {
             "type": "object",
             "properties": {
               "name": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "description": "Sets the unique name of this recipe invocation."
               },
               "uses": {
                 "type": "string",
                 "minLength": 1,
+                "description": "Names the local or remote workflow recipe to expand.",
                 "not": {
                   "pattern": "^[^@]*@(?:[rR][eE][fF][sS]|[pP][uU][lL][lL]|[gG][hH]-[rR][eE][aA][dD][oO][nN][lL][yY]-[qQ][uU][eE][uU][eE])/"
                 }
               },
               "with": {
                 "default": {},
+                "description": "Supplies declared input values to the workflow recipe.",
                 "type": "object",
                 "propertyNames": {
                   "type": "string"
@@ -620,15 +723,18 @@
               "name",
               "uses"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Expands a workflow recipe into one or more named workflows."
           }
         ]
-      }
+      },
+      "description": "Lists inline workflows and workflow recipe invocations."
     }
   },
   "required": [
     "version",
     "workflows"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "description": "Configures the BWV workflows that run for this repository."
 }

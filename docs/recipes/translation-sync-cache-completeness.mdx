@@ -49,7 +49,7 @@ workflows:
         paths: ["docs_vn/specs/**/*.vi.md"]
     steps:
       - id: cache
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@translation/v1
+        uses: BWV-Dev/bwv-workflows-recipes/translation/sync-cache-completeness@translation/v1
         with:
           sourceRoot: docs/specs
           outputRoot: docs_vn/specs
