@@ -53,7 +53,7 @@ workflows:
           printf '%s\n' '{"files":[{"args":"docs/specs/login.md"},{"args":"docs/specs/profile.md"}]}'
         outputJson: true
       - id: review
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@v1
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@common/v1
         with:
           id: document
           items: ${{ steps.plan.output.files }}
@@ -68,7 +68,7 @@ workflows:
             run: { command: review-doc }
 ```
 
-Replace the fixed planning output with your repository's planner. Keep `items` as one runtime expression so it resolves to the array rather than text, and keep the official `@v1` reference shown above.
+Replace the fixed planning output with your repository's planner. Keep `items` as one runtime expression so it resolves to the array rather than text, and keep the official `@common/v1` reference shown above.
 
 ## Generated input reference
 

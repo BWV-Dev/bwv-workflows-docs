@@ -84,11 +84,17 @@ All shared recipes come from `BWV-Dev/bwv-workflows-recipes`. Copy the complete
 `uses` line from the [Recipe catalog](/recipes). For example:
 
 ```text
-BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@v1
+BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@common/v1
 ```
 
-Use `@v1` by default. A full commit SHA also works when a project needs to
-freeze a version.
+Each recipe family is versioned independently. Use `@translation/v1` for
+stable translation recipes and `@common/v1` for stable common recipes. The
+`testcase` family is still alpha, so pin its exact prerelease, currently
+`@testcase/v1.0.0-alpha.1`, instead of expecting a moving major tag.
+
+The repository-wide `v1` tag no longer moves. Production projects may pin a
+full 40-character commit SHA when they need every recipe, skill, and script to
+stay on one reviewed revision.
 
 ### 3. Choose or replace a toolkit
 

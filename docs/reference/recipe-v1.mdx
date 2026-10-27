@@ -12,7 +12,7 @@ import recipeSchema from "@site/generated/schema/recipe-v1.schema.json";
 
 Use recipe version 1 to package a reusable set of workflows or steps. A local recipe lives below `.bwv/recipes/` and starts with `apiVersion: 1`. Official shared recipes in `BWV-Dev/bwv-workflows-recipes` use the same format.
 
-BWV Workflows reads a local recipe from the same trusted base-branch commit as `.bwv/workflows.yml`. Catalog examples reference official shared recipes at `@v1`.
+BWV Workflows reads a local recipe from the same trusted base-branch commit as `.bwv/workflows.yml`. Catalog examples reference official shared recipes with a family tag such as `@translation/v1` or `@common/v1`.
 
 Read [Recipes and toolkits](../configuring/recipes-and-toolkits) before authoring a local recipe. Then use this generated reference for input types, recipe expressions, workflow recipes, and step recipes. A recipe must have exactly one body: `workflows` or `steps`.
 
