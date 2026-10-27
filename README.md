@@ -52,7 +52,7 @@ Run `pnpm content-guard` before committing. The guard scans text in `docs/`, `i1
 
 ## Translate into Vietnamese
 
-> The Vietnamese edition is temporarily disabled; its files remain under `i18n/vi/` and are not built. Re-enable it by adding `vi` to `i18n.locales` in `docusaurus.config.ts`, restoring the navbar `localeDropdown` item, and refreshing every stale `source_hash` before building. The rules below apply once it is enabled again.
+> The Vietnamese edition is not released yet. Its pages live on the `vi/translation` branch, not here. Re-enable it by merging that branch, adding `vi` to `i18n.locales` in `docusaurus.config.ts`, restoring the navbar `localeDropdown` item, and refreshing every stale `source_hash` before building. The rules below apply once it is enabled again.
 
 English under `docs/` is the source of truth. Put each Vietnamese page at the same relative path under `i18n/vi/docusaurus-plugin-content-docs/current/`. Keep slugs, relative links, MDX components, code, YAML keys, file paths, GitHub labels, bot text, check names, and `/bwv` commands unchanged.
 
