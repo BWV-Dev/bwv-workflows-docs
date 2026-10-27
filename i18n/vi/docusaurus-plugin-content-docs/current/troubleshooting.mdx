@@ -3,7 +3,7 @@ title: Khắc phục sự cố và câu hỏi thường gặp
 sidebar_position: 7
 description: Xử lý các lỗi cấu hình và lần chạy BWV Workflows thường gặp.
 slug: /troubleshooting
-source_hash: 8c92225409862cd0ccf81e3a79b6018ec1eb5d58e211cad0e9f5c626e27bc421
+source_hash: 9e0ceff1b9115939a6705812b92b645f515d9ff7657bba95a358d8c6c37c5a3d
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -47,7 +47,7 @@ Kết nối vào mạng công ty, sau đó mở lại file YAML và kiểm tra U
 
 Xem [Tự động gợi ý trong editor](./getting-started/editor-autocomplete) để biết đầy đủ các bước thiết lập và kiểm tra.
 
-## Nhờ BWV Workflows maintainers hỗ trợ
+## Nhờ BWV Workflows maintainers hỗ trợ {#asking-the-bwv-workflows-maintainers-for-help}
 
 Gửi kèm các thông tin sau:
 
@@ -57,5 +57,7 @@ Gửi kèm các thông tin sau:
 - Dòng footer nhỏ ở cuối phần tóm tắt check run: `Job … · attempt n/max · delivery …`.
 
 Dòng footer giúp xác định lần chạy trong log của engine. Sao chép toàn bộ dòng mà không thay đổi các giá trị job, attempt hoặc delivery.
+
+Khi vấn đề đến từ một recipe dùng chung, bạn cũng có thể mở issue hoặc pull request trong `BWV-Dev/bwv-workflows-recipes`. Xem [Báo lỗi hoặc đóng góp bản sửa](/recipes#report-a-problem-or-contribute-a-fix).
 
 <GitHubComment sample="check-run-failed" author="BWV Workflows" />

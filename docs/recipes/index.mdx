@@ -26,3 +26,22 @@ Use an official recipe when its trigger and output match the process in your rep
 :::tip
 Start with each recipe's default toolkit. Override a toolkit only when your repository already has skills or scripts that meet the complete toolkit contract.
 :::
+
+## Report a problem or contribute a fix
+
+👤 Responsible: anyone who uses a shared recipe
+
+`BWV-Dev/bwv-workflows-recipes` accepts issues and pull requests. When a shared recipe misbehaves in your project — wrong or broken output, a check that fails for no visible reason, a rule a skill does not follow, an input you need but cannot set — report it there, or fix it yourself. If you cannot open the repository, ask the BWV Workflows maintainers for access.
+
+1. **Open an issue** with:
+   - the complete `uses` line, including its family tag or pinned sha;
+   - a link to the affected pull request and the exact `bwv/…` check;
+   - the footer line of that check run summary, `Job … · attempt n/max · delivery …`;
+   - what you expected and what happened instead.
+2. **Open a pull request** when you know the fix: change the recipe, skill, or script together with its tests, and say in the description which behaviour changes for every project that uses the recipe. The maintainers review it and release it as a new family tag.
+
+:::caution
+The recipes repository is shared by every project. Do not paste customer documents or project content into an issue or pull request. Describe the problem, or reduce it to a small fictional example.
+:::
+
+Once a fix is released, projects on a moving tag such as `@translation/v1` receive it on their next run, and projects pinned to a sha receive it when they update the pin. A problem with checks, comments, retries, or triggers in general belongs to the engine, not to a recipe: [ask the BWV Workflows maintainers](/troubleshooting#asking-the-bwv-workflows-maintainers-for-help).
