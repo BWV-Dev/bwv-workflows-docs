@@ -73,7 +73,7 @@ workflows:
           model: sonnet
 ```
 
-Use these controls inside a `claude` block or in the root `defaults`:
+Use these controls inside a `claude` block, except `timeoutMinutes`, which belongs on the step itself. Each can also be set in the root `defaults`:
 
 | Field            | Behavior                                                                       |
 | ---------------- | ------------------------------------------------------------------------------ |
