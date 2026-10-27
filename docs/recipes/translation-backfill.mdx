@@ -33,6 +33,12 @@ Use this workflow recipe to create the first Vietnamese translation of documents
 
 The default recipe writes one `.vi.md` translation and one `.vi.json` cache for every source document.
 
+Translation v1.5 also keeps relative links faithful. Links and images that
+target non-Markdown files are rewritten to point back to the corresponding
+file in the source tree. Before publication, the output check compares resolved
+resource targets with the source. A target that is already missing in the
+source produces a warning; a changed, added, or dropped target fails the check.
+
 ### 2. Add the workflow
 
 👤 Responsible: Project Leader
@@ -55,7 +61,10 @@ workflows:
       maxIterations: 10
 ```
 
-Keep the official `@translation/v1` reference shown above. The recipe workflow is named `<caller>/backfill`, so this example creates `translation-backfill/backfill`.
+Keep the official `@translation/v1` reference shown above. It follows the
+compatible translation v1 releases and includes the v1.5 and v1.6 behavior
+described here. The recipe workflow is named `<caller>/backfill`, so this
+example creates `translation-backfill/backfill`.
 
 ### 3. Start the backfill
 
@@ -69,7 +78,13 @@ Open an issue or pull request conversation and comment:
 
 The branch may be omitted because `branches` contains one literal name. Add `on <branch>` when the recipe accepts several branches or a glob.
 
-Read the manual-run hub in that conversation. It links the `bwv/translation-backfill/backfill` check and lists each published batch pull request. Send each batch to Dev & Com for normal review and merge.
+Read the manual-run hub in that conversation. It links the
+`bwv/translation-backfill/backfill` check and lists each pass, including a pass
+that kept zero documents. Translation v1.6 writes a Summary such as
+`8/10 kept · 1 failed · 1 stray — failed: docs/specs/demo-a.md: cache missing · stray: docs_vn/specs/demo-old.vi.md`.
+The same kept, failed, and stray outcome appears in every batch pull request
+body, followed by the discarded paths and short reasons. Send each batch to Dev
+& Com for normal review and merge.
 
 ### 4. Continue after a stop
 
@@ -109,10 +124,12 @@ If the run waits for quota, do nothing. A completed batch is published before th
 default and must not be empty; omit the input to exclude nothing.
 
 :::caution Tool overrides replace the whole list
-`allowedTools` replaces the complete default. Keep `Bash(jq empty:*)` so the
-translation skill can validate cache JSON with `jq empty`. Never add broad
-`Bash`: under `permissionMode: acceptEdits`, it can bypass path restrictions
-expressed through `disallowedTools`. Add only narrow `Bash(<command>:*)` rules.
+`allowedTools` replaces the complete default. Translation v1.6 runs the Claude
+step with `permissionMode: dontAsk`, so an unlisted tool is denied immediately
+instead of waiting for approval. Keep `Read`, `Glob`, `Grep`, `Write`, `Edit`,
+and `Bash(jq empty:*)`; add every other narrow tool rule the project toolkit
+needs. Never add broad `Bash`, because it can bypass path restrictions expressed
+through `disallowedTools`.
 :::
 
 ## Common problems
@@ -127,4 +144,9 @@ The planner selects only source documents without a translation in the current w
 
 ### A batch publishes fewer documents than planned
 
-The finalizer keeps only documents whose translation and cache both pass the output check. Read the failed step, fix the source, glossary, or custom toolkit, then start another run.
+The finalizer keeps only documents whose translation and cache both pass the
+output check. Read the kept/failed/stray Summary and the batch pull request's
+discarded-output list, fix the source, glossary, missing asset, or custom
+toolkit, then start another run. A source link whose target is already missing
+is only a warning; a translation that changes, adds, or drops a target is a
+failure.

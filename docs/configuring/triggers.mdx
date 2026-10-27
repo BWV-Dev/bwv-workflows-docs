@@ -153,11 +153,26 @@ A person with repository write access can comment:
 
 `branches` is required. Omit `on <branch>` only when the workflow accepts exactly one literal branch name. Include the branch when the list has several entries or a glob.
 
-The conversation receives a manual-run hub comment. The requested branch tip receives the `bwv/<workflow>` check run. The hub links the check and shows the final result:
+The conversation keeps one manual-run hub for each workflow and branch. A later
+`/bwv run` or `/bwv recreate #N` for the same identity updates that comment
+instead of creating another active hub. Accepted commands receive a reaction;
+the hub carries their progress. Refused commands and help requests still receive
+a reply.
+
+The requested branch tip receives the `bwv/<workflow>` check run. The hub's
+request ledger shows who asked, when, the exact command, its state, any quota
+retry time, and the check run. Joined requests share one job row. The newest
+run and its passes stay on top; earlier pass histories and closed or merged
+batches are folded below it:
 
 <GitHubComment sample="manual-run-hub" author="BWV Workflows" />
 
 A manual request shares the branch's push lane. A push run and a manual run on the same branch never run at the same time; the later request waits and then uses the current branch tip. The worker checks again that the workflow still declares `on.manual` and that the branch still matches before it starts.
+
+The hub distinguishes `failed`, `not run`, `superseded`, and `ended`. An
+`ended` row points to the check run because the hub cannot safely infer the
+conclusion. Legacy workflow-only hubs are adopted when possible, and duplicate
+legacy comments are archived on later updates.
 
 ### 4. Combine triggers when needed
 

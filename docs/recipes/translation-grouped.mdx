@@ -14,6 +14,12 @@ Use this workflow recipe for a repository that synchronizes Japanese Markdown th
 
 The recipe also keeps cache files aligned with wording that reviewers edit on a translation branch. Pull requests into the configured gate branches must pass the cache check.
 
+Translation v1.5 rewrites relative links and images for non-Markdown files so
+the translated document points back to the source-tree asset. Its output check
+compares the translation's resolved resource targets with the source. A target
+already missing in the source produces a warning; a changed, added, or dropped
+target fails publication.
+
 ## What users see on the pull request
 
 Before the sync pull request merges, BWV Workflows adds a planned tracker. After the merge, the same tracker shows each source group and its generated pull request. Dev & Com read it with [Working on a pull request](../pull-requests).
@@ -57,7 +63,10 @@ workflows:
       maxFilesPerGroup: 3
 ```
 
-The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted. Keep the official `@translation/v1` reference shown above.
+The recipe owns its triggers and uses its default toolkit when `toolkit` is
+omitted. Keep the official `@translation/v1` reference shown above. It follows
+compatible translation v1 releases, including the v1.5 link checks and the
+v1.6 permission behavior described here.
 
 ## Generated input reference
 
@@ -88,10 +97,18 @@ The recipe owns its triggers and uses its default toolkit when `toolkit` is omit
 default and must not be empty; omit the input to exclude nothing.
 
 :::caution Tool overrides replace the whole list
-Both tool inputs replace their complete defaults. Keep `Bash(jq empty:*)` so
-the skills can validate cache JSON with `jq empty`. Never add broad `Bash`:
-under `permissionMode: acceptEdits`, it can bypass path restrictions expressed
-through `disallowedTools`. Add only narrow `Bash(<command>:*)` rules.
+Both tool inputs replace their complete defaults. Translation v1.6 runs the
+translation and cache-sync Claude steps with `permissionMode: dontAsk`, so an
+unlisted tool is denied immediately instead of waiting for approval. Keep
+`Read`, `Glob`, `Grep`, `Write`, `Edit`, and `Bash(jq empty:*)`; add every other
+narrow tool rule the project toolkit needs. Never add broad `Bash`, because it
+can bypass path restrictions expressed through `disallowedTools`.
+:::
+
+:::note Backfill summaries in translation v1.6
+If the same repository also uses `translation/backfill`, each manual-hub pass
+and batch pull request reports `N/M kept · K failed · S stray — reasons`, even
+when `N` is zero. See [translation/backfill](./translation-backfill#3-start-the-backfill).
 :::
 
 ## Common problems
@@ -102,7 +119,11 @@ Check that the pull request merged from `sourceBranch` into `syncBase` and chang
 
 ### A group fails with missing outputs
 
-Open the check run and inspect the named file. Every source must produce both the mirrored `.vi.md` translation and `.vi.json` cache. Fix the source, glossary, or custom toolkit, then send Dev & Com to [Working on a pull request](../pull-requests).
+Open the check run and inspect the named file. Every source must produce both
+the mirrored `.vi.md` translation and `.vi.json` cache, and the translated
+links must preserve the source's targets. Fix the source, glossary, missing
+asset, or custom toolkit, then send Dev & Com to
+[Working on a pull request](../pull-requests).
 
 ### The tracker says outputs are partly on the base branch
 

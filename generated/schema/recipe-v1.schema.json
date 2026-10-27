@@ -590,6 +590,22 @@
                                                 }
                                               ]
                                             },
+                                            "permissionDenials": {
+                                              "description": "Chooses whether a denied Claude tool fails the step or only adds a warning; defaults to fail.",
+                                              "default": "fail",
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "fail",
+                                                    "warn"
+                                                  ]
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
                                             "claude": {
                                               "description": "Configures a Claude invocation or a skill or command toolkit entry.",
                                               "anyOf": [
@@ -1752,6 +1768,22 @@
                               },
                               {
                                 "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
+                          "permissionDenials": {
+                            "description": "Chooses whether a denied Claude tool fails the step or only adds a warning; defaults to fail.",
+                            "default": "fail",
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fail",
+                                  "warn"
+                                ]
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
                               }
                             ]
                           },
