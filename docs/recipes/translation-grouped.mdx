@@ -30,7 +30,7 @@ Prepare the target repository before adding the recipe:
 - Choose a separate output folder that mirrors the source tree, such as `docs_vn/specs`.
 - Add a Markdown glossary, such as `docs/glossary.md`, with project terminology and translation rules. Project rules in this file take priority over the recipe's generic rules.
 - Use a sync branch, such as `docs-sync`, and merge it into the sync base, such as `main`, through a pull request.
-- Protect the sync base and every gate branch so reviewed output cannot bypass the required checks.
+- Merge into the sync base and every gate branch only through reviewed pull requests.
 - Use a BWV Workflows engine release that supports `ignorePaths` without negated `!` globs. The current translation recipe uses that path-filter contract.
 - Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
 - Keep spaces out of the configured paths and document paths. The recipe passes these paths as separate command arguments.

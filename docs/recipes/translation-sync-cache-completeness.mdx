@@ -30,7 +30,7 @@ Prepare the target repository before adding this step recipe:
 - Make sure each translation records its source path and source commit, and each cache keeps its metadata wrapper. The default translation recipe writes both.
 - Run the calling workflow with `fetchDepth: 0`. The drift and edit checks compare Git history.
 - Reserve `.bwv/vi-cache-edits/` for temporary plans created during the run. Do not commit that folder.
-- Protect the base branch so only reviewed, verified cache changes merge.
+- Merge cache changes into the base branch only through reviewed pull requests.
 - Keep spaces out of source, output, and document paths.
 
 ## Add the workflow

@@ -152,8 +152,9 @@ operands, or Bash arithmetic. Quoting protects the first parse only.
 
 :::warning Review scripts from triggering branches
 A direct `shell` step runs repository content from the checked-out commit.
-Protect every triggering branch because a change to a called script changes
-what the step executes.
+Only people trusted to change automation should be able to push to a
+triggering branch, because a change to a called script changes what the step
+executes.
 :::
 
 ### 3. Insert a step recipe
