@@ -112,6 +112,10 @@ does not silently become an empty value.
 `forEach` must resolve to an array. An empty array skips the step; another type
 fails it. `maxParallel` defaults to 3 and accepts a positive integer up to 20.
 
+`forEach` repeats one step inside a single run, and the run publishes once. To
+split large work into one pull request per batch, see
+[Many pull requests from one run](./many-pull-requests#loop-or-foreach).
+
 Choose the Claude fan-out mode:
 
 | Mode       | Behavior                                                                                    |

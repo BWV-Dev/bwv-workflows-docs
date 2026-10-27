@@ -117,7 +117,7 @@ BWV Workflows từ chối biểu thức ở những chỗ có thể thay đổi 
 Đừng đưa giá trị lúc chạy vào lệnh phân tích lại đối số, gồm `eval`, chuỗi lệnh của trap, chuỗi lệnh `sh -c`, toán hạng của export hoặc phép toán Bash. Dấu nháy chỉ bảo vệ lần phân tích đầu tiên.
 
 :::warning Review script từ các nhánh kích hoạt
-Bước `shell` trực tiếp chạy nội dung repository từ commit đã checkout. Hãy bảo vệ mọi nhánh kích hoạt, vì thay đổi trong script được gọi sẽ thay đổi nội dung mà bước thực thi.
+Bước `shell` trực tiếp chạy nội dung repository từ commit đã checkout. Chỉ người được tin cậy thay đổi tự động hóa mới nên được push lên nhánh kích hoạt, vì thay đổi trong script được gọi sẽ thay đổi nội dung mà bước thực thi.
 :::
 
 ### 3. Chèn step recipe {#3-insert-a-step-recipe}

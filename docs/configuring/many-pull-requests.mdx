@@ -13,6 +13,21 @@ Use `loop` when a push or manual request can create more work than one focused p
 
 Suppose the fake repository `acme/web-app` updates many generated documentation files after a push. The workflow below uses a repository-owned planner to split that work into focused batches.
 
+## `loop` or `forEach`?
+
+They repeat different things and are often used together, as in the example below.
+
+|           | `forEach`                                                  | `loop`                                                                |
+| --------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| Set on    | One step                                                   | The whole workflow                                                    |
+| Repeats   | That step, once per item of an array                       | Every step, as a sequence of passes                                   |
+| Publishes | Once, after all steps of the run                           | Once per pass: one pull request per batch, on its own branch          |
+| Work list | An array known when the step starts, usually a step output | Recomputed from the Git tree by a plan step at the start of each pass |
+| Stops     | After the last item                                        | When `while` is false, at `maxIterations`, or after two idle passes   |
+| Triggers  | Any                                                        | `on.push` or `on.manual` only                                         |
+
+Use `forEach` to process several independent items inside one run. Use `loop` when the whole job is too large for one pull request to review.
+
 ## Workflow Summary
 
 1. [Make the plan step describe one batch](#1-make-the-plan-step-describe-one-batch).

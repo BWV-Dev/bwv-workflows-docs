@@ -31,7 +31,7 @@ Chuẩn bị repository đích trước khi thêm step recipe này:
 - Đảm bảo mỗi bản dịch ghi đường dẫn và commit nguồn, còn mỗi cache giữ phần bọc thông tin. Recipe dịch mặc định ghi cả hai.
 - Chạy workflow gọi recipe với `fetchDepth: 0`. Các check về độ lệch và chỉnh sửa sẽ so sánh lịch sử Git.
 - Dành riêng `.bwv/vi-cache-edits/` cho kế hoạch tạm được tạo trong lúc chạy. Đừng commit thư mục đó.
-- Bảo vệ nhánh đích để chỉ thay đổi cache đã review và kiểm tra mới được merge.
+- Chỉ merge thay đổi cache vào nhánh đích qua pull request đã review.
 - Không dùng khoảng trắng trong đường dẫn nguồn, đầu ra và tài liệu.
 
 ## Thêm workflow

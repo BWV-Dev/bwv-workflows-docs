@@ -8,7 +8,7 @@ source_hash: 71ca3f350688d06f2cb0256fa745f83caad6e34e8bf4961da3ded12a38fe7bab
 
 👤 Phụ trách: Project Leader
 
-Thêm một workflow nhỏ chạy trên pull request để xác nhận việc đưa repository vào sử dụng, bảo vệ nhánh (branch protection), chạy workflow và xuất bản kết quả đều hoạt động.
+Thêm một workflow nhỏ chạy trên pull request để xác nhận việc đưa repository vào sử dụng, chạy workflow và xuất bản kết quả đều hoạt động.
 
 ## Tóm tắt workflow
 
@@ -24,7 +24,7 @@ Thêm một workflow nhỏ chạy trên pull request để xác nhận việc đ
 
 👤 Phụ trách: Project Leader
 
-Tạo `.bwv/workflows.yml` với cấu hình sau. Thay `main` nếu repository dùng một nhánh đích (base branch) được bảo vệ khác.
+Tạo `.bwv/workflows.yml` với cấu hình sau. Thay `main` nếu repository dùng một nhánh đích (base branch) khác.
 
 ```yaml title=".bwv/workflows.yml"
 version: 1
@@ -65,7 +65,7 @@ git push --set-upstream origin chore/add-bwv-workflow
 gh pr create --base main --title "chore: add first BWV workflow" --body "Add the initial BWV Workflows configuration."
 ```
 
-Review và merge pull request thiết lập này theo quy tắc bảo vệ nhánh. Workflow chưa áp dụng cho chính pull request thiết lập vì cấu hình được lấy từ nhánh đích.
+Review và merge pull request thiết lập này. Workflow chưa áp dụng cho chính pull request thiết lập vì cấu hình được lấy từ nhánh đích.
 
 :::important Merge trước khi thử nghiệm
 Workflow phải có trên `main` trước khi một pull request thử nghiệm riêng có thể dùng workflow. Thay đổi với `.bwv/workflows.yml` chỉ có hiệu lực sau khi được merge.

@@ -7,8 +7,8 @@ slug: /getting-started/first-workflow
 
 👤 Responsible: Project Leader
 
-Add a small pull request workflow to confirm that onboarding, branch
-protection, execution, and result publication all work.
+Add a small pull request workflow to confirm that onboarding, execution, and
+result publication all work.
 
 ## Workflow Summary
 
@@ -25,7 +25,7 @@ protection, execution, and result publication all work.
 👤 Responsible: Project Leader
 
 Create `.bwv/workflows.yml` with this configuration. Replace `main` if the
-repository uses a different protected base branch.
+repository uses a different base branch.
 
 ```yaml title=".bwv/workflows.yml"
 version: 1
@@ -67,8 +67,7 @@ git push --set-upstream origin chore/add-bwv-workflow
 gh pr create --base main --title "chore: add first BWV workflow" --body "Add the initial BWV Workflows configuration."
 ```
 
-Review and merge this setup pull request through the protected branch. The
-workflow does not govern its own setup pull request because configuration comes
+Review and merge this setup pull request. The workflow does not govern its own setup pull request because configuration comes
 from the base branch.
 
 :::important Merge before testing
