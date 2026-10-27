@@ -10,10 +10,24 @@ import workflowsSchema from "@site/generated/schema/workflows.schema.json";
 
 👤 Responsible: Project Leader
 
-Put the repository configuration at `.bwv/workflows.yml`. BWV Workflows reads this file from the pull request's base branch, so a pull request cannot change the workflow that evaluates itself.
+Put the repository configuration at `.bwv/workflows.yml`. BWV Workflows reads
+it from a trusted ref: the pull request's base branch for a pull request run,
+the pushed commit for a push run, or the selected target branch tip for a
+manual run. A pull request therefore cannot change the workflow that evaluates
+itself.
 
 Start with [Your first workflow](../getting-started/first-workflow), then use this generated reference to check nested fields, required values, defaults, and allowed values. Keep `version: 1` at the root of the file.
 
 The reference below is generated from the same schema used by BWV Workflows. Do not copy every field; add only the trigger, steps, defaults, and success action your workflow needs.
+
+:::tip[How to read this page]
+Start with the short section list. Select a workflow or step variant, then
+follow linked object fields to their YAML-path section. Use the guides for the
+behavior behind the fields: [Triggers](../configuring/triggers),
+[Steps](../configuring/steps),
+[Passing data, `forEach`, and expressions](../configuring/passing-data),
+[Many pull requests from one run](../configuring/many-pull-requests), and
+[Translating after merge](../configuring/translating-after-merge).
+:::
 
 <SchemaReference schema={workflowsSchema} />
