@@ -3,7 +3,7 @@ title: common/command-fanout
 sidebar_position: 5
 description: Chạy một skill hoặc command của dự án cho mỗi mục với số tiến trình song song có giới hạn.
 slug: /recipes/common-command-fanout
-source_hash: 0a8d4e2349d7574962e5f97c998c7238286e72886e381f3aca66a0fbf24acdef
+source_hash: 50c968280def9a648b54d3cad633035d49eccb57102ea42bb6eeefd3e191cb0b
 ---
 
 import { RecipeInputs } from "@site/src/components/GeneratedReference";
@@ -54,7 +54,7 @@ workflows:
           printf '%s\n' '{"files":[{"args":"docs/specs/login.md"},{"args":"docs/specs/profile.md"}]}'
         outputJson: true
       - id: review
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@v1
+        uses: BWV-Dev/bwv-workflows-recipes/common/command-fanout@common/v1
         with:
           id: document
           items: ${{ steps.plan.output.files }}

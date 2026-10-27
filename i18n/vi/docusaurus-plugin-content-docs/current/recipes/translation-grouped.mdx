@@ -3,7 +3,7 @@ title: translation/grouped
 sidebar_position: 2
 description: Dịch Markdown tiếng Nhật theo nhóm nguồn và giữ cache đã review luôn đồng bộ.
 slug: /recipes/translation-grouped
-source_hash: a59af087e76f7f6a0f849fecd8640cab4121dddc24d7ceab81742d702ddbdf33
+source_hash: 0f5d444d95231159fe1830ae1078a78d2a0c7bdc61f88adf7bf2ee09d6c61d49
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -44,7 +44,7 @@ version: 1
 
 workflows:
   - name: translate-specs
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@v1
+    uses: BWV-Dev/bwv-workflows-recipes/translation/grouped@translation/v1
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs

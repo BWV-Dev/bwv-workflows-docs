@@ -3,7 +3,7 @@ title: translation/sync-cache-completeness
 sidebar_position: 3
 description: Đồng bộ mọi chỉnh sửa bản dịch đã review vào cache và kiểm tra tính đầy đủ.
 slug: /recipes/translation-sync-cache-completeness
-source_hash: 999de0749ead80255b9dd25ccfe6c174dc50eb22706cfc6616166561c2cbfdc4
+source_hash: 95f24a03b6020c2ba400897831ffbe0283c097f6b7fd073e599492bf381b6b98
 ---
 
 import { RecipeInputs } from "@site/src/components/GeneratedReference";
@@ -50,7 +50,7 @@ workflows:
         paths: ["docs_vn/specs/**/*.vi.md"]
     steps:
       - id: cache
-        uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/sync-cache-completeness.yml@v1
+        uses: BWV-Dev/bwv-workflows-recipes/translation/sync-cache-completeness@translation/v1
         with:
           sourceRoot: docs/specs
           outputRoot: docs_vn/specs

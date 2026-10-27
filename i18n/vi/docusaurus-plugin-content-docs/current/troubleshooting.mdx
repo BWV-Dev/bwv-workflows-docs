@@ -3,7 +3,7 @@ title: Khắc phục sự cố và câu hỏi thường gặp
 sidebar_position: 7
 description: Xử lý các lỗi cấu hình và lần chạy BWV Workflows thường gặp.
 slug: /troubleshooting
-source_hash: 1803533c3f59ab73005512d0a0594dfbdb5c48689bc8e14f4952ff0c9a22e0a2
+source_hash: 8c92225409862cd0ccf81e3a79b6018ec1eb5d58e211cad0e9f5c626e27bc421
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
@@ -24,6 +24,8 @@ Kiểm tra lần lượt các nguyên nhân sau:
 ## `bwv/config` có màu đỏ
 
 Mở check `bwv/config` và đọc thông báo kiểm tra tính hợp lệ. Sửa `.bwv/workflows.yml` hoặc recipe được tham chiếu trên nhánh đích; nếu chỉ sửa nhánh nguồn của pull request, cấu hình đáng tin cậy cho pull request đó sẽ không đổi.
+
+Khi không tìm thấy recipe từ xa, thông báo sẽ hiển thị đường dẫn mà BWV Workflows đã thử trong repository nguồn. Ví dụ, tham chiếu bị thiếu `BWV-Dev/bwv-workflows-recipes/translation/missing@translation/v1` sẽ báo `recipes/translation/missing.yml`. Hãy kiểm tra rằng file này tồn tại tại ref đã nêu.
 
 Dùng [Tự động gợi ý trong editor](./getting-started/editor-autocomplete) để phát hiện lỗi schema khi chỉnh sửa. Sau đó, làm theo [Workflow đầu tiên](./getting-started/first-workflow) để merge và thử bản sửa.
 

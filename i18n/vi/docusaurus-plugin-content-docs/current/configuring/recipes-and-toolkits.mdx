@@ -3,7 +3,7 @@ title: Recipe và toolkit
 sidebar_position: 3
 description: Dùng lại recipe chính thức dùng chung hoặc recipe trong repository của bạn.
 slug: /configuring/recipes-and-toolkits
-source_hash: 841e4b84fc8b56e54e1b5c89e1ebfb6043c45cb4209301006abd6e935e8dffc0
+source_hash: 4cfd44129bd560cca3898ff0f0775fc15c022163f3e306f4353a5be7f47a62d3
 ---
 
 👤 Phụ trách: Project Leader
@@ -23,7 +23,7 @@ Dùng recipe chính thức dùng chung thay vì sao chép các bước đã đư
 
 👤 Phụ trách: Project Leader
 
-Lưu recipe của dự án trong `.bwv/recipes/`. Tham chiếu recipe từ `.bwv/workflows.yml` bằng đường dẫn bắt đầu với `./.bwv/recipes/`:
+Cú pháp `uses` cục bộ là `./.bwv/recipes/<name>`. Cú pháp này đọc file `.bwv/recipes/<name>.yml` từ dự án. Ví dụ, tham chiếu `.bwv/recipes/review-specs.yml` từ `.bwv/workflows.yml` bằng `./.bwv/recipes/review-specs`:
 
 ```yaml title=".bwv/workflows.yml"
 version: 1
@@ -36,12 +36,12 @@ workflows:
         paths: ["docs/specs/**"]
     steps:
       - name: Review the changed specifications
-        uses: ./.bwv/recipes/review-specs.yml
+        uses: ./.bwv/recipes/review-specs
         with:
           source: docs/specs
 ```
 
-Workflow recipe được dùng trong danh sách `workflows`. Step recipe được dùng bên trong `steps`, như ví dụ trên. Recipe có thể dùng file cùng cấp như `./check.yml`, nhưng đường dẫn recipe cục bộ phải nằm trong `.bwv/recipes/`.
+Workflow recipe được dùng trong danh sách `workflows`. Step recipe được dùng bên trong `steps`, như ví dụ trên. Bên trong một recipe, dùng `./check` để tham chiếu file cùng cấp `check.yml`. Đường dẫn recipe cục bộ phải nằm trong `.bwv/recipes/`.
 
 Commit recipe trước khi kiểm tra. BWV Workflows đọc recipe từ cùng commit đáng tin cậy với `.bwv/workflows.yml`.
 
@@ -78,10 +78,14 @@ Ví dụ này cần `.claude/skills/review-specs/SKILL.md` và `.bwv/scripts/che
 Mọi recipe dùng chung đều đến từ `BWV-Dev/bwv-workflows-recipes`. Hãy sao chép toàn bộ dòng `uses` từ [Danh mục recipe](/recipes). Ví dụ:
 
 ```text
-BWV-Dev/bwv-workflows-recipes/recipes/common/command-fanout.yml@v1
+BWV-Dev/bwv-workflows-recipes/common/command-fanout@common/v1
 ```
 
-Dùng `@v1` theo mặc định. SHA đầy đủ của commit cũng dùng được khi dự án cần cố định một phiên bản.
+Cú pháp từ xa là `<owner>/<repo>/<family>/<name>@<ref>`. BWV Workflows đọc tham chiếu này từ `recipes/<family>/<name>.yml` trong repository nguồn tại `<ref>`. Vì vậy, repository tạo hoặc lưu trữ recipe dùng chung phải giữ các recipe trong thư mục `recipes/`.
+
+Mỗi nhóm recipe có phiên bản độc lập. Dùng `@translation/v1` cho các recipe dịch ổn định và `@common/v1` cho các recipe common ổn định. Nhóm `testcase` vẫn đang ở giai đoạn alpha, vì vậy hãy cố định prerelease chính xác, hiện là `@testcase/v1.0.0-alpha.1`, thay vì dựa vào một major tag có thể di chuyển.
+
+Tag `v1` trên toàn repository không còn di chuyển. Dự án production có thể cố định SHA đầy đủ gồm 40 ký tự của commit khi cần giữ mọi recipe, skill và script ở cùng một bản sửa đổi đã được review.
 
 ### 3. Chọn hoặc thay toolkit {#3-choose-or-replace-a-toolkit}
 

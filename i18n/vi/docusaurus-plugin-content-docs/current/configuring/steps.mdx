@@ -3,7 +3,7 @@ title: "Các bước: claude, shell, uses"
 sidebar_position: 2
 description: Chọn và cấu hình các loại bước được workflow hỗ trợ.
 slug: /configuring/steps
-source_hash: 8db162f533e174352c9cc84d99062e6b2246e154813456b3a9362dc5d653e070
+source_hash: b61219da3611e6363f8da751bdcf806c99baac8a23e3caa4f6d610b259e503dd
 ---
 
 👤 Phụ trách: Project Leader
@@ -138,7 +138,7 @@ workflows:
     steps:
       - id: review
         name: Review the changed specifications
-        uses: ./.bwv/recipes/review-specs.yml
+        uses: ./.bwv/recipes/review-specs
         with:
           source: docs/specs
 ```
