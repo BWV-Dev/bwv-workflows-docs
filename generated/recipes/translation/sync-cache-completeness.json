@@ -4,22 +4,66 @@
     {
       "name": "sourceRoot",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Repository-relative root of the original Japanese Markdown files."
     },
     {
       "name": "outputRoot",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Root containing mirrored Vietnamese translations and JSON caches."
+    },
+    {
+      "name": "exclude",
+      "type": "array",
+      "required": true,
+      "description": "Repository-relative globs of source documents whose outputs are no longer checked or synced."
     },
     {
       "name": "glossary",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Markdown file containing project terms and segment-matching rules."
     },
     {
       "name": "model",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Model used by the cache-synchronization skill."
+    },
+    {
+      "name": "timeoutMinutes",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Time limit in minutes for each document's cache sync, per attempt."
+    },
+    {
+      "name": "maxTurns",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Maximum Claude turns for each document's cache sync, per attempt."
+    },
+    {
+      "name": "maxBudgetUsd",
+      "type": "number",
+      "required": false,
+      "default": 6,
+      "description": "Runaway guard in USD (API list price) for each document's cache sync, per attempt."
+    },
+    {
+      "name": "allowedTools",
+      "type": "array",
+      "required": false,
+      "default": [
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Bash(jq empty:*)"
+      ],
+      "description": "Claude tools of the cache-sync step; replaces the whole default list. Keep Bash(jq empty:*) and add only narrow Bash(<command>:*) rules."
     },
     {
       "name": "toolkit",
@@ -35,7 +79,8 @@
         "cacheEdits": {
           "script": "scripts/vi-cache-edits.mjs"
         }
-      }
+      },
+      "description": "Complete replacement for the cache-sync skill, drift checker, and protected edit-plan checker."
     }
   ]
 }

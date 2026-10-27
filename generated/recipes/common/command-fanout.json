@@ -4,55 +4,65 @@
     {
       "name": "id",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "ID assigned to the emitted fan-out step."
     },
     {
       "name": "items",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Runtime expression that resolves to the array of items to process."
     },
     {
       "name": "args",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Per-item argument string passed to the selected skill or command."
     },
     {
       "name": "model",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Model used by every item process."
     },
     {
       "name": "maxTurns",
       "type": "number",
-      "required": true
+      "required": true,
+      "description": "Maximum agent turns allowed for each item."
     },
     {
       "name": "allowedTools",
       "type": "array",
-      "required": true
+      "required": true,
+      "description": "Tools available to each item process."
     },
     {
       "name": "disallowedTools",
       "type": "array",
       "required": false,
-      "default": []
+      "default": [],
+      "description": "Tools or path-scoped edits denied to each item process."
     },
     {
       "name": "timeoutMinutes",
       "type": "number",
       "required": false,
-      "default": 20
+      "default": 20,
+      "description": "Timeout applied to the fan-out work."
     },
     {
       "name": "maxParallel",
       "type": "number",
       "required": false,
-      "default": 3
+      "default": 3,
+      "description": "Maximum item processes that may run concurrently."
     },
     {
       "name": "toolkit",
       "type": "toolkit",
-      "required": true
+      "required": true,
+      "description": "Required toolkit containing exactly one run skill or command."
     }
   ]
 }

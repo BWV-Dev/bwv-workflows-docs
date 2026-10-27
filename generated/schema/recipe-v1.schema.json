@@ -34,6 +34,11 @@
                       "glob"
                     ]
                   },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
                   "enum": {
                     "type": "array",
                     "items": {}
@@ -64,6 +69,11 @@
                   "type": {
                     "type": "string",
                     "const": "toolkit"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "contract": {
                     "type": "string",
@@ -152,6 +162,7 @@
           "type": "object",
           "properties": {
             "model": {},
+            "effort": {},
             "maxTurns": {},
             "timeoutMinutes": {},
             "permissionMode": {},
@@ -267,7 +278,15 @@
                                               {
                                                 "type": "array",
                                                 "items": {
-                                                  "type": "string"
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               {
@@ -280,7 +299,15 @@
                                               {
                                                 "type": "array",
                                                 "items": {
-                                                  "type": "string"
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               {
@@ -323,7 +350,15 @@
                                               {
                                                 "type": "array",
                                                 "items": {
-                                                  "type": "string"
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               {
@@ -336,7 +371,15 @@
                                               {
                                                 "type": "array",
                                                 "items": {
-                                                  "type": "string"
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               {
@@ -497,6 +540,23 @@
                                                     },
                                                     "model": {
                                                       "type": "string"
+                                                    },
+                                                    "effort": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "low",
+                                                            "medium",
+                                                            "high",
+                                                            "xhigh",
+                                                            "max"
+                                                          ]
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipeInterpolation"
+                                                        }
+                                                      ]
                                                     },
                                                     "allowedTools": {
                                                       "anyOf": [
@@ -1071,7 +1131,8 @@
                                           "anyOf": [
                                             {
                                               "type": "string",
-                                              "minLength": 1
+                                              "minLength": 1,
+                                              "pattern": "^(?!!)"
                                             },
                                             {
                                               "$ref": "#/$defs/recipeInterpolation"
@@ -1093,7 +1154,8 @@
                                           "anyOf": [
                                             {
                                               "type": "string",
-                                              "minLength": 1
+                                              "minLength": 1,
+                                              "pattern": "^(?!!)"
                                             },
                                             {
                                               "$ref": "#/$defs/recipeInterpolation"
@@ -1275,6 +1337,11 @@
                       "glob"
                     ]
                   },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
                   "enum": {
                     "type": "array",
                     "items": {}
@@ -1305,6 +1372,11 @@
                   "type": {
                     "type": "string",
                     "const": "toolkit"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "contract": {
                     "type": "string",
@@ -1393,6 +1465,7 @@
           "type": "object",
           "properties": {
             "model": {},
+            "effort": {},
             "maxTurns": {},
             "timeoutMinutes": {},
             "permissionMode": {},
@@ -1504,6 +1577,23 @@
                                   },
                                   "model": {
                                     "type": "string"
+                                  },
+                                  "effort": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "low",
+                                          "medium",
+                                          "high",
+                                          "xhigh",
+                                          "max"
+                                        ]
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
+                                      }
+                                    ]
                                   },
                                   "allowedTools": {
                                     "anyOf": [

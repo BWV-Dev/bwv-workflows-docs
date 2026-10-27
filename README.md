@@ -78,6 +78,12 @@ Generated schemas, command tables, recipe metadata, and rendered samples live un
 pnpm docs:export --out ../bwv-workflows-docs/generated --recipes <checkout>
 ```
 
+From the engine checkout, run
+`pnpm docs:check [--docs <checkout>] [--recipes <checkout>]` to see whether a
+refresh is due. It exports into a temporary directory, lists generated files
+this repository would gain, lose, or change, and exits 1 when `generated/` is
+stale. It checks generated content only, not documentation prose.
+
 Commit the refreshed `generated/` directory and its `manifest.json` together. The manifest records the engine commit, optional recipe commit, and export time.
 
 `generated/.exclude` is owned by this documentation repository and lists generated files that must not be published. After every export, remove every listed file that the exporter recreated.
