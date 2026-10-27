@@ -10,10 +10,38 @@ import recipeSchema from "@site/generated/schema/recipe-v1.schema.json";
 
 👤 Responsible: Project Leader
 
-Use recipe version 1 to package a reusable set of workflows or steps. A local recipe lives below `.bwv/recipes/` and starts with `apiVersion: 1`. Official shared recipes in `BWV-Dev/bwv-workflows-recipes` use the same format.
+Use recipe version 1 to package a reusable set of workflows or steps. Keep a
+local recipe under `.bwv/recipes/` and start it with `apiVersion: 1`.
+Official shared recipes in `BWV-Dev/bwv-workflows-recipes` use the same
+format.
 
-BWV Workflows reads a local recipe from the same trusted base-branch commit as `.bwv/workflows.yml`. Catalog examples reference official shared recipes with a family tag such as `@translation/v1` or `@common/v1`.
+BWV Workflows reads a local recipe from the same trusted commit as
+`.bwv/workflows.yml`. A recipe has exactly one body: `workflows` or `steps`.
+Use the stable family tags `@translation/v1` and `@common/v1` for official
+recipes. The `testcase` family is alpha, so use an exact prerelease tag rather
+than a moving major tag, currently `@testcase/v1.0.0-alpha.1`.
 
-Read [Recipes and toolkits](../configuring/recipes-and-toolkits) before authoring a local recipe. Then use this generated reference for input types, recipe expressions, workflow recipes, and step recipes. A recipe must have exactly one body: `workflows` or `steps`.
+Read [Recipes and toolkits](../configuring/recipes-and-toolkits) before
+authoring a local recipe.
 
-<SchemaReference schema={recipeSchema} />
+:::tip[How to read this page]
+Compare the two recipe bodies first. Shared fields appear once; linked fields
+open their own YAML-path sections. The embedded workflow and step bodies link
+to the matching [`workflows.yml` reference](./workflows-yml). Read
+[Recipes and toolkits](../configuring/recipes-and-toolkits),
+[Steps](../configuring/steps), and
+[Passing data, `forEach`, and expressions](../configuring/passing-data) for
+the behavior behind these fields. For working examples, browse the
+[Recipe catalog](../recipes),
+[`translation/grouped`](../recipes/translation-grouped),
+[`translation/backfill`](../recipes/translation-backfill), and
+[`common/command-fanout`](../recipes/common-command-fanout).
+:::
+
+<SchemaReference
+  schema={recipeSchema}
+  sectionLinks={{
+    "workflows[]": "/reference/workflows-yml#schema-workflows",
+    "steps[]": "/reference/workflows-yml#schema-workflows-steps",
+  }}
+/>
