@@ -41,7 +41,9 @@ This workflow shows a direct prompt, a skill, and a command:
 version: 1
 defaults:
   model: sonnet
+  effort: high
   maxTurns: 30
+  maxBudgetUsd: 6
   timeoutMinutes: 20
   permissionMode: acceptEdits
 workflows:
@@ -71,10 +73,20 @@ workflows:
           model: sonnet
 ```
 
-`model`, `maxTurns`, `permissionMode`, and `timeoutMinutes` can be set in the
-root `defaults`. A step value overrides the corresponding default. When they
-are omitted, the runtime defaults are `sonnet`, 30 turns, `acceptEdits`, and 20
-minutes.
+Use these controls inside a `claude` block or in the root `defaults`:
+
+| Field            | Behavior                                                                       |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `model`          | Chooses the Claude model.                                                      |
+| `effort`         | Passes `low`, `medium`, `high`, `xhigh`, or `max` to Claude CLI as `--effort`. |
+| `maxTurns`       | Limits the number of agent turns.                                              |
+| `maxBudgetUsd`   | Stops the step at a positive per-step budget guard.                            |
+| `permissionMode` | Chooses `default`, `acceptEdits`, `dontAsk`, `plan`, or `bypassPermissions`.   |
+| `timeoutMinutes` | Sets a positive whole-minute timeout.                                          |
+
+A step value overrides the corresponding default. When omitted, the runtime
+defaults are `sonnet`, 30 turns, `acceptEdits`, and 20 minutes. `effort` and
+`maxBudgetUsd` have no runtime default and apply only when configured.
 
 #### Restrict tools explicitly
 
