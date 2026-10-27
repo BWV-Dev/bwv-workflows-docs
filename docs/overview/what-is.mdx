@@ -15,7 +15,7 @@ in GitHub and can open a pull request with the result.
 
 ## Workflow Summary
 
-1. [A pull request or push triggers a workflow](#1-trigger-a-workflow).
+1. [A pull request, a push, or a manual request triggers a workflow](#1-trigger-a-workflow).
 2. [BWV Workflows reports progress](#2-follow-the-run-in-github).
 3. [The App publishes the result](#3-review-the-result-pull-request).
 4. [Each role follows its own guide](#4-choose-your-role-track).
@@ -26,10 +26,12 @@ in GitHub and can open a pull request with the result.
 
 👤 Responsible: Project Leader and Dev & Com
 
-A Project Leader chooses one or both triggers in `.bwv/workflows.yml`:
+A Project Leader chooses one or more triggers in `.bwv/workflows.yml`:
 
 - **Pull request:** Run when a pull request targets a configured base branch.
 - **Push:** Run when commits reach a configured branch.
+- **Manual:** Run when a person with write access comments
+  `/bwv run <workflow> on <branch>` in an issue or pull request.
 
 The workflow can filter by branch, pull request action, and changed path. See
 [Triggers](../configuring/triggers) for the configuration options.
@@ -49,7 +51,8 @@ Open the source pull request. Look for these updates:
 <GitHubComment sample="status-running" author="BWV Workflows" />
 
 Push workflows report on the pushed commit. They normally do not have a source
-pull request to comment on.
+pull request to comment on. A manual run reports in a hub comment in the
+conversation where it was requested, and its check run is on the branch tip.
 
 ### 3. Review the result pull request
 
@@ -80,7 +83,7 @@ result pull request. The check run remains the source of its result.
 👤 Responsible: Project Leader and Dev & Com
 
 - **Project Leader:** Start with
-  [Onboard your repository](../getting-started/onboard-repository). Then protect
-  the required branches and add the first workflow.
+  [Onboard your repository](../getting-started/onboard-repository). Then add the
+  first workflow.
 - **Dev & Com:** Start with [Working on a pull request](../pull-requests).
   You do not need to read the workflow YAML.

@@ -125,9 +125,8 @@ Workflows cannot know the complete file list, it runs the workflow instead of
 risking a missed change. Make the steps confirm whether work is required.
 :::
 
-Protect every matching push branch. A push run executes repository content
-from the pushed commit, so that branch must require the same review as other
-code that controls automation. See [Protect your branches](../getting-started/protect-branches).
+A push run executes repository content from the pushed commit, so only people
+trusted to change automation should be able to push to a matching branch.
 
 ### 3. Configure a manual trigger
 
