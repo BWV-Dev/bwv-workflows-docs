@@ -88,6 +88,34 @@ A step value overrides the corresponding default. When omitted, the runtime
 defaults are `sonnet`, 30 turns, `acceptEdits`, and 20 minutes. `effort` and
 `maxBudgetUsd` have no runtime default and apply only when configured.
 
+Choose the permission mode based on what should happen when Claude reaches for
+a tool that is not in `allowedTools`:
+
+| Mode          | What happens                                                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `acceptEdits` | Edits in the worktree are approved automatically. Use `disallowedTools` when you need to prevent a write.                           |
+| `dontAsk`     | A tool outside the allowlist is denied immediately instead of waiting for approval. Claude sees the denial and can try another way. |
+
+BWV Workflows records a denied attempt even when Claude completes the task by
+another route. A Claude step therefore also accepts the step-level field
+`permissionDenials: fail | warn`, which defaults to `fail`. Use `warn` only
+when a later deterministic step verifies the required output:
+
+```yaml title=".bwv/workflows.yml"
+- name: Update the generated index
+  permissionDenials: warn
+  claude:
+    prompt: Update docs/index.json from the Markdown files under docs/specs.
+    permissionMode: dontAsk
+    allowedTools: [Read, Glob, Grep, Write]
+- name: Verify the generated index
+  shell: ./.bwv/scripts/check-index.sh docs/index.json
+```
+
+With `warn`, a successful Claude CLI result may continue and the denied tools
+remain visible on the step row. It does not turn a failed CLI result into a
+success; any non-zero Claude CLI exit fails the step.
+
 #### Restrict tools explicitly
 
 Keep `allowedTools` narrow and list only the tools the task needs. Under the
@@ -101,10 +129,11 @@ that relies on a path deny. Grant only narrow, read-only shell rules such as
 `Bash(git diff:*)`, because a general shell can reach the same files by another
 route.
 
-:::caution A denied tool fails the step
-When a tool rule blocks an attempted action, BWV Workflows marks the step as
-failed. Use `continueOnError: true` only when that denial is an expected result
-and later steps can handle it.
+:::caution Keep permission denials failing by default
+`permissionDenials: fail` prevents a run that produced no usable output from
+appearing healthy. Choose `warn` only when a later deterministic gate checks
+the output. Use `continueOnError: true` when later steps must handle an actual
+step failure, not merely to hide denied tools.
 :::
 
 ### 2. Run a shell command safely
@@ -195,21 +224,29 @@ shared recipe.
 
 Use these fields on resolved `claude` and `shell` steps:
 
-| Field             | Behavior                                                                      |
-| ----------------- | ----------------------------------------------------------------------------- |
-| `id`              | Makes the result available as `${{ steps.<id>.output }}`. IDs must be unique. |
-| `name`            | Labels the step in the check run and status comment.                          |
-| `if`              | Runs the step only when the expression is truthy; otherwise it is skipped.    |
-| `forEach`         | Requires an array and repeats the step for its items.                         |
-| `fanout`          | Selects `process` or `subagent` execution for a repeated Claude step.         |
-| `maxParallel`     | Limits parallel items; defaults to 3 and cannot exceed 20.                    |
-| `continueOnError` | Continues after this step fails. Defaults to `false`.                         |
-| `timeoutMinutes`  | Sets a positive whole-minute timeout for the step. Defaults to 20.            |
+| Field               | Behavior                                                                         |
+| ------------------- | -------------------------------------------------------------------------------- |
+| `id`                | Makes the result available as `${{ steps.<id>.output }}`. IDs must be unique.    |
+| `name`              | Labels the step in the check run and status comment.                             |
+| `if`                | Runs the step only when the expression is truthy; otherwise it is skipped.       |
+| `forEach`           | Requires an array and repeats the step for its items.                            |
+| `fanout`            | Selects `process` or `subagent` execution for a repeated Claude step.            |
+| `maxParallel`       | Limits parallel items; defaults to 3 and cannot exceed 20.                       |
+| `continueOnError`   | Continues after this step fails. Defaults to `false`.                            |
+| `permissionDenials` | On a Claude step, chooses `fail` or `warn` for denied tools. Defaults to `fail`. |
+| `timeoutMinutes`    | Sets a positive whole-minute timeout for the step. Defaults to 20.               |
 
 Without `continueOnError`, the workflow stops at the first failed step. With
 it, the failed step and its output remain visible, and later steps may use the
 recorded output. A non-zero shell exit, invalid JSON from `outputJson`, a
-timeout, or a denied Claude tool all count as failures.
+timeout, a non-zero Claude CLI exit, or a denied Claude tool under
+`permissionDenials: fail` all count as failures.
+
+`maxParallel` is a ceiling, not a promise that every slot starts immediately.
+Runner capacity still decides how many processes can run at once. Engine
+deployments that use memory requests with an aggregate limit can admit several
+Claude processes while preserving each process's hard limit, so repeated steps
+may run more items concurrently without a workflow change.
 
 See [Passing data, forEach, and expressions](./passing-data) for repeated work
 and expression contexts. Use the generated

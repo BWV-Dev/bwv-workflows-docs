@@ -13,6 +13,17 @@ Type a command as a new line in an issue or pull request conversation. Start the
 
 BWV Workflows carries out commands only for a user with write access to the repository. An unsupported command may return the command list, but it does not run workflow work. Do not edit an older comment into a command; add a new comment.
 
+An accepted `/bwv run` or `/bwv recreate #N` receives a reaction instead of a
+separate acceptance reply. Follow the manual-run hub in that conversation. BWV
+Workflows keeps one active hub per workflow and branch, so later commands update
+its request ledger and may join the same queued or running job. Refusals and
+help replies remain separate comments.
+
+The hub keeps the current pass on top, folds older request histories and closed
+or merged batches, and shows quota retry times in the State column. If a hub
+ends without a known conclusion, use its linked `bwv/<workflow>` check run as
+the authoritative result.
+
 Use the exact syntax in the generated table. See [Triggers](../configuring/triggers) for manual runs, [Working on a pull request](../pull-requests) for retry and recreate, and [When Dev & Com report a problem](../troubleshooting/dev-com-reports) for provenance and uncommon results.
 
 <Commands />

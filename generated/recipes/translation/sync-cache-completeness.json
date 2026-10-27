@@ -58,12 +58,13 @@
       "required": false,
       "default": [
         "Read",
+        "Glob",
+        "Grep",
         "Write",
         "Edit",
-        "Glob",
         "Bash(jq empty:*)"
       ],
-      "description": "Claude tools of the cache-sync step; replaces the whole default list. Keep Bash(jq empty:*) and add only narrow Bash(<command>:*) rules."
+      "description": "Claude tools of the cache-sync step; replaces the whole default list. Keep Read, Glob, Grep, Write, Edit, and Bash(jq empty:*); add only narrow Bash(<command>:*) rules."
     },
     {
       "name": "toolkit",
