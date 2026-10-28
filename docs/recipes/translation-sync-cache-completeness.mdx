@@ -108,7 +108,6 @@ Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the 
 | `model`          | Model used by the cache-sync skill.                                                                                                            | `sonnet`           |
 | `timeoutMinutes` | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                                                             | `40`               |
 | `maxTurns`       | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                                                                 | `40`               |
-| `maxBudgetUsd`   | Per-document, per-attempt runaway guard. Defaults to `6`.                                                                                      | `6`                |
 | `allowedTools`   | Complete cache-sync tool list. Omit it to use the maintained default.                                                                          | Omitted            |
 | `toolkit`        | Complete replacement for the default cache-sync skill, drift checker, and protected edit-plan checker. Omit it to use the maintained defaults. | Omitted            |
 

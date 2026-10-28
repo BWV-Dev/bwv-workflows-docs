@@ -126,6 +126,8 @@ BWV Workflows replaces only a branch tip it recognizes as its own. If someone pu
 
 One comment is kept per issue or pull request, workflow, and branch. Its request table shows who requested work, the command, the state, and the current check run. The current run keeps all pass and attempt rows together. Earlier request histories are folded instead of replaced.
 
-The finished hub folds its available Retry and Recreate boxes under **Actions**. While a request is queued, running, or waiting for an automatic retry, the hub shows that state instead of offering a conflicting action.
+The finished hub folds its available Retry and Recreate boxes under **Actions**. While a request is running or waiting for an automatic retry, the hub shows that state instead of offering a conflicting action.
+
+When a pass uses up the Claude quota, its result is ⏸️ rather than ❌. The summary adds **Stopped: Claude quota used up · retrying around HH:MM UTC**. The bot chooses that time shortly after the reset time reported by Claude, keeps completed batches, and continues automatically.
 
 See the [end-to-end translation example](/examples/translation-end-to-end#1-backfill-the-existing-documents) for a run that published two batches before pausing after quota exhaustion, resumed as a second attempt, published its third batch, and kept the earlier pull requests in the same hub.

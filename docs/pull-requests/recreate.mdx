@@ -13,8 +13,6 @@ import GitHubComment from "@site/src/components/GitHubComment";
 
 Use **Recreate** when an output pull request was closed without merging and you want the bot to open a fresh pull request. Closing an output pull request is treated as a deliberate decision, so a normal run or retry does not reopen it.
 
-You need **write** access to request a recreation.
-
 <GitHubComment
   sample="translation-tracker-closed-output-pr"
   author="BWV Workflows"
@@ -27,7 +25,7 @@ You need **write** access to request a recreation.
 1. **Dev or Com:** Return to the source or sync pull request that contains the tracker.
 2. Expand **Actions**.
 3. Tick **Recreate pull request `<group>`**.
-4. Wait for the bot to untick the box and show that the recreation is queued or running.
+4. The bot unticks the box and shows that it accepted the request. Wait for the tracker to show **running**.
 
 For a workflow without groups, use the **Recreate pull request** box in its status comment.
 
@@ -38,17 +36,7 @@ For a workflow without groups, use the **Recreate pull request** box in its stat
 
 {/* TODO(screenshot): A BWV Workflows comment while a user ticks `Recreate pull request source-pr-7`, with the Actions section open and repository name, avatars, and pull request number blurred */}
 
-### Option 2: Select Recreate PR
-
-1. **Dev or Com:** Open the closed output pull request.
-2. Open its `bwv/<workflow>/<group>` check run.
-3. Select **Recreate PR**.
-
-This button is available for a grouped output pull request. For a workflow without groups, use its comment box or the command below.
-
-{/* TODO(screenshot): The GitHub Recreate PR button on a completed `bwv/translate-docs/source-pr-7` check run of a closed output pull request, tightly cropped with repository name and pull request number blurred */}
-
-### Option 3: Add a command
+### Option 2: Add a command
 
 On the source or sync pull request, comment:
 
@@ -58,7 +46,7 @@ On the source or sync pull request, comment:
 
 Replace `source-pr-7` with the group or workflow name shown in the tracker or status comment. The command checks the pull request's current state, so it can work even before a recently closed row has refreshed.
 
-### Option 4: Recreate one manual loop batch
+### Recreate one manual loop batch
 
 A finished manual-run hub lists closed, unmerged batches and folds its action boxes below the pass table. Tick **Recreate pull request `#N`**, or comment in the same issue or pull request conversation:
 
@@ -76,7 +64,7 @@ The bot runs that work again and opens a new pull request from the same output b
 
 For a manual loop batch, the next plan stops loading the numbered closed batch and recomputes the work from Git. The replacement may contain a different set of documents if repository state changed. Its pull request body records which old batch it supersedes so later runs do not load the old one again.
 
-If the request is held behind a run already in progress, the bot shows it as queued and starts it after that run finishes.
+If the same work is already running, wait. The tracker updates when the recreate starts.
 
 :::caution Someone pushed to the output branch
 The bot does not overwrite commits it does not recognize as its own. If the check says the output branch cannot be replaced, preserve any needed changes, then ask the repository's Project Leader to delete the branch or change the configured output branch name. Run **Recreate** again afterwards.

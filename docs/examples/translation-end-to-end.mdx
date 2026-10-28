@@ -23,7 +23,7 @@ BWV Workflows keeps one hub comment for this workflow and branch. Its request ta
 
 ![The manual backfill hub while its first pass is running](/img/screenshots/s1-01-hub-running.png)
 
-The first pass published PR #2 with five documents. The summary records five kept, no failures, no stray outputs, and no deterministic repairs.
+The first pass published PR #2 with five documents. The summary shows that all five were ready to review. Nothing failed, no extra files appeared, and no model correction was needed after the output check.
 
 ![The manual hub after the first successful pass](/img/screenshots/s1-02-hub-pass1.png)
 
@@ -31,11 +31,13 @@ Each batch pull request contains the translation and cache pairs. The first batc
 
 ![The first backfill batch pull request and its cache check](/img/screenshots/s1-03-batch-pr.png)
 
-Three translation runners worked in parallel. Each used about 160–194 MiB in this run. Passes 1 and 2 published PRs #2 and #3. Pass 3 reached the Claude subscription quota after selecting the last three documents, so the hub kept the completed batches and waited for the automatic retry.
+Passes 1 and 2 published PRs #2 and #3. Pass 3 reached the Claude subscription quota after selecting the last three documents. The hub kept the completed batches and showed when it would try again.
+
+This screenshot predates the current quota display, so its stopped pass has a ❌ result. The current hub uses ⏸️ and adds a line such as **Stopped: Claude quota used up · retrying around HH:MM UTC**. The retry time is shortly after the reset time reported by Claude.
 
 ![The manual hub waiting after the quota stop in pass 3](/img/screenshots/s1-03b-hub-quota-wait.png)
 
-The next attempt resumed the same request and published PR #4. The final hub shows both attempts together and the **Resumed after** line preserves the already-open batches. Across PRs #2, #3, and #4, all 13 documents were kept and none required deterministic repair.
+The next attempt resumed the same request and published PR #4. The final hub shows both attempts together, and the **Resumed after** line keeps the already-open batches visible. Across PRs #2, #3, and #4, all 13 documents were ready to review. None needed a model correction after its output check.
 
 ![The finished manual hub with all four pass rows](/img/screenshots/s1-04-hub-finished.png)
 
@@ -61,9 +63,9 @@ After merge, the tracker published PRs #8, #9, and #10. PR #9 was then closed wi
 
 ![The Recreate checkbox for the closed direct-commit group](/img/screenshots/s2-03-recreate-box.png)
 
-BWV Workflows accepts the request, unticks the box, and refreshes the tracker while the work is queued.
+BWV Workflows unticks the box and refreshes the tracker to show that it accepted the request.
 
-![The tracker refreshing after the recreate request is accepted](/img/screenshots/s2-04-recreate-queued.png)
+![The tracker refreshing after the recreate request is accepted](/img/screenshots/s2-04-recreate-accepted.png)
 
 The request line then shows the recreate running, who requested it, and when it started.
 
@@ -119,7 +121,7 @@ Instead of ticking the box, comment on sync PR #16:
 /bwv recreate source-pr-15
 ```
 
-BWV Workflows adds a 👍 reaction. This request starts immediately, so there is no separate queued state in this run. The tracker shows `Recreate source-pr-15` running from 14:40 UTC and identifies the requester.
+BWV Workflows adds a 👍 reaction and starts this request immediately. The tracker shows `Recreate source-pr-15` running from 14:40 UTC and identifies the requester.
 
 ![The command and the source-pr-15 recreate running immediately](/img/screenshots/s5-03-command-running.png)
 

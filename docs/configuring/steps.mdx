@@ -31,7 +31,7 @@ Only `skill` and `command` accept `args`. The named file must already exist on t
     disallowedTools: ["Edit(.bwv/**)", "Edit(.claude/**)"]
 ```
 
-Put `timeoutMinutes` on the step. Put `model`, `effort`, `maxTurns`, `maxBudgetUsd`, `permissionMode`, and tool lists inside `claude`, or provide their shared values in root `defaults`.
+Put `timeoutMinutes` on the step. Put `model`, `effort`, `maxTurns`, `permissionMode`, and tool lists inside `claude`, or provide their shared values in root `defaults`.
 
 Keep `allowedTools` narrow. A broad shell permission can reach paths that a file-edit denial was meant to protect, so grant only specific rules such as `Bash(git diff:*)`.
 

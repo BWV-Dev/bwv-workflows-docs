@@ -105,7 +105,6 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 | `maxFilesPerGroup`      | Maximum files in one group and maximum simultaneous translations for it.                                                                   | `3`                   |
 | `timeoutMinutes`        | Per-document, per-attempt timeout for translation or cache sync. Defaults to `40`; maximum `90`.                                           | `40`                  |
 | `maxTurns`              | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                                                             | `40`                  |
-| `maxBudgetUsd`          | Per-document, per-attempt runaway guard. Defaults to `6`.                                                                                  | `6`                   |
 | `maxRepairs`            | Same-session model repairs after `checkOutputs` fails. Defaults to `1`; range `0`–`3`.                                                     | `1`                   |
 | `allowedTools`          | Complete tool list for translation. Omit it to use the maintained default.                                                                 | Omitted               |
 | `syncCacheAllowedTools` | Complete tool list for cache synchronization. Omit it to use the maintained default.                                                       | Omitted               |
