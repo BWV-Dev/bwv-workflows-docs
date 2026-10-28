@@ -1,0 +1,105 @@
+{
+  "path": "recipes/translation/translate-step.yml",
+  "inputs": [
+    {
+      "name": "id",
+      "type": "string",
+      "required": true,
+      "description": "Step id of the translate step."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "description": "Display name of the translate step."
+    },
+    {
+      "name": "items",
+      "type": "string",
+      "required": true,
+      "description": "Runtime expression resolving to the array of items to translate, one process each."
+    },
+    {
+      "name": "args",
+      "type": "string",
+      "required": true,
+      "description": "Arguments passed to the translate entry for each item."
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": true,
+      "description": "Model used by the translation skill."
+    },
+    {
+      "name": "maxParallel",
+      "type": "number",
+      "required": true,
+      "description": "Translation processes at once."
+    },
+    {
+      "name": "timeoutMinutes",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Time limit in minutes for each document's translation, per attempt."
+    },
+    {
+      "name": "maxTurns",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Maximum Claude turns for each document's translation, per attempt."
+    },
+    {
+      "name": "maxBudgetUsd",
+      "type": "number",
+      "required": false,
+      "default": 6,
+      "description": "Runaway guard in USD (API list price) for each document's translation, per attempt."
+    },
+    {
+      "name": "maxRepairs",
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "description": "Same-session model repair attempts after the output check fails; zero keeps the verify-only gate."
+    },
+    {
+      "name": "verify",
+      "type": "string",
+      "required": false,
+      "default": "true",
+      "description": "Per-item deterministic output check command; the no-op default keeps verification optional for direct callers."
+    },
+    {
+      "name": "allowedTools",
+      "type": "array",
+      "required": false,
+      "default": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit",
+        "Bash(git log:*)",
+        "Bash(git diff:*)",
+        "Bash(jq empty:*)"
+      ],
+      "description": "Claude tools of the translate step; replaces the whole default list. Keep Read, Glob, Grep, Write, Edit, and Bash(jq empty:*); add only narrow Bash(<command>:*) rules."
+    },
+    {
+      "name": "continueOnError",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Let the run go on when a document fails, for a caller that drops incomplete outputs itself."
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": true,
+      "description": "The translate command or skill invoked once per item."
+    }
+  ]
+}

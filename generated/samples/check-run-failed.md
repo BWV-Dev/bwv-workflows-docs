@@ -2,9 +2,9 @@
 
 | | Step | Time | Notes |
 |---|---|---|---|
-| ✅ | Plan changed documents | 1.2s |  |
-| ✅ | Translate documents | 3.2s |  |
-| ❌ | Verify outputs | 1.2s | docs_vn/specs/login.md was not created |
+| ✅ | `Plan changed documents` | 1.2s |  |
+| ✅ | `Translate documents` | 3.2s |  |
+| ❌ | `Verify outputs` | 1.2s | `docs_vn/specs/login.md was not created` |
 
 <details>
 <summary>Output of Verify outputs (exit 1)</summary>

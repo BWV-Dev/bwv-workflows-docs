@@ -1,0 +1,136 @@
+{
+  "path": "recipes/translation/backfill.yml",
+  "inputs": [
+    {
+      "name": "sourceRoot",
+      "type": "path",
+      "required": true,
+      "description": "Repository-relative root of Japanese Markdown source files."
+    },
+    {
+      "name": "outputRoot",
+      "type": "path",
+      "required": true,
+      "description": "Repository-relative root for mirrored Vietnamese Markdown translations and JSON caches."
+    },
+    {
+      "name": "glossary",
+      "type": "path",
+      "required": true,
+      "description": "Markdown file containing project terminology and translation rules."
+    },
+    {
+      "name": "exclude",
+      "type": "array",
+      "required": false,
+      "default": [
+        ".git/**"
+      ],
+      "description": "Repository-relative globs of source documents to leave out of planning and translation."
+    },
+    {
+      "name": "branches",
+      "type": "array",
+      "required": true,
+      "description": "Branches a person may run this workflow on; also the bases of the batch pull requests."
+    },
+    {
+      "name": "branchPrefix",
+      "type": "string",
+      "required": true,
+      "description": "Prefix for batch branches, which are named <branchPrefix>/backfill-<batch id>."
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": false,
+      "default": "sonnet",
+      "description": "Model used by the translation skill."
+    },
+    {
+      "name": "batchSize",
+      "type": "number",
+      "required": false,
+      "default": 10,
+      "description": "Documents per batch pull request."
+    },
+    {
+      "name": "maxParallel",
+      "type": "number",
+      "required": false,
+      "default": 3,
+      "description": "Translation processes at once; the effective concurrency is the smaller of this and batchSize."
+    },
+    {
+      "name": "timeoutMinutes",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Time limit in minutes for each document's translation, per attempt."
+    },
+    {
+      "name": "maxTurns",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Maximum Claude turns for each document's translation, per attempt."
+    },
+    {
+      "name": "maxBudgetUsd",
+      "type": "number",
+      "required": false,
+      "default": 6,
+      "description": "Runaway guard in USD (API list price) for each document's translation, per attempt."
+    },
+    {
+      "name": "maxRepairs",
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "description": "Same-session model repair attempts after a translated document fails checkOutputs; zero keeps the verify-only gate."
+    },
+    {
+      "name": "allowedTools",
+      "type": "array",
+      "required": false,
+      "default": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit",
+        "Bash(git log:*)",
+        "Bash(git diff:*)",
+        "Bash(jq empty:*)"
+      ],
+      "description": "Claude tools of the translate step; replaces the whole default list. Keep Read, Glob, Grep, Write, Edit, and Bash(jq empty:*); add only narrow Bash(<command>:*) rules."
+    },
+    {
+      "name": "maxIterations",
+      "type": "number",
+      "required": false,
+      "default": 10,
+      "description": "Batches per run; at most maxIterations times batchSize documents are attempted."
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": false,
+      "default": {
+        "translate": {
+          "skill": "translate-doc"
+        },
+        "checkOutputs": {
+          "script": "scripts/check-group-outputs.sh"
+        },
+        "plan": {
+          "script": "scripts/plan-translation-backfill.mjs"
+        },
+        "finalize": {
+          "script": "scripts/finalize-translation-batch.mjs"
+        }
+      },
+      "description": "Complete replacement for the default translation, output-check, planner, and finalizer tools."
+    }
+  ]
+}

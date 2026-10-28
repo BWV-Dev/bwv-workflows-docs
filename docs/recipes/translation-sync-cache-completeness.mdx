@@ -53,6 +53,7 @@ workflows:
         with:
           sourceRoot: docs/specs
           outputRoot: docs_vn/specs
+          exclude: [".git/**"]
           glossary: docs/glossary.md
           model: sonnet
     onSuccess:
@@ -98,13 +99,18 @@ Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the 
 
 ## Inputs explained
 
-| Input        | Meaning                                                                                                                                        | Example            |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `sourceRoot` | Root folder of the original Japanese `.md` files.                                                                                              | `docs/specs`       |
-| `outputRoot` | Root folder containing mirrored `.vi.md` translations and `.vi.json` caches.                                                                   | `docs_vn/specs`    |
-| `glossary`   | Markdown file containing project terms and rules for matching source and translation segments.                                                 | `docs/glossary.md` |
-| `model`      | Model used by the cache-sync skill.                                                                                                            | `sonnet`           |
-| `toolkit`    | Complete replacement for the default cache-sync skill, drift checker, and protected edit-plan checker. Omit it to use the maintained defaults. | Omitted            |
+| Input            | Meaning                                                                                                                                        | Example            |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `sourceRoot`     | Root folder of the original Japanese `.md` files.                                                                                              | `docs/specs`       |
+| `outputRoot`     | Root folder containing mirrored `.vi.md` translations and `.vi.json` caches.                                                                   | `docs_vn/specs`    |
+| `exclude`        | Source globs whose outputs are outside cache synchronization. This input is required for direct callers.                                       | `[".git/**"]`      |
+| `glossary`       | Markdown file containing project terms and segment-matching rules.                                                                             | `docs/glossary.md` |
+| `model`          | Model used by the cache-sync skill.                                                                                                            | `sonnet`           |
+| `timeoutMinutes` | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                                                             | `40`               |
+| `maxTurns`       | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                                                                 | `40`               |
+| `maxBudgetUsd`   | Per-document, per-attempt runaway guard. Defaults to `6`.                                                                                      | `6`                |
+| `allowedTools`   | Complete cache-sync tool list. Omit it to use the maintained default.                                                                          | Omitted            |
+| `toolkit`        | Complete replacement for the default cache-sync skill, drift checker, and protected edit-plan checker. Omit it to use the maintained defaults. | Omitted            |
 
 ## Common problems
 

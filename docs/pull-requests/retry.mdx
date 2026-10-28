@@ -15,6 +15,8 @@ Use a retry after you have fixed the reason a workflow or translation group fail
 
 Choose one of three ways: tick the offered box, select **Re-run** on one check run, or comment with `/bwv retry`.
 
+A manual loop hub can also offer Retry after its last completed pass records a true `loop.retryWhen` result, or after the engine stops with a known backlog. The same rule applies: use the offered action only after the underlying problem is fixed.
+
 ## Step-by-step
 
 ### Option 1: Tick Retry
@@ -78,6 +80,8 @@ If you make a typo or use an unknown `/bwv` command, the bot runs nothing and re
 ## What happens next
 
 The bot uses the latest version of an open pull request when the retry starts. For a merged pull request, it retries work from that merge. The status comment, tracker, and check run update as the request waits, starts, and finishes.
+
+For a manual workflow, the retry stays in the existing hub for that workflow and branch. Its new attempt rows appear with the current run, while earlier request histories remain folded. A later false `loop.retryWhen` result clears earlier retry evidence.
 
 :::caution Do not retry a published group
 A group with an output pull request has already published. The bot refuses `/bwv retry <group>` for it. Review the existing pull request, or use **Recreate** if it was closed without merging.

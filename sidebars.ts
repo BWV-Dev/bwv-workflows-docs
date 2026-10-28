@@ -11,6 +11,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Example",
+      collapsed: false,
+      items: ["examples/translation-end-to-end"],
+    },
+    {
+      type: "category",
       label: "Getting started",
       collapsed: false,
       items: [
@@ -34,6 +40,7 @@ const sidebars: SidebarsConfig = {
           link: { type: "doc", id: "recipes/index" },
           items: [
             "recipes/translation-grouped",
+            "recipes/translation-backfill",
             "recipes/translation-sync-cache-completeness",
             "recipes/testcase-batch",
             "recipes/common-command-fanout",

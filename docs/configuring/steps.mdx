@@ -1,14 +1,145 @@
 ---
 title: "Steps: claude, shell, uses"
 sidebar_position: 2
-description: Choose and configure the supported workflow step types.
+description: Choose, verify, and configure the supported workflow step types.
 slug: /configuring/steps
 ---
 
 👤 Responsible: Project Leader
 
-This page will compare `claude`, `shell`, and `uses` steps and show the required fields for each step type.
+Build a workflow from `claude`, `shell`, and `uses` steps. Keep each step focused on one result, then verify model-written output with a deterministic command.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
-:::
+## Choose a Claude task
+
+A `claude` step must set exactly one task source:
+
+| Field        | Use it for                                               |
+| ------------ | -------------------------------------------------------- |
+| `prompt`     | Instructions written directly in the workflow.           |
+| `promptFile` | Instructions read from a repository file.                |
+| `skill`      | `.claude/skills/<name>/SKILL.md`.                        |
+| `command`    | `.claude/commands/<name>.md`, or a user-invocable skill. |
+
+Only `skill` and `command` accept `args`. The named file must already exist on the trusted branch that supplies the workflow.
+
+```yaml title=".bwv/workflows.yml"
+- name: Update the generated index
+  claude:
+    prompt: Update docs/index.json from the Markdown files under docs/specs.
+    model: sonnet
+    allowedTools: [Read, Glob, Grep, Write]
+    disallowedTools: ["Edit(.bwv/**)", "Edit(.claude/**)"]
+```
+
+Put `timeoutMinutes` on the step. Put `model`, `effort`, `maxTurns`, `maxBudgetUsd`, `permissionMode`, and tool lists inside `claude`, or provide their shared values in root `defaults`.
+
+Keep `allowedTools` narrow. A broad shell permission can reach paths that a file-edit denial was meant to protect, so grant only specific rules such as `Bash(git diff:*)`.
+
+## Verify and repair Claude output
+
+Add `verify` beside `claude` when a deterministic command can prove that the output is acceptable:
+
+```yaml title=".bwv/workflows.yml"
+- id: update-index
+  name: Update and verify the generated index
+  claude:
+    prompt: Update docs/index.json from the Markdown files under docs/specs.
+    permissionMode: dontAsk
+    allowedTools: [Read, Glob, Grep, Write]
+  verify:
+    shell: ./.bwv/scripts/check-index.sh docs/index.json
+    maxRepairs: 1
+```
+
+After a successful Claude invocation, BWV Workflows runs `verify.shell`. When the check fails, it gives the bounded end of the check output to the same Claude session and asks it to repair only the reported problem. The check runs again after every repair.
+
+`maxRepairs` defaults to `1` and accepts `0` through `3`:
+
+- Set `0` to keep the deterministic verification gate but disable model repair.
+- Keep `1` for one focused repair after the initial model result.
+- Raise it only when the verifier can report a new, actionable failure after each repair.
+
+Each repair keeps the original model, tools, permission mode, timeout, and per-invocation limits. If the last check still fails, the Claude step fails with the verifier's exit code and output. An initial Claude failure, a failing permission denial, quota exhaustion, or an infrastructure failure skips verification because there is no successful result to check.
+
+For a repeated Claude step, verification is per item and requires `fanout: process`:
+
+```yaml title=".bwv/workflows.yml"
+- id: translate
+  forEach: ${{ steps.plan.output.files }}
+  fanout: process
+  maxParallel: 3
+  claude:
+    skill: translate-doc
+    args: ${{ item.source }}
+    permissionMode: dontAsk
+    allowedTools: [Read, Glob, Grep, Write, Edit]
+  verify:
+    shell: ./.bwv/scripts/check-translation.sh "${{ item.source }}"
+    maxRepairs: 1
+```
+
+`verify.shell` uses the same worktree, environment, sandbox, expression safety, and resource profile as a normal `shell` step. In a recipe, it may also invoke a toolkit script:
+
+```yaml title="recipe.yml"
+steps:
+  - id: translate
+    claude:
+      run: $[[ toolkit.translate ]]
+      args: $[[ inputs.source ]]
+    verify:
+      shell: $[[ toolkit.checkOutputs ]] $[[ inputs.source ]]
+      maxRepairs: $[[ inputs.maxRepairs ]]
+```
+
+BWV Workflows resolves that script at the recipe's trusted commit and materializes it before the step starts. The same toolkit script therefore runs identically from `shell` or `verify.shell`.
+
+## Run a shell command safely
+
+A `shell` step runs `/bin/sh` in the checked-out worktree. Its trimmed stdout becomes the step output. Set `outputJson: true` when stdout is one JSON value:
+
+```yaml title=".bwv/workflows.yml"
+- id: plan
+  name: Select a specification
+  shell: >-
+    printf '%s\n' '{"file":"docs/specs/login.md"}'
+  outputJson: true
+- name: Check the selected specification
+  shell: >-
+    ./.bwv/scripts/check-spec.sh
+    "${{ steps.plan.output.file }}"
+```
+
+Pass runtime expressions as positional arguments to a script. A top-level expression or one inside double quotes is preserved as one argument during the shell's first parse.
+
+BWV Workflows refuses expressions in contexts that can change how the shell parses the command, including single quotes, arithmetic, command substitutions, comments, expression-bearing heredocs, and unsupported parameter expansions. Do not pass a runtime value to `eval`, a trap command string, `sh -c`, an export operand, or shell arithmetic; those constructs parse the value again.
+
+## Insert a step recipe
+
+Use `uses` to insert steps from a local or remote step recipe:
+
+```yaml title=".bwv/workflows.yml"
+- id: review
+  name: Review the changed specifications
+  uses: ./.bwv/recipes/review-specs
+  with:
+    source: docs/specs
+```
+
+The recipe expands while configuration loads. A step-recipe caller may set `id`, `name`, `if`, and `with`; the emitted steps own execution fields such as `forEach`, `fanout`, `maxParallel`, `continueOnError`, and `timeoutMinutes`.
+
+## Control step execution
+
+Resolved `claude` and `shell` steps accept these common fields:
+
+| Field             | Behavior                                                           |
+| ----------------- | ------------------------------------------------------------------ |
+| `id`              | Makes the result available as `${{ steps.<id>.output }}`.          |
+| `name`            | Labels the row in the check run and status comment.                |
+| `if`              | Skips the step when its runtime expression is false.               |
+| `forEach`         | Repeats the step for every item in an array.                       |
+| `fanout`          | Selects process or subagent execution for repeated Claude work.    |
+| `maxParallel`     | Limits simultaneous items; defaults to `3` and cannot exceed `20`. |
+| `continueOnError` | Lets later steps run after this step fails.                        |
+| `timeoutMinutes`  | Sets the positive whole-minute timeout for the step.               |
+
+Use the generated [workflow configuration reference](/reference/workflows-yml) for the complete field list and defaults.

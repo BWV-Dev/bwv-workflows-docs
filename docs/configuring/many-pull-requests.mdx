@@ -1,14 +1,131 @@
 ---
 title: Many pull requests from one run
 sidebar_position: 6
-description: Repeat a workflow and publish one focused pull request per pass.
+description: Repeat a workflow, publish one pull request per pass, and offer the right recovery action.
 slug: /configuring/many-pull-requests
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
+
 👤 Responsible: Project Leader
 
-This page will show how `loop` repeats a workflow and how each pass produces a separate, focused pull request.
+Use `loop` when one push or manual request can create more work than one focused pull request should contain. Each pass plans one batch, runs every step, and publishes that batch before the next pass starts.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
+## `loop` or `forEach`?
+
+|           | `forEach`                            | `loop`                                                       |
+| --------- | ------------------------------------ | ------------------------------------------------------------ |
+| Set on    | One step                             | The whole workflow                                           |
+| Repeats   | That step for every item in an array | Every step as a sequence of passes                           |
+| Publishes | Once after all steps                 | Once per pass, on a separate branch                          |
+| Work list | Known when the step starts           | Recomputed from Git by a plan step at the start of each pass |
+| Triggers  | Any                                  | `on.push` or `on.manual`                                     |
+
+Use both when one batch contains several independent files that can run in parallel.
+
+## Configure a loop
+
+Make the plan step inspect the current Git tree and return structured JSON with the next batch, a stable branch identifier, and the remaining backlog:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: update-doc-batches
+    fetchDepth: 0
+    on:
+      manual:
+        branches: [main]
+    loop:
+      while: ${{ steps.plan.output.remaining > 0 }}
+      maxIterations: 20
+      summary: "${{ steps.finalize.output.kept }} kept"
+      retryWhen: ${{ steps.finalize.output.failed > 0 }}
+      closed: skip
+    steps:
+      - id: plan
+        name: Plan the next batch
+        shell: node scripts/plan-doc-batch.mjs
+        outputJson: true
+      - name: Update this batch
+        forEach: ${{ steps.plan.output.files }}
+        fanout: process
+        maxParallel: 2
+        claude:
+          prompt: Update the generated documentation for ${{ item }}.
+          allowedTools: [Read, Write, Edit]
+      - id: finalize
+        name: Check this batch
+        shell: node scripts/check-doc-batch.mjs
+        outputJson: true
+    onSuccess:
+      createPullRequest:
+        branch: "bwv/docs/${{ steps.plan.output.batchId }}"
+        title: "docs: update ${{ steps.plan.output.batchId }}"
+```
+
+`while` is evaluated after a completed pass. A truthy result starts another pass in the same worktree; a false result finishes after the current batch is published.
+
+`maxIterations` defaults to `20` and cannot exceed `100`. The engine also stops after two consecutive passes publish no changes. Both limits prevent a broken planner from running forever.
+
+Make the output branch vary with stable batch content. Reusing a branch during one run is refused because the later pass would replace an earlier batch pull request.
+
+## Offer Retry from a pass result
+
+`summary` is display text only. It appears as one line in the hub and never controls recovery.
+
+Use `retryWhen` to record whether the completed pass left recoverable work:
+
+```yaml
+retryWhen: ${{ steps.finalize.output.failed > 0 }}
+```
+
+The expression is evaluated in the same completed-pass context as `while`:
+
+- `true` records evidence that the finished hub should offer **Retry**;
+- `false` clears earlier retry evidence;
+- omitting `retryWhen` records neither.
+
+Across automatic attempts, the latest recorded true or false value controls the action. BWV Workflows may also offer Retry when it knows the loop stopped with backlog at `maxIterations` or the no-progress limit.
+
+Use Retry for work that failed and can be attempted again. Do not use it for a deliberately closed batch pull request; that needs Recreate.
+
+## Resume from published batches
+
+Keep progress in Git. The planner must derive completed and remaining work from repository files and history; BWV Workflows does not keep a separate cursor.
+
+Before a new run plans work, it loads batches that the same workflow already published:
+
+- Open batches are loaded so their changes are not generated again.
+- Merged batches are already present on the base branch.
+- With `closed: skip`, closed unmerged batches are loaded and treated as completed until someone requests a replacement.
+- With `closed: redo`, closed unmerged batches are not loaded, so the planner may select that work again automatically.
+
+The manual hub shows open loaded batches in **Resumed after**. It folds closed and merged loaded batches below the current pass table.
+
+<GitHubComment sample="manual-run-hub" author="BWV Workflows" />
+
+## Recreate one closed batch
+
+With `closed: skip`, a closed unmerged batch appears in the folded history and in **Actions**. A user with write access can tick its box or comment in the same conversation:
+
+```text
+/bwv recreate #7
+```
+
+The pull request number scopes the request. BWV Workflows stops loading that specific batch and lets the planner redo its work. The replacement uses the original branch when it is still safe to replace, or a later valid branch selected by the workflow.
+
+After publication, the old row is shown as `#7 (closed; replaced by #11)`. That old batch is never offered or loaded again, even if the replacement later closes. Request Recreate on the newest eligible closed pull request instead.
+
+The command does nothing under `closed: redo`, because closed batches were already left out of the resumed tree.
+
+:::caution Do not change a bot batch branch
+BWV Workflows replaces only a branch tip it recognizes as its own. If someone pushed another commit to the branch, preserve that work and resolve the branch before recreating the batch.
 :::
+
+## Read the manual hub
+
+One comment is kept per issue or pull request, workflow, and branch. Its request table shows who requested work, the command, the state, and the current check run. The current run keeps all pass and attempt rows together. Earlier request histories are folded instead of replaced.
+
+The finished hub folds its available Retry and Recreate boxes under **Actions**. While a request is queued, running, or waiting for an automatic retry, the hub shows that state instead of offering a conflicting action.
+
+See the [end-to-end translation example](/examples/translation-end-to-end#1-backfill-the-existing-documents) for a run that published two batches before pausing after quota exhaustion, resumed as a second attempt, published its third batch, and kept the earlier pull requests in the same hub.

@@ -1,7 +1,7 @@
 ---
 title: Recreating a closed pull request
 sidebar_position: 4
-description: Recreate published work after its pull request was closed.
+description: Recreate grouped or loop-batch work after its pull request was closed.
 slug: /pull-requests/recreate
 ---
 
@@ -58,9 +58,23 @@ On the source or sync pull request, comment:
 
 Replace `source-pr-7` with the group or workflow name shown in the tracker or status comment. The command checks the pull request's current state, so it can work even before a recently closed row has refreshed.
 
+### Option 4: Recreate one manual loop batch
+
+A finished manual-run hub lists closed, unmerged batches and folds its action boxes below the pass table. Tick **Recreate pull request `#N`**, or comment in the same issue or pull request conversation:
+
+```text
+/bwv recreate #9
+```
+
+The number identifies one published batch, not a workflow or source group. BWV Workflows accepts it only while that pull request is the newest eligible closed publication for its batch branch.
+
+The replacement is recorded in the hub. The old row becomes `#9 (closed; replaced by #11)` and is never offered or loaded again. If the replacement later closes, recreate the newest eligible pull request instead of asking for #9 again.
+
 ## What happens next
 
 The bot runs that work again and opens a new pull request from the same output branch. The old closed pull request stays closed. The tracker changes to the new pull request when publication succeeds.
+
+For a manual loop batch, the next plan stops loading the numbered closed batch and recomputes the work from Git. The replacement may contain a different set of documents if repository state changed. Its pull request body records which old batch it supersedes so later runs do not load the old one again.
 
 If the request is held behind a run already in progress, the bot shows it as queued and starts it after that run finishes.
 

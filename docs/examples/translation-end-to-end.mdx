@@ -1,0 +1,136 @@
+---
+title: Translation workflow, end to end
+sidebar_position: 1
+description: Follow a complete backfill, grouped translation, review, recreation, and incremental update.
+slug: /examples/translation-end-to-end
+---
+
+👤 Responsible: Project Leader and Dev & Com
+
+This worked example follows a small Japanese-to-Vietnamese documentation repository from its first backfill through a later incremental translation. The screenshots come from one complete run in an example repository. The people in the scenario use the demo identities `demo-jp-author`, `demo-project-leader`, `demo-com`, and `demo-dev`.
+
+The repository keeps Japanese Markdown on `main`, reviewed Vietnamese Markdown and caches on `bwv-docs`, and generated translation branches below `bwv/translation/`.
+
+## 1. Backfill the existing documents
+
+**Project Leader:** Start the manual workflow from issue #1:
+
+```text
+/bwv run translation-backfill/backfill on bwv-docs
+```
+
+BWV Workflows keeps one hub comment for this workflow and branch. Its request table links the check run, and its current-run table gains one row for every loop pass.
+
+![The manual backfill hub while its first pass is running](/img/screenshots/s1-01-hub-running.png)
+
+The first pass published PR #2 with five documents. The summary records five kept, no failures, no stray outputs, and no deterministic repairs.
+
+![The manual hub after the first successful pass](/img/screenshots/s1-02-hub-pass1.png)
+
+Each batch pull request contains the translation and cache pairs. The first batch changed ten files for five documents, and the cache-in-sync workflow ran on the draft pull request.
+
+![The first backfill batch pull request and its cache check](/img/screenshots/s1-03-batch-pr.png)
+
+Three translation runners worked in parallel. Each used about 160–194 MiB in this run. Passes 1 and 2 published PRs #2 and #3. Pass 3 reached the Claude subscription quota after selecting the last three documents, so the hub kept the completed batches and waited for the automatic retry.
+
+![The manual hub waiting after the quota stop in pass 3](/img/screenshots/s1-03b-hub-quota-wait.png)
+
+The next attempt resumed the same request and published PR #4. The final hub shows both attempts together and the **Resumed after** line preserves the already-open batches. Across PRs #2, #3, and #4, all 13 documents were kept and none required deterministic repair.
+
+![The finished manual hub with all four pass rows](/img/screenshots/s1-04-hub-finished.png)
+
+## 2. Group new source changes and recreate a closed output
+
+**Japanese-side author:** Merge two source pull requests and make one direct source commit. **Project Leader:** Open sync PR #7 from `main` into `bwv-docs`.
+
+Before merge, the tracker previews three groups:
+
+- `source-pr-6` for three files from source PR #6;
+- `direct-f9c5db3` for the direct commit;
+- `source-pr-5` for one file from source PR #5.
+
+The preview is advisory. It does not run a model, push a branch, or open a translation pull request.
+
+![The three planned groups on sync pull request 7](/img/screenshots/s2-01-sync-preview.png)
+
+After merge, the tracker published PRs #8, #9, and #10. PR #9 was then closed without merging, so the tracker kept it as `#9 (closed)` and exposed one Recreate action.
+
+![The published tracker with output pull request 9 closed](/img/screenshots/s2-02-sync-published-closed.png)
+
+**Com:** Expand **Actions** and tick **Recreate pull request `direct-f9c5db3`**. A normal retry does not reopen a deliberately closed output pull request.
+
+![The Recreate checkbox for the closed direct-commit group](/img/screenshots/s2-03-recreate-box.png)
+
+BWV Workflows accepts the request, unticks the box, and refreshes the tracker while the work is queued.
+
+![The tracker refreshing after the recreate request is accepted](/img/screenshots/s2-04-recreate-queued.png)
+
+The request line then shows the recreate running, who requested it, and when it started.
+
+![The direct-commit group running again](/img/screenshots/s2-05-recreate-running.png)
+
+The replacement becomes PR #11 on the same output branch. PR #9 remains closed in the conversation history, while the tracker row now points reviewers to #11.
+
+![The published tracker after pull request 11 replaces pull request 9](/img/screenshots/s2-06-recreate-finished.png)
+
+Slash commands always re-check the current tracker state. Here `/bwv retry translation/draft` reports that nothing is eligible because every group is already published. A retry of published work runs nothing; review its existing output pull request, or use Recreate after that pull request is closed without merging.
+
+![A command response after every source group has been published](/img/screenshots/s2-07-retry-command.png)
+
+## 3. Keep the cache aligned with a reviewer edit
+
+**Com:** Edit the Vietnamese Markdown directly on translation PR #8. The edit changed only the reviewed sentence. BWV Workflows detected the difference, committed `sync the VI cache with the reviewed translation`, and changed only the matching `.vi.json` cache. The follow-up `translation/cache-in-sync` check passed.
+
+![Translation pull request 8 after the reviewer edit was written to the cache](/img/screenshots/s3-01-cache-synced-pr.png)
+
+This cache update matters because a later translation reuses reviewed Vietnamese text for Japanese segments that did not change.
+
+## 4. Translate only the later source change
+
+**Japanese-side author:** Merge source PR #12, which changes the CSV paragraph in one timesheet document. **Project Leader:** Open sync PR #13.
+
+The preview contains one group, `source-pr-12`, with only `docs/screens/SCR-TIMESHEET-001.md`.
+
+![The second sync preview with one source group](/img/screenshots/s4-01-sync2-preview.png)
+
+After merge, the tracker shows that one group running.
+
+![The second sync tracker while source-pr-12 is running](/img/screenshots/s4-02-sync2-running.png)
+
+The group publishes translation PR #14.
+
+![The second sync tracker linking to translation pull request 14](/img/screenshots/s4-03-sync2-published.png)
+
+The output pull request changes only the `.vi.md` and `.vi.json` pair for the timesheet document. In the cache, only the changed CSV paragraph and the `sourceCommit` footer move forward. The sentence that `demo-com` reviewed in the earlier pull request stays unchanged in both Markdown and cache.
+
+![The incremental cache diff in translation pull request 14](/img/screenshots/s4-04-incremental-diff.png)
+
+## 5. Recreate a closed output by command
+
+**Japanese-side author:** Merge source PR #15, `docs(screen): ロック解除後の初回ログイン通知を追記`, which adds one line to `SCR-LOGIN-001`. **Project Leader:** Merge sync PR #16, the third sync run.
+
+The sync produces one group, `source-pr-15`, and publishes output PR #17. **Com:** Close #17 without merging and leave the Vietnamese reason in the pull request. The tracker changes its row to `#17 (closed)` and offers Recreate.
+
+![The third sync tracker after output pull request 17 was closed](/img/screenshots/s5-01-output-closed.png)
+
+Instead of ticking the box, comment on sync PR #16:
+
+```text
+/bwv recreate source-pr-15
+```
+
+BWV Workflows adds a 👍 reaction. This request starts immediately, so there is no separate queued state in this run. The tracker shows `Recreate source-pr-15` running from 14:40 UTC and identifies the requester.
+
+![The command and the source-pr-15 recreate running immediately](/img/screenshots/s5-03-command-running.png)
+
+The finished tracker points to PR #18. It is a new pull request on the same `bwv/translation/sync-16/source-pr-15` branch; #17 stays closed. After the normal translation and cache gates pass, Dev & Com review and merge #18.
+
+![The third sync tracker after pull request 18 replaces pull request 17](/img/screenshots/s5-04-command-finished.png)
+
+## What this run demonstrates
+
+- A manual loop publishes completed batches before a later pass stops, and a retry resumes from Git instead of restarting the whole backfill.
+- A sync preview groups source changes without running the model; the merge result is authoritative.
+- A closed output pull request is recreated as a new pull request on the same branch, rather than reopened by Retry.
+- Recreate works from either the tracker checkbox or `/bwv recreate <group>`, while Retry correctly does nothing for already-published groups.
+- A reviewer edit updates its cache before merge, so unchanged reviewed wording survives the next incremental translation.
