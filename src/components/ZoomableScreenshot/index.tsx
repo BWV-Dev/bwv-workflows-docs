@@ -22,6 +22,7 @@ export default function ZoomableScreenshot({
       target="_blank"
       rel="noreferrer"
       aria-label={`Open full-size image: ${alt}`}
+      title="Open full-size image"
     >
       <img
         className={clsx(styles.image, compact && styles.compact)}
