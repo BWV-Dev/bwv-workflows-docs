@@ -1,7 +1,7 @@
 ---
 title: Running something again
 sidebar_position: 3
-description: Retry eligible work from a checkbox, check run, or command.
+description: Retry failed work from a checkbox or command.
 slug: /pull-requests/retry
 ---
 
@@ -11,9 +11,9 @@ import GitHubComment from "@site/src/components/GitHubComment";
 
 ## When you see this
 
-Use a retry after you have fixed the reason a workflow or translation group failed. You need **write** access to the repository to request one.
+Use a retry after you have fixed the reason a workflow or translation group failed. Choose one of two ways: tick the offered box or comment with `/bwv retry`.
 
-Choose one of three ways: tick the offered box, select **Re-run** on one check run, or comment with `/bwv retry`.
+A manual loop hub can also offer Retry after its last completed pass records a true `loop.retryWhen` result, or after the engine stops with a known backlog. The same rule applies: use the offered action only after the underlying problem is fixed.
 
 ## Step-by-step
 
@@ -22,23 +22,13 @@ Choose one of three ways: tick the offered box, select **Re-run** on one check r
 1. **Dev or Com:** Open the BWV Workflows status comment or translation tracker.
 2. For a tracker, expand **Actions**.
 3. Tick the **Retry** box for the failed workflow or group.
-4. Wait for the bot to untick the box and show a queued or running line.
+4. The bot unticks the box and shows that it accepted the request. Wait for the line to change to **running**.
 
 {/* TODO(screenshot): A BWV Workflows tracker Actions section expanded while a user ticks `Retry source-pr-7`, with repository name, avatars, and pull request number blurred */}
 
 <GitHubComment sample="status-failed-with-retry" author="BWV Workflows" />
 
-### Option 2: Select Re-run on one check run
-
-1. **Dev or Com:** Open the failed check named `bwv/<workflow>` or `bwv/<workflow>/<group>`.
-2. Open the check run menu.
-3. Select **Re-run** for that check run.
-
-For a grouped workflow, the workflow check retries the groups the tracker still offers. A group check retries only that group.
-
-{/* TODO(screenshot): The GitHub Re-run button on a failed `bwv/translate-docs/source-pr-7` check run, tightly cropped with repository name and pull request number blurred */}
-
-### Option 3: Add a pull request comment
+### Option 2: Add a pull request comment
 
 Comment on the pull request with one of these commands:
 
@@ -62,14 +52,7 @@ See the [/bwv command reference](/reference/commands) for the complete generated
 
 ### Read the bot's answer
 
-| Answer                                      | Meaning                                                               |
-| ------------------------------------------- | --------------------------------------------------------------------- |
-| **queued**                                  | The request was accepted.                                             |
-| **after the run in progress finishes**      | The request is held behind the current run and will follow it.        |
-| **after the work already waiting**          | Another request is already ahead of this one.                         |
-| **already covered by a run that is queued** | The queued work already includes your request. Do not ask again.      |
-| **running since …**                         | The requested retry has started.                                      |
-| **Nothing to retry yet: … is running now**  | That exact workflow or group is already running. Wait for its result. |
+The bot first confirms that it accepted the request, then shows **running since …** when the work starts. If the same work is already running or already requested, do not comment again. Wait for the current result.
 
 If you make a typo or use an unknown `/bwv` command, the bot runs nothing and replies with the supported commands:
 
@@ -77,16 +60,14 @@ If you make a typo or use an unknown `/bwv` command, the bot runs nothing and re
 
 ## What happens next
 
-The bot uses the latest version of an open pull request when the retry starts. For a merged pull request, it retries work from that merge. The status comment, tracker, and check run update as the request waits, starts, and finishes.
+The bot uses the latest version of an open pull request when the retry starts. For a merged pull request, it retries work from that merge. The status comment, tracker, and check run update as the request is accepted, starts, and finishes.
+
+For a manual workflow, the retry stays in the existing hub for that workflow and branch. Its new attempt rows appear with the current run, while earlier request histories remain folded. A later false `loop.retryWhen` result clears earlier retry evidence.
 
 :::caution Do not retry a published group
 A group with an output pull request has already published. The bot refuses `/bwv retry <group>` for it. Review the existing pull request, or use **Recreate** if it was closed without merging.
 :::
 
-:::note Can I use Re-run all checks?
-Use the **Re-run** action for the specific `bwv/…` check, a Retry box, or `/bwv retry`. A whole-suite **Re-run all checks** action is not a reliable way to request the intended BWV work.
-:::
-
 :::note Why did my request not start immediately?
-Only one run of the same work proceeds at a time. The bot holds an eligible request behind the running work and shows that wait in the tracker or a queued check run.
+Only one run of the same work proceeds at a time. Wait for the current run; the tracker updates when your request starts.
 :::

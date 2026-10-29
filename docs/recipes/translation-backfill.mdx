@@ -1,0 +1,127 @@
+---
+title: translation/backfill
+sidebar_position: 3
+description: Manually translate documents that existed before the grouped translation workflow was enabled.
+slug: /recipes/translation-backfill
+---
+
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
+👤 Responsible: Project Leader
+
+Use this workflow recipe to create the first Vietnamese translations for documents that already exist. A person starts it manually. Each loop pass plans a bounded batch, translates documents in parallel, verifies each output, and opens one draft pull request.
+
+Use [translation/grouped](./translation-grouped) for later source changes. Both recipes share the same translate step, output format, output check, and model-correction behavior.
+
+## Prerequisites
+
+- Keep Japanese Markdown under one source folder, such as `docs/specs`.
+- Choose a mirrored output folder, such as `docs_vn/specs`.
+- Add a Markdown glossary with project terminology and translation rules.
+- Use the same `branchPrefix` as `translation/grouped` so its cache-sync workflow covers backfill branches.
+- Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
+- Keep spaces out of configured paths and document paths.
+
+Every source document produces one `.vi.md` translation and one `.vi.json` cache below `outputRoot`.
+
+## Add the workflow
+
+Create `.bwv/workflows.yml` on the branch that will receive the batch pull requests:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+
+workflows:
+  - name: translation-backfill
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/backfill.yml@<sha-of-latest-tag>
+    with:
+      sourceRoot: docs/specs
+      outputRoot: docs_vn/specs
+      glossary: docs/glossary.md
+      branches: [main]
+      branchPrefix: bwv/translate
+      batchSize: 10
+      maxParallel: 3
+      maxIterations: 10
+      maxRepairs: 1
+```
+
+Pin the full commit SHA behind the latest `translation/v1` release tag. One pinned commit selects the recipe, translation skill, and verification scripts together.
+
+## Start and follow the backfill
+
+Open an issue or pull request conversation and comment:
+
+```text
+/bwv run translation-backfill/backfill
+```
+
+The expanded recipe workflow name is `<caller>/backfill`. Add `on <branch>` when `branches` contains several names or a glob.
+
+The manual hub links the `bwv/translation-backfill/backfill` check and lists every pass. Each summary shows how many planned documents are ready to review, could not be published, produced extra files, or needed a model correction after the output check. A pass that keeps nothing still appears and has no pull request.
+
+Documents inside one pass run in parallel up to the smaller of `batchSize` and `maxParallel`. Every successful document is checked immediately. If the check fails, the same model session may correct it up to `maxRepairs` times. The finalizer runs the output check again before deciding which documents can be published.
+
+Send every draft batch pull request to Dev & Com. Merge only after the Vietnamese Markdown is reviewed and its cache check passes.
+
+See [Recommended project setup](/getting-started/recommended-project-setup#2-create-the-first-vietnamese-documents) for a 13-document run that published PRs in three batches and resumed after a quota stop.
+
+## Continue, retry, or recreate
+
+Progress lives in Git. A later run loads the workflow's open batches before planning, while merged batches are already on the base branch. With the recipe's default `closed: skip` behavior, it also loads closed unmerged batches so their work is not repeated automatically.
+
+If the hub offers Retry, fix the reported failure and use the offered action. The recipe sets `loop.retryWhen` from its finalizer result, so a pass with failed planned documents can leave a retry signal even after its valid documents were published.
+
+If one batch pull request was closed without merging, expand **Actions** and tick its Recreate box, or comment:
+
+```text
+/bwv recreate #9
+```
+
+The replacement stops loading #9 and lets the next plan recompute that work. After a new batch is published, #9 is shown as closed and replaced, and it is never offered again.
+
+If the run stops because the Claude quota is used up, do not start another run. The stopped pass shows ⏸️ and **Stopped: Claude quota used up · retrying around HH:MM UTC**. The bot retries shortly after the reset time reported by Claude. Completed batches have already been published; the next attempt loads them and continues with the remaining documents.
+
+## Generated input reference
+
+<RecipeInputs recipe="translation/backfill" />
+
+## Inputs explained
+
+| Input            | Meaning                                                                                            | Example               |
+| ---------------- | -------------------------------------------------------------------------------------------------- | --------------------- |
+| `sourceRoot`     | Root folder of Japanese `.md` source files.                                                        | `docs/specs`          |
+| `outputRoot`     | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                              | `docs_vn/specs`       |
+| `glossary`       | Markdown file containing project terms and translation rules.                                      | `docs/glossary.md`    |
+| `exclude`        | Source globs omitted from planning and translation. A supplied list replaces the default sentinel. | `["docs/archive/**"]` |
+| `branches`       | Branches on which people may start the workflow and against which batch pull requests open.        | `[main]`              |
+| `branchPrefix`   | Prefix for deterministic backfill batch branches.                                                  | `bwv/translate`       |
+| `model`          | Model used by each translation process.                                                            | `sonnet`              |
+| `batchSize`      | Documents planned for one batch. Defaults to `10`; maximum `20`.                                   | `10`                  |
+| `maxParallel`    | Translation processes at once. Defaults to `3`; maximum `20`.                                      | `3`                   |
+| `timeoutMinutes` | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                 | `40`                  |
+| `maxTurns`       | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                     | `40`                  |
+| `maxRepairs`     | Same-session repairs after `checkOutputs` fails. Defaults to `1`; range `0`–`3`.                   | `1`                   |
+| `allowedTools`   | Complete translation tool list. Omit it to use the maintained default.                             | Omitted               |
+| `maxIterations`  | Maximum batches attempted in one run. Defaults to `10`; maximum `100`.                             | `10`                  |
+| `toolkit`        | Complete replacement for translation, output check, planner, and finalizer tools.                  | Omitted               |
+
+Set `maxRepairs: 0` to keep the per-document verification gate without asking the model to repair a failed check.
+
+:::caution Tool overrides replace the whole list
+`allowedTools` replaces the maintained default. Keep `Read`, `Glob`, `Grep`, `Write`, `Edit`, and `Bash(jq empty:*)`, plus the narrow Git rules the translation skill needs. Do not grant broad `Bash`.
+:::
+
+## Common problems
+
+### The command says the workflow is not manually runnable
+
+Confirm that the requested branch matches `branches`, the configuration has reached that branch, and the command uses the expanded name `translation-backfill/backfill`.
+
+### A document is missing from a batch
+
+The planner selects only non-excluded source documents without a translation in the resumed worktree. Check whether an open, merged, or skipped closed batch already contains it.
+
+### A batch publishes fewer documents than planned
+
+Read the pass summary and batch pull request body. The finalizer keeps only documents whose Markdown and cache pass `checkOutputs`; it discards ordinary failed documents and reports stray output paths. Fix the source, glossary, or custom toolkit, then use Retry when the hub offers it.

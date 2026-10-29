@@ -1,18 +1,23 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BWV recipe version 1",
+  "description": "Defines either a workflow recipe or a step recipe with typed inputs and expansion metadata.",
   "anyOf": [
     {
       "type": "object",
       "properties": {
         "apiVersion": {
           "type": "number",
-          "const": 1
+          "const": 1,
+          "description": "Selects version 1 of the recipe document format."
         },
         "description": {
+          "description": "Summarizes what the recipe provides to callers.",
           "type": "string"
         },
         "inputs": {
           "default": {},
+          "description": "Declares the typed values callers may supply through `with`.",
           "type": "object",
           "propertyNames": {
             "type": "string"
@@ -32,60 +37,88 @@
                       "object",
                       "path",
                       "glob"
-                    ]
+                    ],
+                    "description": "Selects the value type accepted from callers."
+                  },
+                  "description": {
+                    "description": "Documents the input for callers and editor hovers.",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "enum": {
+                    "description": "Restricts the input to one of these exact values.",
                     "type": "array",
                     "items": {}
                   },
                   "pattern": {
+                    "description": "Requires string values to match this regular expression.",
                     "type": "string"
                   },
                   "minimum": {
+                    "description": "Sets the inclusive minimum for numeric values.",
                     "type": "number"
                   },
                   "maximum": {
+                    "description": "Sets the inclusive maximum for numeric values.",
                     "type": "number"
                   },
                   "required": {
                     "default": false,
+                    "description": "Requires callers to supply this input when no default exists.",
                     "type": "boolean"
                   },
-                  "default": {}
+                  "default": {
+                    "description": "Provides the value used when the caller omits this input."
+                  }
                 },
                 "required": [
                   "type"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "description": "Declares a typed value input accepted by the recipe."
               },
               {
                 "type": "object",
                 "properties": {
                   "type": {
                     "type": "string",
-                    "const": "toolkit"
+                    "const": "toolkit",
+                    "description": "Declares a toolkit input of skills, commands, or scripts."
+                  },
+                  "description": {
+                    "description": "Documents the input for callers and editor hovers.",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "contract": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "States what every toolkit entry must do for the recipe."
                   },
                   "required": {
                     "default": false,
+                    "description": "Requires callers to supply the toolkit when no default exists.",
                     "type": "boolean"
                   },
                   "keys": {
+                    "description": "Lists every toolkit key a caller replacement must supply.",
                     "minItems": 1,
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                      "description": "Names a toolkit entry available as `toolkit.<key>`."
                     }
                   },
                   "default": {
+                    "description": "Provides the complete toolkit set used when the caller omits it.",
                     "type": "object",
                     "propertyNames": {
                       "type": "string",
-                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                      "description": "Names a toolkit entry available as `toolkit.<key>`."
                     },
                     "additionalProperties": {
                       "anyOf": [
@@ -94,40 +127,47 @@
                           "properties": {
                             "skill": {
                               "type": "string",
-                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$",
+                              "description": "Names the skill this toolkit entry provides."
                             }
                           },
                           "required": [
                             "skill"
                           ],
-                          "additionalProperties": false
+                          "additionalProperties": false,
+                          "description": "Provides a Claude skill toolkit entry."
                         },
                         {
                           "type": "object",
                           "properties": {
                             "command": {
                               "type": "string",
-                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$",
+                              "description": "Names the command this toolkit entry provides."
                             }
                           },
                           "required": [
                             "command"
                           ],
-                          "additionalProperties": false
+                          "additionalProperties": false,
+                          "description": "Provides a Claude command toolkit entry."
                         },
                         {
                           "type": "object",
                           "properties": {
                             "script": {
-                              "type": "string"
+                              "type": "string",
+                              "description": "Names the script this toolkit entry provides."
                             }
                           },
                           "required": [
                             "script"
                           ],
-                          "additionalProperties": false
+                          "additionalProperties": false,
+                          "description": "Provides a trusted script toolkit entry."
                         }
-                      ]
+                      ],
+                      "description": "Provides exactly one skill, command, or script."
                     }
                   }
                 },
@@ -135,13 +175,16 @@
                   "type",
                   "contract"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "description": "Declares a replaceable set of skills, commands, or scripts."
               }
-            ]
+            ],
+            "description": "Declares one recipe input and its validation constraints."
           }
         },
         "locals": {
           "default": {},
+          "description": "Defines reusable recipe expressions resolved in declaration order from inputs and earlier locals.",
           "type": "object",
           "propertyNames": {
             "type": "string"
@@ -149,22 +192,38 @@
           "additionalProperties": {}
         },
         "defaults": {
+          "description": "Provides defaults that emitted steps inherit below repository and explicit step values.",
           "type": "object",
           "properties": {
-            "model": {},
-            "maxTurns": {},
-            "timeoutMinutes": {},
-            "permissionMode": {},
-            "maxBudgetUsd": {}
+            "model": {
+              "description": "Sets the recipe default Claude model after expansion."
+            },
+            "effort": {
+              "description": "Sets the recipe default Claude reasoning effort after expansion."
+            },
+            "maxTurns": {
+              "description": "Sets the recipe default maximum Claude turns after expansion."
+            },
+            "timeoutMinutes": {
+              "description": "Sets the recipe default step timeout in minutes after expansion."
+            },
+            "permissionMode": {
+              "description": "Sets the recipe default Claude permission mode after expansion."
+            },
+            "maxBudgetUsd": {
+              "description": "Sets the recipe default maximum API budget after expansion."
+            }
           },
           "additionalProperties": false
         },
         "workflows": {
+          "description": "Lists the workflows emitted by this workflow recipe.",
           "anyOf": [
             {
               "minItems": 1,
               "type": "array",
               "items": {
+                "description": "Defines an inline workflow or invokes a workflow recipe.",
                 "anyOf": [
                   {
                     "anyOf": [
@@ -172,6 +231,7 @@
                         "type": "object",
                         "properties": {
                           "name": {
+                            "description": "Sets the unique workflow name.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -183,16 +243,19 @@
                             ]
                           },
                           "on": {
+                            "description": "Configures the events that run this workflow.",
                             "anyOf": [
                               {
                                 "type": "object",
                                 "properties": {
                                   "pull_request": {
+                                    "description": "Configures pull request events that run the workflow.",
                                     "anyOf": [
                                       {
                                         "type": "object",
                                         "properties": {
                                           "types": {
+                                            "description": "Selects pull request actions and defaults to opened and synchronize.",
                                             "default": [
                                               "opened",
                                               "synchronize"
@@ -225,6 +288,7 @@
                                             ]
                                           },
                                           "base": {
+                                            "description": "Matches the pull request base branch against these globs.",
                                             "anyOf": [
                                               {
                                                 "minItems": 1,
@@ -239,6 +303,7 @@
                                             ]
                                           },
                                           "merged": {
+                                            "description": "Matches closed pull requests by whether they were merged.",
                                             "anyOf": [
                                               {
                                                 "type": "boolean"
@@ -249,6 +314,7 @@
                                             ]
                                           },
                                           "head": {
+                                            "description": "Matches the pull request head branch against these globs.",
                                             "anyOf": [
                                               {
                                                 "minItems": 1,
@@ -263,11 +329,20 @@
                                             ]
                                           },
                                           "paths": {
+                                            "description": "Runs only when pull request changes include a matching path.",
                                             "anyOf": [
                                               {
                                                 "type": "array",
                                                 "items": {
-                                                  "type": "string"
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               {
@@ -276,11 +351,20 @@
                                             ]
                                           },
                                           "ignorePaths": {
+                                            "description": "Excludes matching pull request paths from trigger matching.",
                                             "anyOf": [
                                               {
                                                 "type": "array",
                                                 "items": {
-                                                  "type": "string"
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               {
@@ -300,11 +384,13 @@
                                     ]
                                   },
                                   "push": {
+                                    "description": "Configures push events that run the workflow.",
                                     "anyOf": [
                                       {
                                         "type": "object",
                                         "properties": {
                                           "branches": {
+                                            "description": "Matches the pushed branch against these globs.",
                                             "anyOf": [
                                               {
                                                 "minItems": 1,
@@ -319,11 +405,20 @@
                                             ]
                                           },
                                           "paths": {
+                                            "description": "Advises push matching by changed path, but an incomplete file list runs the workflow.",
                                             "anyOf": [
                                               {
                                                 "type": "array",
                                                 "items": {
-                                                  "type": "string"
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               {
@@ -332,8 +427,49 @@
                                             ]
                                           },
                                           "ignorePaths": {
+                                            "description": "Advises push matching by excluded path, but an incomplete file list runs the workflow.",
                                             "anyOf": [
                                               {
+                                                "type": "array",
+                                                "items": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "pattern": "^(?!!)"
+                                                    },
+                                                    {
+                                                      "$ref": "#/$defs/recipeInterpolation"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "branches"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "manual": {
+                                    "description": "Configures branches on which the workflow may be started manually.",
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "branches": {
+                                            "description": "Allows manual runs on branches matching these globs.",
+                                            "anyOf": [
+                                              {
+                                                "minItems": 1,
                                                 "type": "array",
                                                 "items": {
                                                   "type": "string"
@@ -364,6 +500,7 @@
                             ]
                           },
                           "steps": {
+                            "description": "Lists the recipe steps to emit in order.",
                             "anyOf": [
                               {
                                 "minItems": 1,
@@ -376,6 +513,7 @@
                                           "type": "object",
                                           "properties": {
                                             "id": {
+                                              "description": "Assigns an identifier used to read this step's output.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -387,15 +525,19 @@
                                               ]
                                             },
                                             "name": {
+                                              "description": "Sets the display name of the step.",
                                               "type": "string"
                                             },
                                             "if": {
+                                              "description": "Runs the step only when this runtime expression is truthy.",
                                               "type": "string"
                                             },
                                             "forEach": {
+                                              "description": "Runs the step once for each item in the resolved array.",
                                               "type": "string"
                                             },
                                             "fanout": {
+                                              "description": "Chooses one Claude process with subagents or separate processes for forEach items.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -410,6 +552,7 @@
                                               ]
                                             },
                                             "maxParallel": {
+                                              "description": "Requests at most this many parallel forEach items, defaulting to 3 with a maximum of 20.",
                                               "default": 3,
                                               "anyOf": [
                                                 {
@@ -423,6 +566,7 @@
                                               ]
                                             },
                                             "continueOnError": {
+                                              "description": "Allows later steps to run when this step fails; defaults to false.",
                                               "default": false,
                                               "anyOf": [
                                                 {
@@ -434,6 +578,7 @@
                                               ]
                                             },
                                             "timeoutMinutes": {
+                                              "description": "Overrides the maximum number of minutes this step may run.",
                                               "anyOf": [
                                                 {
                                                   "type": "integer",
@@ -445,30 +590,115 @@
                                                 }
                                               ]
                                             },
+                                            "permissionDenials": {
+                                              "description": "Chooses whether a denied Claude tool fails the step or only adds a warning; defaults to fail.",
+                                              "default": "fail",
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "fail",
+                                                    "warn"
+                                                  ]
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipeInterpolation"
+                                                }
+                                              ]
+                                            },
+                                            "verify": {
+                                              "description": "Verifies Claude output and resumes the same session to repair bounded failures.",
+                                              "anyOf": [
+                                                {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "shell": {
+                                                      "description": "Runs this deterministic shell command after Claude and after every repair.",
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "string",
+                                                          "minLength": 1
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipeInterpolation"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "maxRepairs": {
+                                                      "description": "Allows zero to three same-session repair attempts and defaults to one.",
+                                                      "default": 1,
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "integer",
+                                                          "minimum": 0,
+                                                          "maximum": 3
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipePlaceholder"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "shell"
+                                                  ],
+                                                  "additionalProperties": false
+                                                },
+                                                {
+                                                  "$ref": "#/$defs/recipePlaceholder"
+                                                }
+                                              ]
+                                            },
                                             "claude": {
+                                              "description": "Configures a Claude invocation or a skill or command toolkit entry.",
                                               "anyOf": [
                                                 {
                                                   "type": "object",
                                                   "properties": {
                                                     "prompt": {
+                                                      "description": "Provides the prompt for Claude.",
                                                       "type": "string"
                                                     },
                                                     "promptFile": {
+                                                      "description": "Reads the Claude prompt from a repository-relative file.",
                                                       "type": "string"
                                                     },
                                                     "skill": {
+                                                      "description": "Runs a project skill by name as the Claude prompt.",
                                                       "type": "string"
                                                     },
                                                     "command": {
+                                                      "description": "Runs a project slash command by name as the Claude prompt.",
                                                       "type": "string"
                                                     },
                                                     "args": {
+                                                      "description": "Passes arguments to the selected skill or command.",
                                                       "type": "string"
                                                     },
                                                     "model": {
+                                                      "description": "Selects the Claude model for this step.",
                                                       "type": "string"
                                                     },
+                                                    "effort": {
+                                                      "description": "Overrides the reasoning effort for this step.",
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "string",
+                                                          "enum": [
+                                                            "low",
+                                                            "medium",
+                                                            "high",
+                                                            "xhigh",
+                                                            "max"
+                                                          ]
+                                                        },
+                                                        {
+                                                          "$ref": "#/$defs/recipeInterpolation"
+                                                        }
+                                                      ]
+                                                    },
                                                     "allowedTools": {
+                                                      "description": "Lists tools Claude may use, but does not restrict file edits when permissionMode is `acceptEdits`.",
                                                       "anyOf": [
                                                         {
                                                           "type": "array",
@@ -482,6 +712,7 @@
                                                       ]
                                                     },
                                                     "disallowedTools": {
+                                                      "description": "Denies listed tools or scoped operations and still applies under permissionMode `acceptEdits`.",
                                                       "anyOf": [
                                                         {
                                                           "type": "array",
@@ -495,6 +726,7 @@
                                                       ]
                                                     },
                                                     "permissionMode": {
+                                                      "description": "Sets how Claude handles tool permissions for this step.",
                                                       "anyOf": [
                                                         {
                                                           "type": "string",
@@ -512,6 +744,7 @@
                                                       ]
                                                     },
                                                     "maxTurns": {
+                                                      "description": "Limits the number of agentic turns Claude may take.",
                                                       "anyOf": [
                                                         {
                                                           "type": "integer",
@@ -524,6 +757,7 @@
                                                       ]
                                                     },
                                                     "maxBudgetUsd": {
+                                                      "description": "Stops the Claude invocation when this API budget limit is reached.",
                                                       "anyOf": [
                                                         {
                                                           "type": "number",
@@ -535,9 +769,11 @@
                                                       ]
                                                     },
                                                     "appendSystemPrompt": {
+                                                      "description": "Appends instructions to Claude's system prompt.",
                                                       "type": "string"
                                                     },
                                                     "outputSchema": {
+                                                      "description": "Requires Claude to return structured output matching this JSON Schema.",
                                                       "anyOf": [
                                                         {
                                                           "type": "object",
@@ -552,6 +788,7 @@
                                                       ]
                                                     },
                                                     "run": {
+                                                      "description": "Runs the referenced skill or command toolkit entry.",
                                                       "type": "string"
                                                     }
                                                   },
@@ -566,12 +803,14 @@
                                           "required": [
                                             "claude"
                                           ],
-                                          "additionalProperties": false
+                                          "additionalProperties": false,
+                                          "description": "Runs a Claude prompt, skill, command, or toolkit entry."
                                         },
                                         {
                                           "type": "object",
                                           "properties": {
                                             "id": {
+                                              "description": "Assigns an identifier used to read this step's output.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -583,15 +822,19 @@
                                               ]
                                             },
                                             "name": {
+                                              "description": "Sets the display name of the step.",
                                               "type": "string"
                                             },
                                             "if": {
+                                              "description": "Runs the step only when this runtime expression is truthy.",
                                               "type": "string"
                                             },
                                             "forEach": {
+                                              "description": "Runs the step once for each item in the resolved array.",
                                               "type": "string"
                                             },
                                             "fanout": {
+                                              "description": "Chooses one Claude process with subagents or separate processes for forEach items.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -606,6 +849,7 @@
                                               ]
                                             },
                                             "maxParallel": {
+                                              "description": "Requests at most this many parallel forEach items, defaulting to 3 with a maximum of 20.",
                                               "default": 3,
                                               "anyOf": [
                                                 {
@@ -619,6 +863,7 @@
                                               ]
                                             },
                                             "continueOnError": {
+                                              "description": "Allows later steps to run when this step fails; defaults to false.",
                                               "default": false,
                                               "anyOf": [
                                                 {
@@ -630,6 +875,7 @@
                                               ]
                                             },
                                             "timeoutMinutes": {
+                                              "description": "Overrides the maximum number of minutes this step may run.",
                                               "anyOf": [
                                                 {
                                                   "type": "integer",
@@ -642,6 +888,7 @@
                                               ]
                                             },
                                             "shell": {
+                                              "description": "Runs this shell command in the workflow working directory.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -653,6 +900,7 @@
                                               ]
                                             },
                                             "outputJson": {
+                                              "description": "Parses stdout as JSON instead of returning it as text; defaults to false.",
                                               "default": false,
                                               "anyOf": [
                                                 {
@@ -667,12 +915,14 @@
                                           "required": [
                                             "shell"
                                           ],
-                                          "additionalProperties": false
+                                          "additionalProperties": false,
+                                          "description": "Runs a shell command and returns its stdout."
                                         },
                                         {
                                           "type": "object",
                                           "properties": {
                                             "id": {
+                                              "description": "Assigns an identifier used to read this step's output.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -684,15 +934,19 @@
                                               ]
                                             },
                                             "name": {
+                                              "description": "Sets the display name of the step.",
                                               "type": "string"
                                             },
                                             "if": {
+                                              "description": "Runs the step only when this runtime expression is truthy.",
                                               "type": "string"
                                             },
                                             "forEach": {
+                                              "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                                               "type": "string"
                                             },
                                             "fanout": {
+                                              "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -707,6 +961,7 @@
                                               ]
                                             },
                                             "maxParallel": {
+                                              "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                                               "anyOf": [
                                                 {
                                                   "type": "integer",
@@ -719,6 +974,7 @@
                                               ]
                                             },
                                             "continueOnError": {
+                                              "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                                               "anyOf": [
                                                 {
                                                   "type": "boolean"
@@ -729,6 +985,7 @@
                                               ]
                                             },
                                             "timeoutMinutes": {
+                                              "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                                               "anyOf": [
                                                 {
                                                   "type": "integer",
@@ -741,6 +998,7 @@
                                               ]
                                             },
                                             "uses": {
+                                              "description": "Names the local or remote step recipe to expand at this position.",
                                               "anyOf": [
                                                 {
                                                   "type": "string",
@@ -755,6 +1013,7 @@
                                               }
                                             },
                                             "with": {
+                                              "description": "Supplies declared input values to the step recipe.",
                                               "default": {},
                                               "anyOf": [
                                                 {
@@ -773,7 +1032,8 @@
                                           "required": [
                                             "uses"
                                           ],
-                                          "additionalProperties": false
+                                          "additionalProperties": false,
+                                          "description": "Expands a step recipe into one or more workflow steps."
                                         }
                                       ]
                                     },
@@ -789,6 +1049,7 @@
                             ]
                           },
                           "fetchDepth": {
+                            "description": "Sets the clone depth to 1 by default, or 0 for full history.",
                             "default": 1,
                             "anyOf": [
                               {
@@ -802,19 +1063,23 @@
                             ]
                           },
                           "context": {
+                            "description": "Unpacks additional git-submodule repositories into the worktree.",
                             "default": [],
                             "anyOf": [
                               {
                                 "type": "array",
                                 "items": {
+                                  "description": "Adds a repository pinned by a git submodule as workflow context.",
                                   "anyOf": [
                                     {
                                       "type": "object",
                                       "properties": {
                                         "submodule": {
-                                          "type": "string"
+                                          "type": "string",
+                                          "description": "Names the repository-relative git submodule path whose pinned commit supplies this context."
                                         },
                                         "repo": {
+                                          "description": "Names the context repository as `owner/name`.",
                                           "anyOf": [
                                             {
                                               "type": "string",
@@ -826,6 +1091,7 @@
                                           ]
                                         },
                                         "require": {
+                                          "description": "Lists paths that must exist after the context repository is unpacked.",
                                           "default": [],
                                           "anyOf": [
                                             {
@@ -858,6 +1124,7 @@
                             ]
                           },
                           "statusComment": {
+                            "description": "Maintains one pull request status comment as steps finish; defaults to true.",
                             "default": true,
                             "anyOf": [
                               {
@@ -869,11 +1136,13 @@
                             ]
                           },
                           "loop": {
+                            "description": "Repeats all steps while its condition is true and requires on.push or on.manual.",
                             "anyOf": [
                               {
                                 "type": "object",
                                 "properties": {
                                   "while": {
+                                    "description": "Repeats all steps while this runtime expression stays truthy.",
                                     "anyOf": [
                                       {
                                         "type": "string",
@@ -885,6 +1154,7 @@
                                     ]
                                   },
                                   "maxIterations": {
+                                    "description": "Limits the loop to 20 iterations by default and at most 100.",
                                     "default": 20,
                                     "anyOf": [
                                       {
@@ -894,6 +1164,38 @@
                                       },
                                       {
                                         "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  },
+                                  "summary": {
+                                    "description": "Renders a summary for each published loop batch.",
+                                    "type": "string"
+                                  },
+                                  "retryWhen": {
+                                    "description": "Offers a manual retry when the latest evaluated runtime expression is truthy.",
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
+                                      }
+                                    ]
+                                  },
+                                  "closed": {
+                                    "description": "Skips source work from closed batches by default or redoes it when set to `redo`.",
+                                    "default": "skip",
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "skip",
+                                          "redo"
+                                        ]
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
                                       }
                                     ]
                                   }
@@ -909,23 +1211,28 @@
                             ]
                           },
                           "onSuccess": {
+                            "description": "Controls publication after the workflow succeeds.",
                             "anyOf": [
                               {
                                 "type": "object",
                                 "properties": {
                                   "if": {
+                                    "description": "Publishes successful changes only when this expression is truthy.",
                                     "type": "string"
                                   },
                                   "commitMessage": {
                                     "default": "chore(bwv): automated update",
+                                    "description": "Sets the publication commit message.",
                                     "type": "string"
                                   },
                                   "createPullRequest": {
+                                    "description": "Configures a pull request for successful workflow changes.",
                                     "anyOf": [
                                       {
                                         "type": "object",
                                         "properties": {
                                           "branch": {
+                                            "description": "Names the branch to create or update with workflow changes.",
                                             "anyOf": [
                                               {
                                                 "type": "string",
@@ -937,9 +1244,11 @@
                                             ]
                                           },
                                           "base": {
+                                            "description": "Sets the pull request base branch instead of the run target branch.",
                                             "type": "string"
                                           },
                                           "title": {
+                                            "description": "Sets the pull request title.",
                                             "anyOf": [
                                               {
                                                 "type": "string",
@@ -951,9 +1260,11 @@
                                             ]
                                           },
                                           "body": {
+                                            "description": "Sets the pull request body after runtime expressions are rendered.",
                                             "type": "string"
                                           },
                                           "draft": {
+                                            "description": "Creates the pull request as a draft when true; defaults to false.",
                                             "default": false,
                                             "anyOf": [
                                               {
@@ -965,6 +1276,7 @@
                                             ]
                                           },
                                           "labels": {
+                                            "description": "Adds these labels to the pull request and defaults to none.",
                                             "default": [],
                                             "anyOf": [
                                               {
@@ -992,6 +1304,7 @@
                                   },
                                   "comment": {
                                     "default": false,
+                                    "description": "Posts a success comment when true or uses the rendered string as its body; defaults to false.",
                                     "anyOf": [
                                       {
                                         "type": "boolean"
@@ -1010,11 +1323,13 @@
                             ]
                           },
                           "sourcePrGrouping": {
+                            "description": "Groups selected files by their last source pull request or direct commit.",
                             "anyOf": [
                               {
                                 "type": "object",
                                 "properties": {
                                   "paths": {
+                                    "description": "Selects the required source-file scope used to form source pull request groups.",
                                     "anyOf": [
                                       {
                                         "minItems": 1,
@@ -1023,7 +1338,8 @@
                                           "anyOf": [
                                             {
                                               "type": "string",
-                                              "minLength": 1
+                                              "minLength": 1,
+                                              "pattern": "^(?!!)"
                                             },
                                             {
                                               "$ref": "#/$defs/recipeInterpolation"
@@ -1037,6 +1353,7 @@
                                     ]
                                   },
                                   "ignorePaths": {
+                                    "description": "Excludes matching files from source pull request grouping.",
                                     "anyOf": [
                                       {
                                         "minItems": 1,
@@ -1045,7 +1362,8 @@
                                           "anyOf": [
                                             {
                                               "type": "string",
-                                              "minLength": 1
+                                              "minLength": 1,
+                                              "pattern": "^(?!!)"
                                             },
                                             {
                                               "$ref": "#/$defs/recipeInterpolation"
@@ -1059,6 +1377,7 @@
                                     ]
                                   },
                                   "sourceRoot": {
+                                    "description": "Sets the source directory that the `rel` output-template value is relative to.",
                                     "anyOf": [
                                       {
                                         "type": "string",
@@ -1070,6 +1389,7 @@
                                     ]
                                   },
                                   "requireOutputs": {
+                                    "description": "Lists required output path templates for each source file before a group can publish.",
                                     "anyOf": [
                                       {
                                         "minItems": 1,
@@ -1092,6 +1412,7 @@
                                     ]
                                   },
                                   "maxFilesPerGroup": {
+                                    "description": "Splits groups above this file count and defaults to 3.",
                                     "default": 3,
                                     "anyOf": [
                                       {
@@ -1122,12 +1443,14 @@
                           "on",
                           "steps"
                         ],
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Defines an inline workflow emitted by a workflow recipe."
                       },
                       {
                         "type": "object",
                         "properties": {
                           "name": {
+                            "description": "Sets the unique name of this recipe invocation.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1139,6 +1462,7 @@
                             ]
                           },
                           "uses": {
+                            "description": "Names the local or remote workflow recipe to expand.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1153,6 +1477,7 @@
                             }
                           },
                           "with": {
+                            "description": "Supplies declared input values to the workflow recipe.",
                             "default": {},
                             "anyOf": [
                               {
@@ -1172,7 +1497,8 @@
                           "name",
                           "uses"
                         ],
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Expands a workflow recipe into one or more named workflows."
                       }
                     ]
                   },
@@ -1192,20 +1518,25 @@
         "apiVersion",
         "workflows"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "title": "Workflow recipe",
+      "description": "Defines one or more workflows that a root-level recipe invocation expands."
     },
     {
       "type": "object",
       "properties": {
         "apiVersion": {
           "type": "number",
-          "const": 1
+          "const": 1,
+          "description": "Selects version 1 of the recipe document format."
         },
         "description": {
+          "description": "Summarizes what the recipe provides to callers.",
           "type": "string"
         },
         "inputs": {
           "default": {},
+          "description": "Declares the typed values callers may supply through `with`.",
           "type": "object",
           "propertyNames": {
             "type": "string"
@@ -1225,60 +1556,88 @@
                       "object",
                       "path",
                       "glob"
-                    ]
+                    ],
+                    "description": "Selects the value type accepted from callers."
+                  },
+                  "description": {
+                    "description": "Documents the input for callers and editor hovers.",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "enum": {
+                    "description": "Restricts the input to one of these exact values.",
                     "type": "array",
                     "items": {}
                   },
                   "pattern": {
+                    "description": "Requires string values to match this regular expression.",
                     "type": "string"
                   },
                   "minimum": {
+                    "description": "Sets the inclusive minimum for numeric values.",
                     "type": "number"
                   },
                   "maximum": {
+                    "description": "Sets the inclusive maximum for numeric values.",
                     "type": "number"
                   },
                   "required": {
                     "default": false,
+                    "description": "Requires callers to supply this input when no default exists.",
                     "type": "boolean"
                   },
-                  "default": {}
+                  "default": {
+                    "description": "Provides the value used when the caller omits this input."
+                  }
                 },
                 "required": [
                   "type"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "description": "Declares a typed value input accepted by the recipe."
               },
               {
                 "type": "object",
                 "properties": {
                   "type": {
                     "type": "string",
-                    "const": "toolkit"
+                    "const": "toolkit",
+                    "description": "Declares a toolkit input of skills, commands, or scripts."
+                  },
+                  "description": {
+                    "description": "Documents the input for callers and editor hovers.",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "contract": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "States what every toolkit entry must do for the recipe."
                   },
                   "required": {
                     "default": false,
+                    "description": "Requires callers to supply the toolkit when no default exists.",
                     "type": "boolean"
                   },
                   "keys": {
+                    "description": "Lists every toolkit key a caller replacement must supply.",
                     "minItems": 1,
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                      "description": "Names a toolkit entry available as `toolkit.<key>`."
                     }
                   },
                   "default": {
+                    "description": "Provides the complete toolkit set used when the caller omits it.",
                     "type": "object",
                     "propertyNames": {
                       "type": "string",
-                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                      "description": "Names a toolkit entry available as `toolkit.<key>`."
                     },
                     "additionalProperties": {
                       "anyOf": [
@@ -1287,40 +1646,47 @@
                           "properties": {
                             "skill": {
                               "type": "string",
-                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$",
+                              "description": "Names the skill this toolkit entry provides."
                             }
                           },
                           "required": [
                             "skill"
                           ],
-                          "additionalProperties": false
+                          "additionalProperties": false,
+                          "description": "Provides a Claude skill toolkit entry."
                         },
                         {
                           "type": "object",
                           "properties": {
                             "command": {
                               "type": "string",
-                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$"
+                              "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]*$",
+                              "description": "Names the command this toolkit entry provides."
                             }
                           },
                           "required": [
                             "command"
                           ],
-                          "additionalProperties": false
+                          "additionalProperties": false,
+                          "description": "Provides a Claude command toolkit entry."
                         },
                         {
                           "type": "object",
                           "properties": {
                             "script": {
-                              "type": "string"
+                              "type": "string",
+                              "description": "Names the script this toolkit entry provides."
                             }
                           },
                           "required": [
                             "script"
                           ],
-                          "additionalProperties": false
+                          "additionalProperties": false,
+                          "description": "Provides a trusted script toolkit entry."
                         }
-                      ]
+                      ],
+                      "description": "Provides exactly one skill, command, or script."
                     }
                   }
                 },
@@ -1328,13 +1694,16 @@
                   "type",
                   "contract"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "description": "Declares a replaceable set of skills, commands, or scripts."
               }
-            ]
+            ],
+            "description": "Declares one recipe input and its validation constraints."
           }
         },
         "locals": {
           "default": {},
+          "description": "Defines reusable recipe expressions resolved in declaration order from inputs and earlier locals.",
           "type": "object",
           "propertyNames": {
             "type": "string"
@@ -1342,17 +1711,32 @@
           "additionalProperties": {}
         },
         "defaults": {
+          "description": "Provides defaults that emitted steps inherit below repository and explicit step values.",
           "type": "object",
           "properties": {
-            "model": {},
-            "maxTurns": {},
-            "timeoutMinutes": {},
-            "permissionMode": {},
-            "maxBudgetUsd": {}
+            "model": {
+              "description": "Sets the recipe default Claude model after expansion."
+            },
+            "effort": {
+              "description": "Sets the recipe default Claude reasoning effort after expansion."
+            },
+            "maxTurns": {
+              "description": "Sets the recipe default maximum Claude turns after expansion."
+            },
+            "timeoutMinutes": {
+              "description": "Sets the recipe default step timeout in minutes after expansion."
+            },
+            "permissionMode": {
+              "description": "Sets the recipe default Claude permission mode after expansion."
+            },
+            "maxBudgetUsd": {
+              "description": "Sets the recipe default maximum API budget after expansion."
+            }
           },
           "additionalProperties": false
         },
         "steps": {
+          "description": "Lists the steps emitted by this step recipe.",
           "anyOf": [
             {
               "minItems": 1,
@@ -1365,6 +1749,7 @@
                         "type": "object",
                         "properties": {
                           "id": {
+                            "description": "Assigns an identifier used to read this step's output.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1376,15 +1761,19 @@
                             ]
                           },
                           "name": {
+                            "description": "Sets the display name of the step.",
                             "type": "string"
                           },
                           "if": {
+                            "description": "Runs the step only when this runtime expression is truthy.",
                             "type": "string"
                           },
                           "forEach": {
+                            "description": "Runs the step once for each item in the resolved array.",
                             "type": "string"
                           },
                           "fanout": {
+                            "description": "Chooses one Claude process with subagents or separate processes for forEach items.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1399,6 +1788,7 @@
                             ]
                           },
                           "maxParallel": {
+                            "description": "Requests at most this many parallel forEach items, defaulting to 3 with a maximum of 20.",
                             "default": 3,
                             "anyOf": [
                               {
@@ -1412,6 +1802,7 @@
                             ]
                           },
                           "continueOnError": {
+                            "description": "Allows later steps to run when this step fails; defaults to false.",
                             "default": false,
                             "anyOf": [
                               {
@@ -1423,6 +1814,7 @@
                             ]
                           },
                           "timeoutMinutes": {
+                            "description": "Overrides the maximum number of minutes this step may run.",
                             "anyOf": [
                               {
                                 "type": "integer",
@@ -1434,30 +1826,115 @@
                               }
                             ]
                           },
+                          "permissionDenials": {
+                            "description": "Chooses whether a denied Claude tool fails the step or only adds a warning; defaults to fail.",
+                            "default": "fail",
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "fail",
+                                  "warn"
+                                ]
+                              },
+                              {
+                                "$ref": "#/$defs/recipeInterpolation"
+                              }
+                            ]
+                          },
+                          "verify": {
+                            "description": "Verifies Claude output and resumes the same session to repair bounded failures.",
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "shell": {
+                                    "description": "Runs this deterministic shell command after Claude and after every repair.",
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
+                                      }
+                                    ]
+                                  },
+                                  "maxRepairs": {
+                                    "description": "Allows zero to three same-session repair attempts and defaults to one.",
+                                    "default": 1,
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 3
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipePlaceholder"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "shell"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
                           "claude": {
+                            "description": "Configures a Claude invocation or a skill or command toolkit entry.",
                             "anyOf": [
                               {
                                 "type": "object",
                                 "properties": {
                                   "prompt": {
+                                    "description": "Provides the prompt for Claude.",
                                     "type": "string"
                                   },
                                   "promptFile": {
+                                    "description": "Reads the Claude prompt from a repository-relative file.",
                                     "type": "string"
                                   },
                                   "skill": {
+                                    "description": "Runs a project skill by name as the Claude prompt.",
                                     "type": "string"
                                   },
                                   "command": {
+                                    "description": "Runs a project slash command by name as the Claude prompt.",
                                     "type": "string"
                                   },
                                   "args": {
+                                    "description": "Passes arguments to the selected skill or command.",
                                     "type": "string"
                                   },
                                   "model": {
+                                    "description": "Selects the Claude model for this step.",
                                     "type": "string"
                                   },
+                                  "effort": {
+                                    "description": "Overrides the reasoning effort for this step.",
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "low",
+                                          "medium",
+                                          "high",
+                                          "xhigh",
+                                          "max"
+                                        ]
+                                      },
+                                      {
+                                        "$ref": "#/$defs/recipeInterpolation"
+                                      }
+                                    ]
+                                  },
                                   "allowedTools": {
+                                    "description": "Lists tools Claude may use, but does not restrict file edits when permissionMode is `acceptEdits`.",
                                     "anyOf": [
                                       {
                                         "type": "array",
@@ -1471,6 +1948,7 @@
                                     ]
                                   },
                                   "disallowedTools": {
+                                    "description": "Denies listed tools or scoped operations and still applies under permissionMode `acceptEdits`.",
                                     "anyOf": [
                                       {
                                         "type": "array",
@@ -1484,6 +1962,7 @@
                                     ]
                                   },
                                   "permissionMode": {
+                                    "description": "Sets how Claude handles tool permissions for this step.",
                                     "anyOf": [
                                       {
                                         "type": "string",
@@ -1501,6 +1980,7 @@
                                     ]
                                   },
                                   "maxTurns": {
+                                    "description": "Limits the number of agentic turns Claude may take.",
                                     "anyOf": [
                                       {
                                         "type": "integer",
@@ -1513,6 +1993,7 @@
                                     ]
                                   },
                                   "maxBudgetUsd": {
+                                    "description": "Stops the Claude invocation when this API budget limit is reached.",
                                     "anyOf": [
                                       {
                                         "type": "number",
@@ -1524,9 +2005,11 @@
                                     ]
                                   },
                                   "appendSystemPrompt": {
+                                    "description": "Appends instructions to Claude's system prompt.",
                                     "type": "string"
                                   },
                                   "outputSchema": {
+                                    "description": "Requires Claude to return structured output matching this JSON Schema.",
                                     "anyOf": [
                                       {
                                         "type": "object",
@@ -1541,6 +2024,7 @@
                                     ]
                                   },
                                   "run": {
+                                    "description": "Runs the referenced skill or command toolkit entry.",
                                     "type": "string"
                                   }
                                 },
@@ -1555,12 +2039,14 @@
                         "required": [
                           "claude"
                         ],
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Runs a Claude prompt, skill, command, or toolkit entry."
                       },
                       {
                         "type": "object",
                         "properties": {
                           "id": {
+                            "description": "Assigns an identifier used to read this step's output.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1572,15 +2058,19 @@
                             ]
                           },
                           "name": {
+                            "description": "Sets the display name of the step.",
                             "type": "string"
                           },
                           "if": {
+                            "description": "Runs the step only when this runtime expression is truthy.",
                             "type": "string"
                           },
                           "forEach": {
+                            "description": "Runs the step once for each item in the resolved array.",
                             "type": "string"
                           },
                           "fanout": {
+                            "description": "Chooses one Claude process with subagents or separate processes for forEach items.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1595,6 +2085,7 @@
                             ]
                           },
                           "maxParallel": {
+                            "description": "Requests at most this many parallel forEach items, defaulting to 3 with a maximum of 20.",
                             "default": 3,
                             "anyOf": [
                               {
@@ -1608,6 +2099,7 @@
                             ]
                           },
                           "continueOnError": {
+                            "description": "Allows later steps to run when this step fails; defaults to false.",
                             "default": false,
                             "anyOf": [
                               {
@@ -1619,6 +2111,7 @@
                             ]
                           },
                           "timeoutMinutes": {
+                            "description": "Overrides the maximum number of minutes this step may run.",
                             "anyOf": [
                               {
                                 "type": "integer",
@@ -1631,6 +2124,7 @@
                             ]
                           },
                           "shell": {
+                            "description": "Runs this shell command in the workflow working directory.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1642,6 +2136,7 @@
                             ]
                           },
                           "outputJson": {
+                            "description": "Parses stdout as JSON instead of returning it as text; defaults to false.",
                             "default": false,
                             "anyOf": [
                               {
@@ -1656,12 +2151,14 @@
                         "required": [
                           "shell"
                         ],
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Runs a shell command and returns its stdout."
                       },
                       {
                         "type": "object",
                         "properties": {
                           "id": {
+                            "description": "Assigns an identifier used to read this step's output.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1673,15 +2170,19 @@
                             ]
                           },
                           "name": {
+                            "description": "Sets the display name of the step.",
                             "type": "string"
                           },
                           "if": {
+                            "description": "Runs the step only when this runtime expression is truthy.",
                             "type": "string"
                           },
                           "forEach": {
+                            "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                             "type": "string"
                           },
                           "fanout": {
+                            "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1696,6 +2197,7 @@
                             ]
                           },
                           "maxParallel": {
+                            "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                             "anyOf": [
                               {
                                 "type": "integer",
@@ -1708,6 +2210,7 @@
                             ]
                           },
                           "continueOnError": {
+                            "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                             "anyOf": [
                               {
                                 "type": "boolean"
@@ -1718,6 +2221,7 @@
                             ]
                           },
                           "timeoutMinutes": {
+                            "description": "Is not allowed on a step-recipe caller; put it on an emitted step.",
                             "anyOf": [
                               {
                                 "type": "integer",
@@ -1730,6 +2234,7 @@
                             ]
                           },
                           "uses": {
+                            "description": "Names the local or remote step recipe to expand at this position.",
                             "anyOf": [
                               {
                                 "type": "string",
@@ -1744,6 +2249,7 @@
                             }
                           },
                           "with": {
+                            "description": "Supplies declared input values to the step recipe.",
                             "default": {},
                             "anyOf": [
                               {
@@ -1762,7 +2268,8 @@
                         "required": [
                           "uses"
                         ],
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "description": "Expands a step recipe into one or more workflow steps."
                       }
                     ]
                   },
@@ -1782,15 +2289,21 @@
         "apiVersion",
         "steps"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "title": "Step recipe",
+      "description": "Defines one or more steps that a uses step inserts at its position."
     }
   ],
   "$defs": {
     "recipePlaceholder": {
+      "title": "Recipe placeholder",
+      "description": "A whole-value `$[[ ... ]]` expression resolved before the recipe body is validated.",
       "type": "string",
       "pattern": "^\\$\\[\\[[\\s\\S]*\\]\\]$"
     },
     "recipeInterpolation": {
+      "title": "Recipe interpolation",
+      "description": "Text containing a `$[[ ... ]]` expression resolved before the recipe body is validated.",
       "type": "string",
       "pattern": "\\$\\[\\[[\\s\\S]*\\]\\]"
     }

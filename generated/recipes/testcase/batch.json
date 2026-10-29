@@ -1,38 +1,43 @@
 {
   "path": "recipes/testcase/batch.yml",
-  "description": "Generate testcases from reviewed translations in batches, one pull request per batch, whenever a translation lands on one of the given branches. Progress is recomputed from the tree on every pass, so a run that stops half-way resumes where it left off.",
   "inputs": [
     {
       "name": "sourceRoot",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Root containing reviewed .vi.md specifications."
     },
     {
       "name": "outputRoot",
       "type": "path",
-      "required": true
+      "required": true,
+      "description": "Root for mirrored .testcase.md files."
     },
     {
       "name": "branches",
       "type": "array",
-      "required": true
+      "required": true,
+      "description": "Push branches that start planning when a reviewed translation changes."
     },
     {
       "name": "branchPrefix",
       "type": "string",
-      "required": true
+      "required": true,
+      "description": "Prefix for generated test-case batch branches."
     },
     {
       "name": "model",
       "type": "string",
       "required": false,
-      "default": "sonnet"
+      "default": "sonnet",
+      "description": "Model used by the test-case generation skill."
     },
     {
       "name": "maxIterations",
       "type": "number",
       "required": false,
-      "default": 10
+      "default": 10,
+      "description": "Maximum draft pull request batches published by one workflow run."
     },
     {
       "name": "toolkit",
@@ -45,7 +50,8 @@
         "generate": {
           "skill": "generate-testcases"
         }
-      }
+      },
+      "description": "Complete replacement for the batch planner and test-case generation skill."
     }
   ]
 }

@@ -38,6 +38,19 @@ const config: Config = {
       } satisfies ClassicPresetOptions,
     ],
   ],
+  plugins: [
+    [
+      "@docusaurus/plugin-client-redirects",
+      {
+        redirects: [
+          {
+            from: ["/examples/translation-end-to-end"],
+            to: "/getting-started/recommended-project-setup",
+          },
+        ],
+      },
+    ],
+  ],
   themes: [
     [
       "@easyops-cn/docusaurus-search-local",

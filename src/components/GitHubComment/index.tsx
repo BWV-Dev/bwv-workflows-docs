@@ -32,12 +32,21 @@ function DisabledInput(props: ComponentPropsWithoutRef<"input">): ReactNode {
 
 export default function GitHubComment({
   sample,
+  markdown,
   author,
 }: {
-  sample: string;
+  sample?: string;
+  markdown?: string;
   author: string;
 }): ReactNode {
-  const markdown = requireGenerated(samples, sample, "sample");
+  if ((sample === undefined) === (markdown === undefined)) {
+    throw new Error(
+      "GitHubComment requires exactly one of `sample` or `markdown`.",
+    );
+  }
+
+  const comment =
+    markdown ?? requireGenerated(samples, sample as string, "sample");
 
   return (
     <div className={styles.comment}>
@@ -48,7 +57,11 @@ export default function GitHubComment({
         <div className={styles.header}>
           <strong>{author}</strong>
           <span className={styles.badge}>bot</span>
-          <span className={styles.muted}>commented with example data</span>
+          <span className={styles.muted}>
+            {markdown === undefined
+              ? "commented with example data"
+              : "commented in the example run"}
+          </span>
         </div>
         <div className={styles.body}>
           <ReactMarkdown
@@ -56,7 +69,7 @@ export default function GitHubComment({
             rehypePlugins={[rehypeRaw]}
             components={{ input: DisabledInput }}
           >
-            {markdown}
+            {comment}
           </ReactMarkdown>
         </div>
       </div>

@@ -14,6 +14,8 @@ Use this workflow recipe for a repository that synchronizes Japanese Markdown th
 
 The recipe also keeps cache files aligned with wording that reviewers edit on a translation branch. Pull requests into the configured gate branches must pass the cache check.
 
+After each document is translated, the recipe runs its deterministic `checkOutputs` toolkit script. A failed check can resume the same model session for a focused repair, then runs the check again. `maxRepairs` controls those model repair attempts; setting it to `0` keeps verification but disables model repair.
+
 ## What users see on the pull request
 
 Before the sync pull request merges, BWV Workflows adds a planned [translation tracker](../pull-requests/translation-tracker). After the merge, the same tracker shows each source group and its generated pull request.
@@ -54,6 +56,7 @@ workflows:
       branchPrefix: bwv/translate
       model: sonnet
       maxFilesPerGroup: 3
+      maxRepairs: 1
 ```
 
 The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted.
@@ -88,18 +91,26 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 
 ## Inputs explained
 
-| Input              | Meaning                                                                                                                                    | Example             |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
-| `sourceRoot`       | Root folder of the Japanese `.md` source tree.                                                                                             | `docs/specs`        |
-| `outputRoot`       | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                                                      | `docs_vn/specs`     |
-| `glossary`         | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`  |
-| `syncBase`         | Base branch that receives the merged sync pull request and generated translation pull requests.                                            | `main`              |
-| `sourceBranch`     | Head branch of the sync pull request. A merge from this branch into `syncBase` starts grouping.                                            | `docs-sync`         |
-| `gateBases`        | Pull request base branches on which translation and cache changes must pass the cache-in-sync check.                                       | `[main, docs-sync]` |
-| `branchPrefix`     | Prefix for generated translation branches. BWV Workflows adds the sync pull request and group identifiers.                                 | `bwv/translate`     |
-| `model`            | Model used by the translation and cache-sync skills.                                                                                       | `sonnet`            |
-| `maxFilesPerGroup` | Maximum source files in one group and maximum translations run at the same time for that group.                                            | `3`                 |
-| `toolkit`          | Complete replacement for the default translation, cache-sync, output-check, and drift-check tools. Omit it to use the maintained defaults. | Omitted             |
+| Input                   | Meaning                                                                                                                                    | Example               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `sourceRoot`            | Root folder of the Japanese `.md` source tree.                                                                                             | `docs/specs`          |
+| `outputRoot`            | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                                                      | `docs_vn/specs`       |
+| `glossary`              | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`    |
+| `exclude`               | Source globs omitted from translation and cache checks. A supplied list replaces the default sentinel.                                     | `["docs/archive/**"]` |
+| `syncBase`              | Base branch that receives the merged sync pull request and generated translation pull requests.                                            | `main`                |
+| `sourceBranch`          | Head branch whose merged pull request into `syncBase` starts translation.                                                                  | `docs-sync`           |
+| `gateBases`             | Pull request bases on which translation caches must remain synchronized.                                                                   | `[main, docs-sync]`   |
+| `branchPrefix`          | Prefix for generated translation branches.                                                                                                 | `bwv/translate`       |
+| `model`                 | Model used by the translation and cache-sync skills.                                                                                       | `sonnet`              |
+| `maxFilesPerGroup`      | Maximum files in one group and maximum simultaneous translations for it.                                                                   | `3`                   |
+| `timeoutMinutes`        | Per-document, per-attempt timeout for translation or cache sync. Defaults to `40`; maximum `90`.                                           | `40`                  |
+| `maxTurns`              | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                                                             | `40`                  |
+| `maxRepairs`            | Same-session model repairs after `checkOutputs` fails. Defaults to `1`; range `0`–`3`.                                                     | `1`                   |
+| `allowedTools`          | Complete tool list for translation. Omit it to use the maintained default.                                                                 | Omitted               |
+| `syncCacheAllowedTools` | Complete tool list for cache synchronization. Omit it to use the maintained default.                                                       | Omitted               |
+| `toolkit`               | Complete replacement for the default translation, cache-sync, output-check, and drift-check tools. Omit it to use the maintained defaults. | Omitted               |
+
+The default `checkOutputs` is a toolkit script and is valid in the translate step's `verify.shell`. A custom toolkit must keep the same `checkOutputs <source> <sourceRoot> <outputRoot>` contract so verification, model repair, and the final publication gate agree.
 
 ## Common problems
 

@@ -1,14 +1,122 @@
 ---
 title: Triggers
 sidebar_position: 1
-description: Start workflows from pull request and push events.
+description: Start workflows from pull request, push, and manual events.
 slug: /configuring/triggers
 ---
 
+import GitHubComment from "@site/src/components/GitHubComment";
+
 👤 Responsible: Project Leader
 
-This page will explain `pull_request` and `push` triggers, branch filters, path filters, and how all filters work together.
+Choose the events, branches, and paths that can start each workflow.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
+## Pull request triggers
+
+Use `on.pull_request` when work should follow changes proposed to a base branch:
+
+```yaml title=".bwv/workflows.yml"
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    base: [main, "release/*"]
+    head: ["feature/*"]
+    paths: ["docs/specs/**"]
+    ignorePaths: ["docs/specs/archive/**"]
+```
+
+Every configured filter must pass. `base` is required. `head`, `paths`, and `ignorePaths` are optional glob lists. The workflow is skipped when every otherwise matching file is ignored.
+
+Use a merged-close trigger for work that starts only after a pull request lands:
+
+```yaml
+on:
+  pull_request:
+    types: [closed]
+    base: [main]
+    merged: true
+    paths: ["docs/specs/**"]
+```
+
+Negated `!` globs are not accepted in `paths` or `ignorePaths`. Put exclusions directly in `ignorePaths`.
+
+## Push triggers
+
+Use `on.push` for work that follows an update to a branch:
+
+```yaml title=".bwv/workflows.yml"
+on:
+  push:
+    branches: [main, "release/*"]
+    paths: ["docs/specs/**"]
+    ignorePaths: ["docs/specs/archive/**"]
+```
+
+`branches` is required. The pushed commit supplies both the workflow configuration and the worktree content.
+
+:::caution Push path filters can be incomplete
+GitHub limits the commit list included in a push payload. When BWV Workflows cannot know the complete changed-file list, it runs the workflow instead of risking a missed change. Make the steps confirm whether work is required.
 :::
+
+## Manual triggers
+
+Use `on.manual` when a person with repository write access should start one named workflow from an issue or pull request conversation:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: rebuild-search-index
+    on:
+      manual:
+        branches: [main, "release/*"]
+    steps:
+      - name: Rebuild the search index
+        shell: node scripts/rebuild-search-index.mjs
+```
+
+Start it with:
+
+```text
+/bwv run rebuild-search-index on main
+```
+
+Omit `on <branch>` only when the workflow accepts exactly one literal branch name. Include it when `branches` contains several entries or a glob.
+
+BWV Workflows reads `.bwv/workflows.yml` from the requested branch tip. It refuses an unknown workflow, a workflow without `on.manual`, or a branch that does not match the configured list.
+
+### Follow the hub
+
+The conversation keeps one manual-run hub comment for each workflow and branch. A later run, retry, or batch recreation with the same identity updates that comment rather than creating a second hub.
+
+The request table records the command, requester, state, and check run. A loop workflow also shows every pass and attempt, its batch branch, live pull request state, result, summary, and check. Earlier requests remain in folded history.
+
+<GitHubComment sample="manual-run-hub" author="BWV Workflows" />
+
+At pass boundaries and when the run finishes, the hub refreshes the state of published batches. Open batches appear under **Resumed after**. Closed and merged batches are loaded into folded history. A finished hub folds eligible Retry and Recreate boxes under **Actions**.
+
+Use `/bwv recreate #N` or a Recreate box for a closed unmerged loop batch. The replacement is recorded against that batch, and the old row becomes `#N (closed; replaced by #M)` instead of being offered again. See [Many pull requests from one run](./many-pull-requests#recreate-one-closed-batch).
+
+## Combine triggers
+
+Put more than one trigger under `on` when the same steps should respond to different events:
+
+```yaml title=".bwv/workflows.yml"
+on:
+  pull_request:
+    types: [opened, synchronize]
+    base: [main]
+    paths: ["docs/specs/**"]
+  push:
+    branches: [main]
+    paths: ["docs/specs/**"]
+  manual:
+    branches: [main]
+```
+
+At least one trigger is required. Each event is matched only against its own trigger block.
+
+## Merge configuration before testing
+
+For a pull request run, the base branch supplies `.bwv/workflows.yml`, `.claude/`, and local recipes. A workflow change in the pull request does not control its own run.
+
+For push and manual runs, the target branch supplies both configuration and content. Merge the trigger configuration into that branch before testing it.

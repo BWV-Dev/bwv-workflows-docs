@@ -39,7 +39,7 @@ selects the workflows that should run.
 👤 Responsible: Dev & Com
 
 BWV Workflows creates a check named `bwv/<workflow>` on the source commit. The
-check shows queued, running, passed, and failed steps. It also shows the final
+check shows running, passed, and failed steps. It also shows the final
 error when a step cannot complete.
 
 For configuration errors, look for the `bwv/config` check. It tells the Project
@@ -54,7 +54,9 @@ steps finish. This keeps the current state in one place. A Project Leader can
 turn this comment off with `statusComment: false`; the check run still exists.
 
 A push run normally reports only through its check run because there is no
-source pull request.
+source pull request. A manually triggered run also keeps one hub comment in the
+issue or pull request conversation for each workflow and branch. The hub links
+the check run and preserves later attempts and loop-pass history together.
 
 ### 4. Review the result pull request
 
@@ -90,5 +92,4 @@ This rule has two practical consequences:
    pull request takes effect **from the next merge**.
 
 Merge workflow changes into the target branch before using them in a test pull
-request. Protect every target branch as described in
-[Protect your branches](../getting-started/protect-branches).
+request.

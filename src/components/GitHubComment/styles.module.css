@@ -73,3 +73,28 @@
 .body input[type="checkbox"] {
   opacity: 1;
 }
+
+@media (max-width: 600px) {
+  .comment {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .avatar {
+    display: none;
+  }
+
+  .header,
+  .body {
+    padding: 0.75rem;
+  }
+
+  .body {
+    overscroll-behavior-inline: contain;
+  }
+
+  .body code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

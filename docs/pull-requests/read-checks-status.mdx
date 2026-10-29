@@ -32,14 +32,15 @@ The status comment in the **Conversation** tab is another view of the same workf
 
 ### 2. Read the state
 
-| What you see                                    | Meaning                                                                                       | What to do                                                             |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| ⏳ **running**                                  | The bot is working. The current step has ⏳ and later steps have ⬜.                          | Wait for the comment to update.                                        |
-| ✅ **finished** or a passed check               | Every required step passed.                                                                   | Open and review any output pull request shown.                         |
-| ❌ **failed**                                   | A step failed and no automatic attempt remains.                                               | Read the failed row and its output, fix the cause, then use **Retry**. |
-| **finished**, with a closed output pull request | The steps passed, but publication is held because the earlier output pull request was closed. | Use **Recreate**, not **Retry**.                                       |
-| **Waiting for quota**                           | The bot paused and will try automatically at the UTC time shown.                              | Wait. Do not request another run.                                      |
-| **Waiting for a retry**                         | A temporary problem stopped the attempt. The bot still has an automatic attempt left.         | Wait for the stated UTC time.                                          |
+| What you see                                                      | Meaning                                                                               | What to do                                                             |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| ⏳ **running**                                                    | The bot is working. The current step has ⏳ and later steps have ⬜.                  | Wait for the comment to update.                                        |
+| ✅ **finished** or a passed check                                 | Every required step passed.                                                           | Open and review any output pull request shown.                         |
+| ❌ **failed**                                                     | A step failed and no automatic attempt remains.                                       | Read the failed row and its output, fix the cause, then use **Retry**. |
+| **finished**, with `#N (closed)`                                  | The output pull request was closed without merging.                                   | Use **Recreate**, not **Retry**.                                       |
+| **Waiting for quota · Retrying automatically around HH:MM UTC**   | The bot stopped because the Claude quota was used up and will try again at that time. | Wait. Do not tick **Retry**.                                           |
+| ⏸️ **Stopped: Claude quota used up · retrying around HH:MM UTC**  | A manual-run pass stopped for the same reason. Completed batches remain available.    | Wait. The bot continues by itself.                                     |
+| **Waiting for a retry · Retrying automatically around HH:MM UTC** | A temporary problem stopped the attempt and another attempt is planned.               | Wait for the stated time.                                              |
 
 <GitHubComment sample="status-running" author="BWV Workflows" />
 
