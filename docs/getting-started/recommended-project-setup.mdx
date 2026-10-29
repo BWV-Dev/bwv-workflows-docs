@@ -1,0 +1,198 @@
+---
+title: Recommended project setup
+sidebar_position: 4
+description: Set up Japanese source documents, reviewed Vietnamese documents, and incremental translation.
+slug: /getting-started/recommended-project-setup
+---
+
+import GitHubComment from "@site/src/components/GitHubComment";
+import manualBackfillFinished from "!!raw-loader!@site/src/content/recommended-project-setup/manual-backfill-finished.md";
+import manualBackfillQuotaWait from "!!raw-loader!@site/src/content/recommended-project-setup/manual-backfill-quota-wait.md";
+import retryNothing from "!!raw-loader!@site/src/content/recommended-project-setup/retry-nothing.md";
+import sync7Accepted from "!!raw-loader!@site/src/content/recommended-project-setup/sync-7-accepted.md";
+import sync7Closed from "!!raw-loader!@site/src/content/recommended-project-setup/sync-7-closed.md";
+import sync7Published from "!!raw-loader!@site/src/content/recommended-project-setup/sync-7-published.md";
+import sync7Running from "!!raw-loader!@site/src/content/recommended-project-setup/sync-7-running.md";
+import sync13Published from "!!raw-loader!@site/src/content/recommended-project-setup/sync-13-published.md";
+import sync16Published from "!!raw-loader!@site/src/content/recommended-project-setup/sync-16-published.md";
+
+👤 Responsible: Project Leader and Dev & Com
+
+Use this setup when Japanese Markdown is the source and the project needs reviewed Vietnamese Markdown for daily development and testing.
+
+```text title="Branch and pull request flow"
+main (Japanese documents)
+  │
+  │ Com opens a sync PR: main → bwv-docs
+  ▼
+sync PR
+  │ merge
+  ├──────────────► bwv/translation/** ──► translation output PR ──┐
+  ▼                                                              │
+bwv-docs                                                         │
+└── docs_vn/ ◄────────────────────────────────────────────────────┘
+```
+
+Keep `.bwv/workflows.yml` on `bwv-docs`:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+
+workflows:
+  - name: translation
+    # This moving tag is intentional for the demo. Production projects should pin a full SHA.
+    uses: BWV-Dev/bwv-workflows-recipes/translation/grouped@translation/v1
+    with:
+      sourceRoot: docs
+      outputRoot: docs_vn
+      glossary: docs_vn/glossary.md
+      syncBase: bwv-docs
+      sourceBranch: main
+      gateBases: [bwv-docs]
+      branchPrefix: bwv/translation
+      model: sonnet
+      maxFilesPerGroup: 3
+
+  - name: translation-backfill
+    # This moving tag is intentional for the demo. Production projects should pin a full SHA.
+    uses: BWV-Dev/bwv-workflows-recipes/translation/backfill@translation/v1
+    with:
+      sourceRoot: docs
+      outputRoot: docs_vn
+      glossary: docs_vn/glossary.md
+      branches: [bwv-docs]
+      branchPrefix: bwv/translation
+      model: sonnet
+      batchSize: 5
+      maxParallel: 3
+      maxIterations: 3
+```
+
+:::important Pin recipes in production
+The moving `translation/v1` tag makes this demonstration easy to repeat. In a production project, replace each tag with the approved full 40-character commit SHA.
+:::
+
+## Workflow Summary
+
+1. [Project Leader: onboard the repository and add the workflow](#1-onboard-the-repository-and-add-the-workflow).
+2. [Project Leader: create the first Vietnamese documents](#2-create-the-first-vietnamese-documents).
+3. [Com: synchronize and review documents every day](#3-synchronize-and-review-documents-every-day).
+4. [Com: keep reviewed translations for later changes](#4-keep-reviewed-translations-for-later-changes).
+5. [Dev & Com: use the Vietnamese documents](#5-use-the-vietnamese-documents).
+
+## Step-by-Step Instructions
+
+### 1. Onboard the repository and add the workflow
+
+👤 Responsible: Project Leader
+
+Follow [Onboard your repository](./onboard-repository). Send the BWV Workflows maintainers:
+
+```text
+Repository: acme/docs-project
+Recipe sources:
+- BWV-Dev/bwv-workflows-recipes
+```
+
+Wait for the maintainers to confirm that the repository and recipe source are ready. Create `bwv-docs` from `main`, then add the complete `.bwv/workflows.yml` shown above to `bwv-docs`. Also add `docs_vn/glossary.md` so both translation workflows use the same terminology.
+
+### 2. Create the first Vietnamese documents
+
+👤 Responsible: Project Leader
+
+Open a tracking issue and add this command as a new comment:
+
+```text
+/bwv run translation-backfill/backfill on bwv-docs
+```
+
+The bot keeps one hub comment for this workflow and branch. Each successful pass opens a translation PR into `bwv-docs`. In this run, PRs #2, #3, and #4 created all 13 translation and cache pairs.
+
+<details>
+<summary>Historical quota-stop state from this run</summary>
+
+<GitHubComment markdown={manualBackfillQuotaWait} author="BWV Workflows" />
+
+</details>
+
+<GitHubComment markdown={manualBackfillFinished} author="BWV Workflows" />
+
+This run happened before the current quota-stop display. A current hub uses ⏸️ and shows **Stopped: Claude quota used up · retrying around HH:MM UTC** instead of marking that pass with ❌. The bot retries shortly after the reset time reported by Claude.
+
+![The three backfill translation pull requests with passing checks](/img/screenshots/recommended-backfill-prs.png)
+
+**Project Leader:** Ask Com to review the Vietnamese Markdown in every output PR. Merge each PR into `bwv-docs` only after its checks pass.
+
+### 3. Synchronize and review documents every day
+
+👤 Responsible: Dev & Com
+
+**Com:** After Japanese changes reach `main`, open a sync PR from `main` into `bwv-docs`. Before merge, the tracker only previews the source groups; it has not opened translation PRs yet. Merge the sync PR to start the groups.
+
+Open each published PR from the tracker. Review the Vietnamese Markdown and merge it into `bwv-docs` after its checks pass.
+
+If an output PR was closed by mistake, expand **Actions** and tick its **Recreate pull request** box. The tracker shows `#N (closed)` and offers only the group that can be recreated.
+
+<GitHubComment markdown={sync7Closed} author="BWV Workflows" />
+
+The bot unticks the box and shows that it accepted the request.
+
+<GitHubComment markdown={sync7Accepted} author="BWV Workflows" />
+
+It then shows the group as running.
+
+<GitHubComment markdown={sync7Running} author="BWV Workflows" />
+
+The new PR uses the same output branch. Here PR #11 replaced closed PR #9.
+
+<GitHubComment markdown={sync7Published} author="BWV Workflows" />
+
+You can also comment with the group name:
+
+```text
+/bwv recreate source-pr-15
+```
+
+The 👍 reaction confirms that the command was accepted. In this run, PR #18 replaced closed PR #17.
+
+![The recreate command accepted with a thumbs-up reaction](/img/screenshots/recommended-recreate-reaction.png)
+
+<GitHubComment markdown={sync16Published} author="BWV Workflows" />
+
+Use **Retry** only after failed work. A retry of groups that already published runs nothing:
+
+```text
+/bwv retry translation/draft
+```
+
+<GitHubComment markdown={retryNothing} author="BWV Workflows" />
+
+### 4. Keep reviewed translations for later changes
+
+👤 Responsible: Dev & Com
+
+**Com:** Edit Vietnamese Markdown directly on its translation PR when wording needs correction. Each source document has a Markdown and JSON cache pair:
+
+![The Vietnamese Markdown and JSON cache pair in the Files changed view](/img/screenshots/recommended-translation-pair.png)
+
+BWV Workflows detects the reviewer edit and commits the matching cache update to the same PR. Only the changed cache file is updated.
+
+![The reviewer edit followed by the bot cache-sync commit](/img/screenshots/recommended-cache-sync-commits.png)
+
+The cache check blocks merge while Markdown and cache differ. Merge only after **Every cache matches its translation** passes.
+
+![The successful cache-in-sync check](/img/screenshots/recommended-cache-check.png)
+
+Later, `demo-jp-author` changed only the CSV paragraph in the Japanese timesheet document. Com opened and merged sync PR #13. The tracker published PR #14 for that one source group.
+
+<GitHubComment markdown={sync13Published} author="BWV Workflows" />
+
+The incremental translation changed the CSV paragraph and the cache's `sourceCommit`. The Vietnamese sentence reviewed earlier by `demo-com` stayed unchanged in both Markdown and cache.
+
+![The incremental cache diff with only the later source change translated](/img/screenshots/recommended-incremental-diff.png)
+
+### 5. Use the Vietnamese documents
+
+👤 Responsible: Dev & Com
+
+Read the reviewed files under `docs_vn/` while coding and testing. Treat `bwv-docs` as the current Vietnamese documentation branch. If a sentence is unclear, correct it on the translation PR so the cache keeps that reviewed wording for later incremental translations.

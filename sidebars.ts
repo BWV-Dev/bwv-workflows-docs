@@ -11,18 +11,13 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Example",
-      collapsed: false,
-      items: ["examples/translation-end-to-end"],
-    },
-    {
-      type: "category",
       label: "Getting started",
       collapsed: false,
       items: [
         "getting-started/onboard-repository",
         "getting-started/protect-branches",
         "getting-started/first-workflow",
+        "getting-started/recommended-project-setup",
         "getting-started/editor-autocomplete",
       ],
     },
