@@ -191,6 +191,32 @@ The incremental translation changed the CSV paragraph and the cache's `sourceCom
 
 ![The incremental cache diff with only the later source change translated](/img/screenshots/recommended-incremental-diff.png)
 
+#### Fix a translation after its PR is merged
+
+👤 Responsible: Com
+
+If you find a wrong translation on `bwv-docs`, create a branch from `bwv-docs` whose name starts with the configured `branchPrefix`. Edit only the Vietnamese Markdown; do not edit its `.vi.json` cache.
+
+```bash
+git switch bwv-docs
+git pull --ff-only
+git switch -c bwv/translation/fix-scr-login-001
+# Edit only docs_vn/screens/SCR-LOGIN-001.vi.md
+git add docs_vn/screens/SCR-LOGIN-001.vi.md
+git commit -m "docs(vi): fix SCR-LOGIN-001 translation"
+git push -u origin bwv/translation/fix-scr-login-001
+```
+
+When a `.vi.md` file changes on a pushed `bwv/translation/**` branch, the recipe's `sync-vi-cache` workflow commits the matching `.vi.json` update to that branch. In this run, the bot changed only `SCR-LOGIN-001.vi.json` and only the edited segment, then opened draft PR #19 into `bwv-docs`, titled `chore(vi): sync the VI cache on bwv/translation/fix-scr-login-001`.
+
+![Draft PR 19 with the reviewer commit followed by the bot cache-sync commit](/img/screenshots/recommended-post-merge-fix-commits.png)
+
+![The bot commit changing only the edited segment in the matching cache file](/img/screenshots/recommended-post-merge-cache-diff.png)
+
+Mark the draft ready and merge it after **Every cache matches its translation** passes.
+
+Do not push the fix directly to `bwv-docs`. No workflow updates the cache there, so the next incremental translation of that document would restore the old wording. The cache check covers every cache under `docs_vn/`, so the mismatch would also block later translation PRs into `bwv-docs`.
+
 ### 5. Use the Vietnamese documents
 
 👤 Responsible: Dev & Com
