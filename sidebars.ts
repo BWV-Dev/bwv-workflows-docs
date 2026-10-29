@@ -15,7 +15,6 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "getting-started/onboard-repository",
-        "getting-started/protect-branches",
         "getting-started/first-workflow",
         "getting-started/recommended-project-setup",
         "getting-started/editor-autocomplete",

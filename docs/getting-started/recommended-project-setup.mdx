@@ -7,6 +7,7 @@ slug: /getting-started/recommended-project-setup
 
 import GitHubComment from "@site/src/components/GitHubComment";
 import ZoomableScreenshot from "@site/src/components/ZoomableScreenshot";
+import manualBackfillProgress from "!!raw-loader!@site/src/content/recommended-project-setup/manual-backfill-progress.md";
 import sync13Published from "!!raw-loader!@site/src/content/recommended-project-setup/sync-13-published.md";
 
 👤 Responsible: Project Leader and Dev & Com
@@ -47,6 +48,8 @@ workflows:
       maxFilesPerGroup: 3
 
   - name: translation-backfill
+    # Run this manual workflow when first integrating a repository whose source
+    # documents have never been translated. Keep it available after initialization.
     # This moving tag is intentional for the demo. Production projects should pin a full SHA.
     uses: BWV-Dev/bwv-workflows-recipes/translation/backfill@translation/v1
     with:
@@ -83,11 +86,9 @@ Follow [Onboard your repository](./onboard-repository). Send the BWV Workflows m
 
 ```text
 Repository: acme/docs-project
-Recipe sources:
-- BWV-Dev/bwv-workflows-recipes
 ```
 
-Wait for the maintainers to confirm that the repository and recipe source are ready. Create `bwv-docs` from `main`, then add the complete `.bwv/workflows.yml` shown above to `bwv-docs`. Also add `docs_vn/glossary.md` so both translation workflows use the same terminology.
+Wait for the maintainers to confirm that the repository is ready. Create `bwv-docs` from `main`, then add the complete `.bwv/workflows.yml` shown above to `bwv-docs`. Also add `docs_vn/glossary.md` so both translation workflows use the same terminology.
 
 Project Leader owns the initial glossary. Com updates it when the team agrees on new recurring terminology.
 
@@ -104,11 +105,11 @@ Project Leader owns the initial glossary. Com updates it when the team agrees on
 
 </details>
 
-Follow [Protect your branches](./protect-branches) where your GitHub plan supports branch rules. Require pull requests for `main` and `bwv-docs`. For a PR that changes `docs_vn/`, merge only after the cache check appears and passes. If branch rules are unavailable, keep the same pull-request-only policy as a team rule.
-
 ### 2. Create the first Vietnamese documents
 
 👤 Responsible: Project Leader
+
+Use this step once when first integrating BWV Workflows into a repository whose source documents have never been translated. The `translation-backfill` entry stays in `.bwv/workflows.yml` because it defines this manual initialization workflow; it does not run on every source change. Daily changes use the `translation` workflow in step 3 instead.
 
 Open a tracking issue and add this command as a new comment:
 
@@ -118,11 +119,7 @@ Open a tracking issue and add this command as a new comment:
 
 The bot keeps one hub comment for this workflow and branch. Each successful pass opens a draft translation PR into `bwv-docs`. The backfill is complete when the hub is **finished** and every source document has a Vietnamese Markdown and cache pair. If the hub pauses for quota, it shows ⏸️ and the planned retry time; see [Waiting for quota and other stuck states](../pull-requests/waiting).
 
-<ZoomableScreenshot
-  src="/img/screenshots/recommended-backfill-prs.png"
-  alt="The three backfill translation pull requests with passing checks"
-  compact
-/>
+<GitHubComment markdown={manualBackfillProgress} author="BWV Workflows" />
 
 **Project Leader:** Hand the output PRs to Com. Com reviews the Vietnamese Markdown and merges each PR into `bwv-docs` only after its checks pass.
 
@@ -130,15 +127,12 @@ The bot keeps one hub comment for this workflow and branch. Each successful pass
 
 👤 Responsible: Com
 
-After Japanese changes reach `main`, open a sync PR with `main` as the head and `bwv-docs` as the base. In the GitHub UI, confirm the direction is **base: bwv-docs ← compare: main**. Or use:
+After Japanese changes reach `main`, open the repository on GitHub:
 
-```bash
-gh pr create \
-  --base bwv-docs \
-  --head main \
-  --title "docs: sync main into bwv-docs" \
-  --body "Bring the latest Japanese documents into the translation branch."
-```
+1. Select **Pull requests → New pull request**.
+2. Set **base** to `bwv-docs` and **compare** to `main`.
+3. Confirm the direction is **base: bwv-docs ← compare: main**.
+4. Select **Create pull request**, describe the Japanese document changes, and create the sync PR.
 
 Before merge, the tracker previews the source groups; it has not opened translation PRs yet. Merge the sync PR to start translation. Then, for each output PR listed by the tracker:
 
@@ -216,16 +210,16 @@ The output PR translated the changed paragraph and kept the Vietnamese sentence 
 
 If you find a wrong translation on `bwv-docs`, create a branch from `bwv-docs` whose name starts with the configured `branchPrefix`. Edit only the Vietnamese Markdown; do not edit its `.vi.json` cache.
 
-```bash
-git fetch origin
-git switch -c bwv/translation/fix-scr-login-001 origin/bwv-docs
-# Edit only docs_vn/screens/SCR-LOGIN-001.vi.md
-git add docs_vn/screens/SCR-LOGIN-001.vi.md
-git commit -m "docs(vi): fix SCR-LOGIN-001 translation"
-git push -u origin bwv/translation/fix-scr-login-001
-```
+1. Open the repository on GitHub and switch the branch selector to `bwv-docs`.
+2. Open the `.vi.md` file that needs correction and select **Edit this file**.
+3. Edit only the Vietnamese Markdown. Do not edit its `.vi.json` cache.
+4. Select **Commit changes**.
+5. Choose **Create a new branch for this commit and start a pull request**.
+6. Name the branch with the configured prefix, for example `bwv/translation/fix-scr-login-001`.
+7. Select **Propose changes**.
+8. On the pull request page, confirm that the base is `bwv-docs`, then select **Create draft pull request**.
 
-The `sync-vi-cache` workflow commits the matching `.vi.json` update to the same branch and opens a draft PR into `bwv-docs`. Mark the draft ready and merge it after **Every cache matches its translation** passes.
+The `sync-vi-cache` workflow commits the matching `.vi.json` update to the same branch and updates that draft PR. Mark the draft ready and merge it after **Every cache matches its translation** passes.
 
 Do not push the fix directly to `bwv-docs`. No workflow updates the cache there, so a later incremental translation could restore the old wording and later translation PRs could fail the cache check.
 
