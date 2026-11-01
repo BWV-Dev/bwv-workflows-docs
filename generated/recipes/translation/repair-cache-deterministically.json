@@ -1,0 +1,37 @@
+{
+  "path": "recipes/translation/repair-cache-deterministically.yml",
+  "inputs": [
+    {
+      "name": "sourceRoot",
+      "type": "path",
+      "required": true,
+      "description": "Repository-relative root of the original Japanese Markdown files."
+    },
+    {
+      "name": "outputRoot",
+      "type": "path",
+      "required": true,
+      "description": "Root containing mirrored Vietnamese translations and JSON caches."
+    },
+    {
+      "name": "exclude",
+      "type": "array",
+      "required": true,
+      "description": "Repository-relative globs of source documents outside cache-repair scope."
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": false,
+      "default": {
+        "checkDrift": {
+          "script": "scripts/check-cache-drift.sh"
+        },
+        "cacheEdits": {
+          "script": "scripts/vi-cache-edits.mjs"
+        }
+      },
+      "description": "Drift detector plus the protected deterministic cache-edit implementation."
+    }
+  ]
+}

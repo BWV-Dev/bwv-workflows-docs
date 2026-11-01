@@ -221,8 +221,6 @@ If you find a wrong translation on `bwv-docs`, create a branch from `bwv-docs` w
 
 The `sync-vi-cache` workflow commits the matching `.vi.json` update to the same branch and updates that draft PR. Mark the draft ready and merge it after **Every cache matches its translation** passes.
 
-Do not push the fix directly to `bwv-docs`. No workflow updates the cache there, so a later incremental translation could restore the old wording and later translation PRs could fail the cache check.
-
 <details>
 <summary>Verified post-merge correction example</summary>
 
@@ -240,6 +238,16 @@ In the example run, Com changed one `.vi.md` file. The bot committed only the ma
 />
 
 </details>
+
+##### Backup: push directly to `bwv-docs`
+
+👤 Responsible: Com
+
+This is safe with `translation/v1.9.0` or later, but it is not the recommended path. The configuration above uses the moving `translation/v1` tag, which currently points to `translation/v1.9.3`.
+
+When a push to `bwv-docs` changes Vietnamese Markdown, `repair-base-vi-cache` audits the current Japanese, Vietnamese, and cache content. Safe drift opens a draft PR titled `chore(vi): repair translation cache drift` from `bwv/translation/repair-<full-push-SHA>`, with the `bwv-automation` label. It changes only matching existing `.vi.json` entries; review and merge that PR after **Every cache matches its translation** passes. Content whose cache is already correct is a no-op.
+
+Prefer the branch flow above because a direct push puts the Vietnamese change on `bwv-docs` before pull-request review and needs a separate repair PR. Repair fails closed and publishes nothing when a whole cache is missing or malformed; entries are duplicated, cross-wired, structurally unowned, or ambiguous; a deleted or renamed Markdown file leaves an orphan cache; the output tree contains symbolic links or special nodes; or anything outside the planned caches changes. In that case, fix the reported structure in a reviewed `bwv/translation/**` branch. Add, remove, or migrate cache entries there when their ownership cannot be inferred, and merge only after the cache check passes.
 
 ### 5. Use the Vietnamese documents
 
