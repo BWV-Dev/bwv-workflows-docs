@@ -208,7 +208,7 @@ The output PR translated the changed paragraph and kept the Vietnamese sentence 
 
 👤 Responsible: Com
 
-If you find a wrong translation on `bwv-docs`, create a branch from `bwv-docs` whose name starts with the configured `branchPrefix`. Edit only the Vietnamese Markdown; do not edit its `.vi.json` cache.
+If you find a wrong translation on `bwv-docs`, use the GitHub editor to create a correction branch:
 
 1. Open the repository on GitHub and switch the branch selector to `bwv-docs`.
 2. Open the `.vi.md` file that needs correction and select **Edit this file**.
@@ -217,9 +217,9 @@ If you find a wrong translation on `bwv-docs`, create a branch from `bwv-docs` w
 5. Choose **Create a new branch for this commit and start a pull request**.
 6. Name the branch with the configured prefix, for example `bwv/translation/fix-scr-login-001`.
 7. Select **Propose changes**.
-8. On the pull request page, confirm that the base is `bwv-docs`, then select **Create draft pull request**.
+8. On the pull request page that opens, do not create a pull request; leave the page.
 
-The `sync-vi-cache` workflow commits the matching `.vi.json` update to the same branch and updates that draft PR. Mark the draft ready and merge it after **Every cache matches its translation** passes.
+The `sync-vi-cache` workflow commits the matching `.vi.json` update to the same branch, then opens a draft PR from that branch into `bwv-docs`. In the example run, the bot opened PR #19. Mark the draft ready and merge it after **Every cache matches its translation** passes.
 
 <details>
 <summary>Verified post-merge correction example</summary>
