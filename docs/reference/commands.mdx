@@ -9,10 +9,10 @@ import { Commands } from "@site/src/components/GeneratedReference";
 
 👤 Responsible: Dev & Com
 
-Type a command as a new line in the **Conversation** tab of the pull request. Start the line with `/bwv`; text that only mentions or quotes a command does not run it.
+Type a command as a new line in an issue or pull request conversation. Start the line with `/bwv`; text that only mentions or quotes a command does not run it. Manual `/bwv run` and batch `/bwv recreate #N` commands may use an issue; pull request retry, status, provenance, and grouped recreation commands belong on the affected pull request.
 
-BWV Workflows carries out commands only for a user with write access to the repository. An unsupported command may return the command list, but it does not run workflow work. Do not edit an older comment into a command; add a new comment.
+An unsupported command may return the command list, but it does not run workflow work. Do not edit an older comment into a command; add a new comment.
 
-Use the exact syntax in the generated table. See [Running something again](../pull-requests/retry), [Recreating a closed pull request](../pull-requests/recreate), and [When a merge is skipped or needs mapping](../pull-requests/merge-skipped) for the corresponding pull request workflows.
+Use the exact syntax in the generated table. See [Triggers](../configuring/triggers#manual-triggers), [Running something again](../pull-requests/retry), [Recreating a closed pull request](../pull-requests/recreate), and [When a merge is skipped or needs mapping](../pull-requests/merge-skipped) for the corresponding workflows.
 
 <Commands />

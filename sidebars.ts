@@ -15,8 +15,8 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         "getting-started/onboard-repository",
-        "getting-started/protect-branches",
         "getting-started/first-workflow",
+        "getting-started/recommended-project-setup",
         "getting-started/editor-autocomplete",
       ],
     },
@@ -34,6 +34,7 @@ const sidebars: SidebarsConfig = {
           link: { type: "doc", id: "recipes/index" },
           items: [
             "recipes/translation-grouped",
+            "recipes/translation-backfill",
             "recipes/translation-sync-cache-completeness",
             "recipes/testcase-batch",
             "recipes/common-command-fanout",
