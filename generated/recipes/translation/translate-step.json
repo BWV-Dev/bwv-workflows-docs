@@ -73,6 +73,17 @@
       "description": "Per-item deterministic output check command; the no-op default keeps verification optional for direct callers."
     },
     {
+      "name": "permissionDenials",
+      "type": "string",
+      "required": false,
+      "default": "fail",
+      "description": "Use warn only with a real deterministic verifier or later output gate; denied tools remain blocked.",
+      "enum": [
+        "fail",
+        "warn"
+      ]
+    },
+    {
       "name": "allowedTools",
       "type": "array",
       "required": false,

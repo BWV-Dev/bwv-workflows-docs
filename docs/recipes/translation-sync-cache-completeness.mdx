@@ -21,6 +21,8 @@ The calling workflow decides when this step runs and how it publishes changes. I
 
 Dev & Com can read the result in [the check run and status comment](../pull-requests/read-checks-status). If it fails, fix the reported document or cache problem before following [Running something again](../pull-requests/retry).
 
+The released recipe sets `permissionDenials: warn` on cache synchronization only because the following deterministic step verifies every planned reviewer edit. A denied tool remains blocked and appears as a warning; missing cache changes still fail that gate. A definitive sync-process failure stops running sibling sync processes and leaves queued files unstarted.
+
 ## Prerequisites
 
 Prepare the target repository before adding this step recipe:

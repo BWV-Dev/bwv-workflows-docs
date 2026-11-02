@@ -68,6 +68,10 @@ workflows:
 The moving `translation/v1` tag makes this demonstration easy to repeat. In a production project, replace each tag with the approved full 40-character commit SHA.
 :::
 
+:::note Why these recipes warn on denied tools
+The released grouped and backfill recipes set `permissionDenials: warn` only around translation work that has a per-document `checkOutputs` verifier and a later deterministic publication gate. A denied tool remains blocked and visible. Grouped translation stops running siblings and leaves queued files unstarted after a definitive item or verifier failure; backfill deliberately keeps processing the batch and drops incomplete documents in its finalizer.
+:::
+
 ## Workflow Summary
 
 1. [Project Leader: onboard the repository and add the workflow](#1-onboard-the-repository-and-add-the-workflow).
@@ -172,12 +176,6 @@ Edit Vietnamese Markdown directly on its translation PR when wording needs corre
 
 BWV Workflows detects the reviewer edit and commits the matching cache update to the same PR. Only the changed cache file is updated.
 
-<ZoomableScreenshot
-  src="/img/screenshots/recommended-cache-sync-commits.png"
-  alt="The reviewer edit followed by the bot cache-sync commit"
-  compact
-/>
-
 The cache check blocks merge while Markdown and cache differ. Merge only after **Every cache matches its translation** passes.
 
 <ZoomableScreenshot
@@ -191,16 +189,11 @@ Later Japanese edits translate only changed content. Wording already approved by
 <details>
 <summary>Verified incremental translation example</summary>
 
-`demo-jp-author` changed one paragraph in the Japanese timesheet document. After Com merged the sync PR, the tracker published one output PR for that source group:
+`demo-jp-author` changed one paragraph in the Japanese profile document. After Com merged the sync PR, the tracker published one output PR for that source group:
 
 <GitHubComment markdown={sync13Published} author="BWV Workflows" />
 
 The output PR translated the changed paragraph and kept the Vietnamese sentence reviewed earlier by `demo-com`.
-
-<ZoomableScreenshot
-  src="/img/screenshots/recommended-incremental-diff.png"
-  alt="The incremental diff with only the later source change translated"
-/>
 
 </details>
 
@@ -215,7 +208,7 @@ If you find a wrong translation on `bwv-docs`, use the GitHub editor to create a
 3. Edit only the Vietnamese Markdown. Do not edit its `.vi.json` cache.
 4. Select **Commit changes**.
 5. Choose **Create a new branch for this commit and start a pull request**.
-6. Name the branch with the configured prefix, for example `bwv/translation/fix-scr-login-001`.
+6. Name the branch with the configured prefix, for example `bwv/translation/fix-specs-login`.
 7. Select **Propose changes**.
 8. On the pull request page that opens, do not create a pull request; leave the page.
 
@@ -224,18 +217,7 @@ The `sync-vi-cache` workflow commits the matching `.vi.json` update to the same 
 <details>
 <summary>Verified post-merge correction example</summary>
 
-In the example run, Com changed one `.vi.md` file. The bot committed only the matching cache update and opened a draft PR into `bwv-docs`.
-
-<ZoomableScreenshot
-  src="/img/screenshots/recommended-post-merge-fix-commits.png"
-  alt="The reviewer commit followed by the bot cache-sync commit"
-  compact
-/>
-
-<ZoomableScreenshot
-  src="/img/screenshots/recommended-post-merge-cache-diff.png"
-  alt="The bot commit changing only the edited segment in the matching cache file"
-/>
+In the example run, Com changed one `.vi.md` file. The bot committed only the matching cache update and opened a draft PR into `bwv-docs`. The cache commit changed only the edited segment in that file's matching `.vi.json` cache.
 
 </details>
 
@@ -243,7 +225,7 @@ In the example run, Com changed one `.vi.md` file. The bot committed only the ma
 
 👤 Responsible: Com
 
-This is safe with `translation/v1.9.0` or later, but it is not the recommended path. The configuration above uses the moving `translation/v1` tag, which currently points to `translation/v1.9.3`.
+This is safe with `translation/v1.9.0` or later, but it is not the recommended path. The configuration above uses the moving `translation/v1` tag, which currently points to `translation/v1.9.4` (`4a37c4e6ddc14f05e65bbf38024b370016b0f608`).
 
 When a push to `bwv-docs` changes Vietnamese Markdown, `repair-base-vi-cache` audits the current Japanese, Vietnamese, and cache content. Safe drift opens a draft PR titled `chore(vi): repair translation cache drift` from `bwv/translation/repair-<full-push-SHA>`, with the `bwv-automation` label. It changes only matching existing `.vi.json` entries; review and merge that PR after **Every cache matches its translation** passes. Content whose cache is already correct is a no-op.
 

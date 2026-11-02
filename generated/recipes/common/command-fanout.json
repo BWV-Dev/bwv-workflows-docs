@@ -45,6 +45,17 @@
       "description": "Tools or path-scoped edits denied to each item process."
     },
     {
+      "name": "permissionDenials",
+      "type": "string",
+      "required": false,
+      "default": "fail",
+      "description": "Use warn only when a later deterministic step verifies the output; a denied tool is still blocked.",
+      "enum": [
+        "fail",
+        "warn"
+      ]
+    },
+    {
       "name": "timeoutMinutes",
       "type": "number",
       "required": false,

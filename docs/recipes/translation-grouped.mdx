@@ -112,6 +112,8 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 
 The default `checkOutputs` is a toolkit script and is valid in the translate step's `verify.shell`. A custom toolkit must keep the same `checkOutputs <source> <sourceRoot> <outputRoot>` contract so verification, model repair, and the final publication gate agree.
 
+The released recipe sets `permissionDenials: warn` only on the translate step. A denied tool remains blocked and appears as a warning, while the per-document `checkOutputs` verifier and the final group-wide output check still prevent incomplete work from being published. A definitive item or verifier failure stops sibling processes and leaves queued files unstarted.
+
 ## Common problems
 
 ### No translation starts after a merge

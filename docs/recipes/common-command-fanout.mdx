@@ -19,6 +19,8 @@ This is a step recipe. The calling workflow owns the trigger, planning step, suc
 
 Users see the calling workflow's `bwv/<workflow>` check and status comment. The fan-out step appears as one workflow step while its item processes run independently. Any output pull request is created by the calling workflow, not by this recipe.
 
+The recipe defaults `permissionDenials` to `fail`. A denied or failed item stops running siblings and leaves queued items unstarted, because the emitted step does not enable `continueOnError`. The check names the causal item and distinguishes stopped work from work that never started.
+
 Direct reviewers to [the check run and status comment](../pull-requests/read-checks-status). After fixing an item, use the retry action described in [Running something again](../pull-requests/retry).
 
 ## Prerequisites
@@ -62,6 +64,7 @@ workflows:
           maxTurns: 20
           allowedTools: ["Read", "Write", "Edit", "Glob"]
           disallowedTools: ["Edit(docs/specs/**)"]
+          permissionDenials: fail
           timeoutMinutes: 20
           maxParallel: 2
           toolkit:
@@ -100,18 +103,19 @@ Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the 
 
 ## Inputs explained
 
-| Input             | Meaning                                                                            | Example                             |
-| ----------------- | ---------------------------------------------------------------------------------- | ----------------------------------- |
-| `id`              | Step ID emitted for the fan-out work.                                              | `document`                          |
-| `items`           | Runtime expression that resolves to the array to process.                          | `${{ steps.plan.output.files }}`    |
-| `args`            | Argument text evaluated for each item and passed to the selected skill or command. | `${{ item.args }}`                  |
-| `model`           | Model used by every item process.                                                  | `sonnet`                            |
-| `maxTurns`        | Maximum agent turns allowed for each item.                                         | `20`                                |
-| `allowedTools`    | Tools available to each item process.                                              | `["Read", "Write", "Edit", "Glob"]` |
-| `disallowedTools` | Tools or path-scoped edits explicitly denied to each item process.                 | `["Edit(docs/specs/**)"]`           |
-| `timeoutMinutes`  | Time limit for each fan-out step.                                                  | `20`                                |
-| `maxParallel`     | Maximum item processes that run at the same time.                                  | `2`                                 |
-| `toolkit`         | Required toolkit containing exactly one `run` skill or command.                    | `{ run: { command: review-doc } }`  |
+| Input               | Meaning                                                                                                                    | Example                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `id`                | Step ID emitted for the fan-out work.                                                                                      | `document`                          |
+| `items`             | Runtime expression that resolves to the array to process.                                                                  | `${{ steps.plan.output.files }}`    |
+| `args`              | Argument text evaluated for each item and passed to the selected skill or command.                                         | `${{ item.args }}`                  |
+| `model`             | Model used by every item process.                                                                                          | `sonnet`                            |
+| `maxTurns`          | Maximum agent turns allowed for each item.                                                                                 | `20`                                |
+| `allowedTools`      | Tools available to each item process.                                                                                      | `["Read", "Write", "Edit", "Glob"]` |
+| `disallowedTools`   | Tools or path-scoped edits explicitly denied to each item process.                                                         | `["Edit(docs/specs/**)"]`           |
+| `permissionDenials` | Whether a denied tool fails the step or only warns. Defaults to `fail`; use `warn` only before a later deterministic gate. | `fail`                              |
+| `timeoutMinutes`    | Time limit for each fan-out step.                                                                                          | `20`                                |
+| `maxParallel`       | Maximum item processes that run at the same time.                                                                          | `2`                                 |
+| `toolkit`           | Required toolkit containing exactly one `run` skill or command.                                                            | `{ run: { command: review-doc } }`  |
 
 ## Common problems
 
@@ -133,4 +137,6 @@ Supply `toolkit.run` as a project skill or command. This recipe has no default b
 
 ### A process cannot edit or read a required file
 
-Check `allowedTools` and `disallowedTools`. The same lists apply to every item, so split work into separate calls when items need different permissions.
+Check `allowedTools` and `disallowedTools`. Runtime expressions using `${{ item }}` or `${{ index }}` in those lists resolve separately for each process. Other invocation settings are step-level; split work into separate recipe calls when items need different models, commands, skills, or limits.
+
+Keep `permissionDenials: fail` unless the calling workflow runs a later deterministic check that rejects missing or incomplete output. `warn` still blocks the tool and reports the denial, but it lets an otherwise successful Claude result continue to that gate.

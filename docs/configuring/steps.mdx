@@ -35,6 +35,8 @@ Put `timeoutMinutes` on the step. Put `model`, `effort`, `maxTurns`, `permission
 
 Keep `allowedTools` narrow. A broad shell permission can reach paths that a file-edit denial was meant to protect, so grant only specific rules such as `Bash(git diff:*)`.
 
+`permissionDenials` sits beside `claude` and defaults to `fail`. A denied tool then fails the step even when the Claude CLI exits successfully. Set it to `warn` only when a later deterministic gate proves the required output: the tool stays blocked, the step row shows a warning, and an otherwise failed Claude result still fails.
+
 ## Verify and repair Claude output
 
 Add `verify` beside `claude` when a deterministic command can prove that the output is acceptable:
@@ -92,6 +94,10 @@ steps:
 ```
 
 BWV Workflows resolves that script at the recipe's trusted commit and materializes it before the step starts. The same toolkit script therefore runs identically from `shell` or `verify.shell`.
+
+For `fanout: process`, a definitive item failure immediately stops running siblings and leaves queued items unstarted when `continueOnError` is `false`. This includes a denied tool under `permissionDenials: fail`, a failed Claude result, a failed final verifier, or a non-recoverable infrastructure failure. The step reports the causal item and distinguishes stopped items from items that never started. Set `continueOnError: true` only when every item should run and a later step safely handles incomplete results.
+
+`${{ item }}` and `${{ index }}` in `prompt`, `args`, `verify.shell`, `allowedTools`, and `disallowedTools` resolve separately for each process, including same-session repairs. A subagent fan-out rejects item-dependent tool rules because all items share one Claude process. Invocation-wide fields such as `skill`, `command`, recipe `run`, `model`, `effort`, `permissionMode`, `maxTurns`, `maxBudgetUsd`, `appendSystemPrompt`, and `outputSchema` are step-level and reject item-dependent expressions in either fan-out mode.
 
 ## Run a shell command safely
 
