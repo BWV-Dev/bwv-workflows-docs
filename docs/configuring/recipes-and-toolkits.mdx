@@ -126,6 +126,18 @@ script itself, for example
 `. "$(dirname "$0")/lib.sh"`. A path relative to the current working directory
 would read the checked-out branch instead.
 
+:::warning Remote skills and commands have stricter boundaries
+A remote skill's `SKILL.md` frontmatter may set only `name`, `description`,
+`when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`,
+`user-invocable`, `version`, and `license`. Unknown keys and policy keys such
+as `allowed-tools`, `hooks`, `model`, or `effort` are refused; put that policy
+on the workflow step. Project skills are not subject to this remote check.
+
+A toolkit `command` must come from the project. A remote recipe cannot ship a
+command file. Use a remote `skill` when the recipe owns the prompt, or override
+the toolkit with a project command under `.claude/commands/`.
+:::
+
 ### 4. Read configuration errors
 
 👤 Responsible: Project Leader
