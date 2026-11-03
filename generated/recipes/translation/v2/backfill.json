@@ -1,0 +1,147 @@
+{
+  "path": "recipes/translation/v2/backfill.yml",
+  "inputs": [
+    {
+      "name": "sourceRoot",
+      "type": "path",
+      "required": true,
+      "description": "Repository-relative root of Japanese Markdown source files."
+    },
+    {
+      "name": "outputRoot",
+      "type": "string",
+      "required": true,
+      "description": "Repository-relative root for mirrored v2 Vietnamese Markdown and cache files."
+    },
+    {
+      "name": "glossary",
+      "type": "path",
+      "required": true,
+      "description": "Project terminology and translation rules read by the miss-only model step."
+    },
+    {
+      "name": "exclude",
+      "type": "array",
+      "required": false,
+      "default": [
+        ".git/**"
+      ],
+      "description": "Repository-relative globs of source documents outside the v2 adoption backlog."
+    },
+    {
+      "name": "branches",
+      "type": "array",
+      "required": true,
+      "description": "Branches a person may run backfill on; also the bases of batch pull requests."
+    },
+    {
+      "name": "branchPrefix",
+      "type": "string",
+      "required": true,
+      "description": "Prefix for generated branches named <branchPrefix>/backfill-<batch id>."
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "required": false,
+      "default": "sonnet",
+      "description": "Model used only for deterministic v2 cache misses."
+    },
+    {
+      "name": "batchSize",
+      "type": "number",
+      "required": false,
+      "default": 10,
+      "description": "Maximum source documents attempted in one batch pull request."
+    },
+    {
+      "name": "maxParallel",
+      "type": "number",
+      "required": false,
+      "default": 3,
+      "description": "Maximum simultaneous miss-only model processes."
+    },
+    {
+      "name": "timeoutMinutes",
+      "type": "number",
+      "required": false,
+      "default": 40,
+      "description": "Time limit in minutes for each miss-only model process."
+    },
+    {
+      "name": "maxTurns",
+      "type": "number",
+      "required": false,
+      "default": 30,
+      "description": "Maximum turns for each miss-only model process."
+    },
+    {
+      "name": "maxBudgetUsd",
+      "type": "number",
+      "required": false,
+      "default": 4,
+      "description": "Runaway cost guard for each miss-only model process."
+    },
+    {
+      "name": "maxRepairs",
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "description": "Same-session repairs after the read-only result validator rejects output."
+    },
+    {
+      "name": "maxIterations",
+      "type": "number",
+      "required": false,
+      "default": 10,
+      "description": "Maximum batch passes in one manual run."
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": false,
+      "default": {
+        "encodeExclude": {
+          "script": "scripts/encode-exclude.mjs"
+        },
+        "plan": {
+          "script": "scripts/v2/plan-backfill.mjs"
+        },
+        "prepareGroup": {
+          "script": "scripts/v2/prepare-group.mjs"
+        },
+        "translate": {
+          "skill": "translate-v2-misses"
+        },
+        "validateResult": {
+          "script": "scripts/v2/validate-result.mjs"
+        },
+        "select": {
+          "script": "scripts/v2/select-backfill-survivors.mjs"
+        },
+        "sealResults": {
+          "script": "scripts/v2/seal-group-results.mjs"
+        },
+        "assemble": {
+          "script": "scripts/v2/assemble.mjs"
+        },
+        "rewriteAnchors": {
+          "script": "scripts/v2/rewrite-group-anchors.mjs"
+        },
+        "checkGroup": {
+          "script": "scripts/v2/check-group-completeness.mjs"
+        },
+        "sealPublish": {
+          "script": "scripts/v2/seal-publish-group.mjs"
+        },
+        "allowPublish": {
+          "script": "scripts/v2/check-publish-allowlist.mjs"
+        },
+        "scratchClean": {
+          "script": "scripts/v2/check-scratch-clean.mjs"
+        }
+      },
+      "description": "Complete replacement for the trusted v2 backfill pipeline and miss-only skill."
+    }
+  ]
+}

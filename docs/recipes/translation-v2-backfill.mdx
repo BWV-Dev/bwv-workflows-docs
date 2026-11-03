@@ -1,0 +1,123 @@
+---
+title: translation/v2/backfill (beta)
+sidebar_position: 5
+description: Create native-v2 translation pairs for an existing Japanese Markdown backlog.
+slug: /recipes/translation-v2-backfill
+---
+
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
+👤 Responsible: Project Leader
+
+Use this beta workflow to create the first native-v2 Vietnamese pairs for Japanese documents that already exist. A person starts it manually. Each loop pass plans a bounded batch, translates cache misses in parallel, keeps only documents that pass trusted validation, and opens one draft pull request containing those survivors.
+
+Use [translation/v2/grouped](./translation-v2-grouped) for later source changes and reviewer cache synchronization. Both recipes use the same native-v2 cache, deterministic assembly, structural proof, link rewriting, sealed publication set, and scratch cleanup.
+
+:::caution Not a v1 migration
+Backfill adopts Japanese documents that do not have native-v2 output. It does not convert or reuse v1 cache entries. Do not run it over a v1 output tree.
+:::
+
+## Prerequisites
+
+- Add and validate [translation/v2/grouped](./translation-v2-grouped) first.
+- Use the same `sourceRoot`, `outputRoot`, `glossary`, `exclude`, and `branchPrefix` in both workflows.
+- Put every branch on which people may start backfill in `branches`.
+- Finish or close an open grouped-v2 translation pull request for the same source set before starting backfill. Pending batches from another workflow are not loaded into this manual run.
+- Keep whitespace out of configured paths and document paths.
+
+Every successful source document produces one `.vi.md` and one `.vi.json` next to each other below `outputRoot`. Excluded documents are not planned, translated, or required by completeness.
+
+## Add the workflow
+
+Create `.bwv/workflows.yml` on the branch that will receive batch pull requests:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+
+workflows:
+  - name: translation-v2-backfill
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/backfill.yml@translation/v2.0.0-beta.1
+    with:
+      sourceRoot: docs/specs
+      outputRoot: docs_vn/specs
+      glossary: docs/glossary.md
+      exclude: ["docs/specs/archive/**"]
+      branches: [main]
+      branchPrefix: bwv/translation
+      model: haiku
+      batchSize: 10
+      maxParallel: 3
+      maxIterations: 10
+      maxRepairs: 1
+```
+
+Keep the exact `@translation/v2.0.0-beta.1` prerelease tag, or replace it with its full peeled commit SHA, before production use. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
+
+## Start and follow the backfill
+
+Open an issue or pull request conversation and comment:
+
+```text
+/bwv run translation-v2-backfill/backfill
+```
+
+The expanded recipe workflow name is `<caller>/backfill`. Add `on <branch>` when `branches` contains several names or a glob.
+
+Each pass recomputes the native-v2 backlog. It skips excluded documents and pairs that already pass strict v2 completeness. It attempts up to `batchSize` documents, with at most `maxParallel` model processes at once.
+
+One failed document does not discard a valid sibling. The trusted selection step restores both output files of every failed document, removes its scratch state, and lets only validated survivors reach assembly and publication. An all-failed pass opens no pull request.
+
+Send every draft batch pull request to Dev & Com. Review wording in `.vi.md`, let `sync-reviewed-cache` update `.vi.json`, and merge only after `cache-in-sync` passes.
+
+## When backfill refuses an existing pair
+
+Backfill refuses to replace a schema-v2 pair whose cache and translation are incomplete or stale. This protects reviewed wording. Merge or run the reviewer-cache repair, then start backfill again.
+
+It also fails closed when a shared translation footer exists without enough cache evidence to tell whether the output belongs to v1 or v2. Restore the valid v1 cache and move the legacy output away from the v2 tree, or restore and repair the native-v2 pair. Do not delete evidence merely to make the planner continue.
+
+A source changed after its existing v2 translation is `pending`; grouped v2 owns that update. Backfill does not use pending as permission to replace the old pair.
+
+## Generated input reference
+
+<RecipeInputs recipe="translation/v2/backfill" />
+
+## Inputs explained
+
+| Input            | Meaning                                                                                                       | Example               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `sourceRoot`     | Root folder of Japanese `.md` source files.                                                                   | `docs/specs`          |
+| `outputRoot`     | Root folder for mirrored native-v2 `.vi.md` and `.vi.json` pairs.                                             | `docs_vn/specs`       |
+| `glossary`       | Markdown file containing project terms and translation rules.                                                 | `docs/glossary.md`    |
+| `exclude`        | Repository-relative source globs omitted from the v2 adoption backlog. A supplied list replaces the sentinel. | `["docs/archive/**"]` |
+| `branches`       | Branches on which people may start backfill and against which batch pull requests open.                       | `[main]`              |
+| `branchPrefix`   | Prefix for deterministic backfill batch branches. Use the grouped-v2 prefix.                                  | `bwv/translation`     |
+| `model`          | Model used only for cache misses.                                                                             | `haiku`               |
+| `batchSize`      | Maximum source documents attempted in one pass. Defaults to `10`; maximum `20`.                               | `10`                  |
+| `maxParallel`    | Maximum simultaneous miss-only model processes. Defaults to `3`; maximum `20`.                                | `3`                   |
+| `timeoutMinutes` | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                            | `40`                  |
+| `maxTurns`       | Per-document, per-attempt turn limit. Defaults to `30`.                                                       | `30`                  |
+| `maxBudgetUsd`   | Per-document, per-attempt runaway guard. Set it according to your project policy.                             | Project policy        |
+| `maxRepairs`     | Same-session corrections after the read-only validator rejects a result. Defaults to `1`; range `0`–`3`.      | `1`                   |
+| `maxIterations`  | Maximum loop passes in one manual run. Defaults to `10`; maximum `100`.                                       | `10`                  |
+| `toolkit`        | Complete replacement for the trusted v2 backfill pipeline. Omit it to use the maintained default.             | Omitted               |
+
+## Known beta limitations
+
+- V1 and unversioned caches are not reusable v2 cache hits. Backfill may perform a full v2 translation only when the legacy state is unambiguous; otherwise it refuses the pair.
+- An infrastructure or service failure inside every parallel item can be reported as ordinary document failure in this beta. Read the item failures before retrying; the loop stops after its no-progress limit.
+- Open batches from the same backfill workflow are loaded before replanning, but an open grouped-v2 translation pull request is not cross-loaded. Finish or close it before backfilling the same source set.
+- A failed document can appear in a later pass. Fix the source, glossary, or service problem instead of relying on repeated random selection.
+
+## Common problems
+
+### The command says the workflow is not manually runnable
+
+Confirm that the requested branch matches `branches`, the configuration has reached that branch, and the command uses `translation-v2-backfill/backfill`.
+
+### A document is missing from a batch
+
+Check `exclude`, then check whether a current native-v2 pair or a loaded batch already covers it. If the planner reports an ambiguous or stale pair, follow that restore or repair instruction before retrying.
+
+### A batch publishes fewer documents than planned
+
+Read the pass summary and pull request body. The recipe publishes validated survivors only and restores failed pairs to their pre-run state. Fix the reported document or service failure, then use Retry when the hub offers it.
