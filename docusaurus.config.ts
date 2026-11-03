@@ -15,6 +15,16 @@ const config: Config = {
   i18n: {
     defaultLocale: "en",
     locales: ["en"],
+    localeConfigs: {
+      en: {
+        label: "English",
+        htmlLang: "en",
+      },
+      vi: {
+        label: "Tiếng Việt",
+        htmlLang: "vi",
+      },
+    },
   },
   markdown: {
     format: "detect",
@@ -92,7 +102,7 @@ const config: Config = {
     },
     footer: {
       style: "light",
-      copyright: `Copyright © ${new Date().getFullYear()} BWV Workflows.`,
+      copyright: `© ${new Date().getFullYear()} Briswell VietNam Co., Ltd.`,
     },
   },
 };

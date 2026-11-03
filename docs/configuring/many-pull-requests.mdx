@@ -6,6 +6,7 @@ slug: /configuring/many-pull-requests
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
+import manualRunHub from "!!raw-loader!@site/src/content/generated-overrides/manual-run-hub.md";
 
 👤 Responsible: Project Leader
 
@@ -102,7 +103,7 @@ Before a new run plans work, it loads batches that the same workflow already pub
 
 The manual hub shows open loaded batches in **Resumed after**. It folds closed and merged loaded batches below the current pass table.
 
-<GitHubComment sample="manual-run-hub" author="BWV Workflows" />
+<GitHubComment markdown={manualRunHub} author="BWV Workflows" />
 
 ## Recreate one closed batch
 

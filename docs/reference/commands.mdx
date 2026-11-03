@@ -13,6 +13,10 @@ Type a command as a new line in an issue or pull request conversation. Start the
 
 An unsupported command may return the command list, but it does not run workflow work. Do not edit an older comment into a command; add a new comment.
 
+Running a command requires repository write access. Asking for help with a missing or unsupported command does not: BWV Workflows may show the generated command list without reading repository state or starting work.
+
+An accepted `/bwv run` or `/bwv recreate #N` receives a reaction instead of a separate acceptance reply. Follow the manual hub in that conversation. It keeps one request ledger for each workflow and branch, and later requests may join work that is already queued or running.
+
 Use the exact syntax in the generated table. See [Triggers](../configuring/triggers#manual-triggers), [Running something again](../pull-requests/retry), [Recreating a closed pull request](../pull-requests/recreate), and [When a merge is skipped or needs mapping](../pull-requests/merge-skipped) for the corresponding workflows.
 
 <Commands />

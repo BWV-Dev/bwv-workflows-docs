@@ -6,6 +6,7 @@ slug: /pull-requests/waiting
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
+import translationTrackerRunning from "!!raw-loader!@site/src/content/generated-overrides/translation-tracker-running.md";
 
 👤 Responsible: Dev & Com
 
@@ -30,7 +31,7 @@ A yellow or in-progress BWV check is not always stuck. Read its title, summary, 
 
 <GitHubComment sample="status-running" author="BWV Workflows" />
 
-<GitHubComment sample="translation-tracker-running" author="BWV Workflows" />
+<GitHubComment markdown={translationTrackerRunning} author="BWV Workflows" />
 
 ### 2. Open the check
 

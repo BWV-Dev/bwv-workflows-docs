@@ -1,14 +1,149 @@
 ---
 title: Recipes and toolkits
 sidebar_position: 3
-description: Reuse maintained workflow steps and pin every source by commit SHA.
+description: Reuse official shared recipes or recipes kept in your repository.
 slug: /configuring/recipes-and-toolkits
 ---
 
 👤 Responsible: Project Leader
 
-This page will explain how to use recipes and toolkits from `BWV-Dev/bwv-workflows-recipes`, find the commit for the latest tag, and pin the full SHA.
+Use an official shared recipe instead of copying maintained steps. When a
+recipe is specific to one repository, keep it local under `.bwv/recipes/`.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
-:::
+## Workflow Summary
+
+1. [Use a local recipe](#1-use-a-local-recipe).
+2. [Use an official shared recipe](#2-use-an-official-shared-recipe).
+3. [Choose or replace a toolkit](#3-choose-or-replace-a-toolkit).
+4. [Read configuration errors](#4-read-configuration-errors).
+
+## Step-by-Step Instructions
+
+### 1. Use a local recipe
+
+👤 Responsible: Project Leader
+
+The local `uses` syntax is `./.bwv/recipes/<name>`. It reads the file
+`.bwv/recipes/<name>.yml` from the project. For example, reference
+`.bwv/recipes/review-specs.yml` from `.bwv/workflows.yml` as
+`./.bwv/recipes/review-specs`:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: review-specs
+    on:
+      pull_request:
+        types: [opened, synchronize]
+        base: [main]
+        paths: ["docs/specs/**"]
+    steps:
+      - name: Review the changed specifications
+        uses: ./.bwv/recipes/review-specs
+        with:
+          source: docs/specs
+```
+
+A workflow recipe is used from the `workflows` list. A step recipe is used
+inside `steps`, as above. Inside a recipe, use `./check` to reference the
+sibling file `check.yml`. Local recipe paths must stay inside
+`.bwv/recipes/`.
+
+Commit the recipe before testing. BWV Workflows reads it from the same trusted
+commit as `.bwv/workflows.yml`.
+
+Create the matching local recipe:
+
+```yaml title=".bwv/recipes/review-specs.yml"
+apiVersion: 1
+inputs:
+  source:
+    type: path
+    required: true
+  toolkit:
+    type: toolkit
+    contract: review checks the source; verify validates the result
+    default:
+      review: { skill: review-specs }
+      verify: { script: .bwv/scripts/check-specs.sh }
+steps:
+  - name: Review specifications
+    claude:
+      run: $[[ toolkit.review ]]
+      args: $[[ inputs.source ]]
+      allowedTools: [Read, Edit, Glob]
+  - name: Verify specifications
+    shell: $[[ toolkit.verify ]] $[[ inputs.source ]]
+```
+
+This example expects `.claude/skills/review-specs/SKILL.md` and
+`.bwv/scripts/check-specs.sh` to exist on the same base-branch commit.
+
+### 2. Use an official shared recipe
+
+👤 Responsible: Project Leader
+
+All shared recipes come from `BWV-Dev/bwv-workflows-recipes`. Copy the complete
+`uses` line from the [Recipe catalog](/recipes). For example:
+
+```text
+BWV-Dev/bwv-workflows-recipes/common/command-fanout@common/v1
+```
+
+The remote syntax is `<owner>/<repo>/<family>/<name>@<ref>`. BWV Workflows
+reads that reference from `recipes/<family>/<name>.yml` in the source
+repository at `<ref>`. A repository that authors or hosts shared recipes must
+therefore keep them under its `recipes/` directory.
+
+Each recipe family is versioned independently. Use `@translation/v1` for
+stable translation recipes and `@common/v1` for stable common recipes. The
+`testcase` family is still alpha, so pin its exact prerelease, currently
+`@testcase/v1.0.0-alpha.1`, instead of expecting a moving major tag.
+
+The repository-wide `v1` tag no longer moves. Production projects may pin a
+full 40-character commit SHA when they need every recipe, skill, and script to
+stay on one reviewed revision.
+
+### 3. Choose or replace a toolkit
+
+👤 Responsible: Project Leader
+
+A toolkit is a recipe input that maps the operations a recipe needs to skills,
+commands, or scripts. During recipe expansion, it replaces `claude.run` and
+`$[[ toolkit.<key> ]]` placeholders with those concrete entries.
+
+The local step recipe above declares a default toolkit. Official shared
+recipes can also provide a default toolkit.
+
+Use the default when it meets the project. To override it, pass the complete
+toolkit in `with`; an override replaces the whole set rather than merging one
+key at a time. Every named skill, command, and script must exist at the trusted
+commit.
+
+Toolkit script paths run from the recipe that declares them, not from the pull
+request's working tree. Inside a local script, load a helper relative to the
+script itself, for example
+`. "$(dirname "$0")/lib.sh"`. A path relative to the current working directory
+would read the checked-out branch instead.
+
+### 4. Read configuration errors
+
+👤 Responsible: Project Leader
+
+BWV Workflows expands recipes before a workflow runs. Missing inputs, unknown
+`with` keys, missing toolkit files, invalid official recipe references, and
+errors in nested recipes are configuration errors.
+
+For an open pull request, push, or manual run, open the check named `bwv/config`. Its
+**Invalid workflow config** summary identifies the recipe and the failing node.
+On a pull request, fix `.bwv/workflows.yml` or the recipe on the base branch;
+the pull request's own configuration does not govern that run.
+
+For a push or manual run, fix the selected branch. A merged-close run does not
+create `bwv/config`; an unreadable configuration is named in the merge-skipped
+comment instead.
+
+After fixing and merging the configuration, start a new event or retry the
+eligible workflow. See
+[Working on a pull request](../pull-requests)
+for how Dev & Com read and act on the result.

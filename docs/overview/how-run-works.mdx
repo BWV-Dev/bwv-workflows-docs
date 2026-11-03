@@ -30,6 +30,7 @@ A matching GitHub event starts the run:
 - A pull request is opened, updated, reopened, or merged, when that action is
   configured.
 - A push reaches a configured branch.
+- A person with repository write access comments `/bwv run <workflow> [on <branch>]` for a workflow that declares `on.manual`.
 
 BWV Workflows reads `.bwv/workflows.yml`, matches the branch and paths, and
 selects the workflows that should run.
@@ -58,6 +59,8 @@ source pull request. A manually triggered run also keeps one hub comment in the
 issue or pull request conversation for each workflow and branch. The hub links
 the check run and preserves later attempts and loop-pass history together.
 
+A manual run reports through a hub comment in the issue or pull request where it was requested. The hub links the check run on the requested branch tip.
+
 ### 4. Review the result pull request
 
 👤 Responsible: Dev & Com
@@ -76,11 +79,11 @@ request, the run ends after reporting its result.
 :::important The target branch controls executable workflow content
 For a pull request run, BWV Workflows reads `.bwv/workflows.yml`, `.claude/`
 skills and commands, and local recipes from the pull request's base branch.
-That configuration also chooses the source and ref for any remote recipes. The
-pull request head supplies only the content to work on.
+That configuration also chooses any official shared recipes and their family
+tags or pinned commit SHAs. The pull request head supplies only the content to
+work on.
 
-For a push run, the pushed branch is both the target branch and the content
-being worked on.
+For a push run, the pushed branch is both the target branch and the content being worked on. For a manual run, the requested branch serves both roles.
 :::
 
 This rule has two practical consequences:

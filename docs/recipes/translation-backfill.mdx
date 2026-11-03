@@ -33,7 +33,7 @@ version: 1
 
 workflows:
   - name: translation-backfill
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/backfill.yml@<sha-of-latest-tag>
+    uses: BWV-Dev/bwv-workflows-recipes/translation/backfill@<full-sha-of-reviewed-tag>
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -103,6 +103,7 @@ If the run stops because the Claude quota is used up, do not start another run. 
 | `maxParallel`    | Translation processes at once. Defaults to `3`; maximum `20`.                                      | `3`                   |
 | `timeoutMinutes` | Per-document, per-attempt timeout. Defaults to `40`; maximum `90`.                                 | `40`                  |
 | `maxTurns`       | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                     | `40`                  |
+| `maxBudgetUsd`   | Per-document, per-attempt runaway guard. Defaults to `6`.                                          | `6`                   |
 | `maxRepairs`     | Same-session repairs after `checkOutputs` fails. Defaults to `1`; range `0`–`3`.                   | `1`                   |
 | `allowedTools`   | Complete translation tool list. Omit it to use the maintained default.                             | Omitted               |
 | `maxIterations`  | Maximum batches attempted in one run. Defaults to `10`; maximum `100`.                             | `10`                  |
