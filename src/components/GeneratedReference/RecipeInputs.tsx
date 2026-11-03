@@ -1,3 +1,4 @@
+import Translate from "@docusaurus/Translate";
 import type { ReactNode } from "react";
 
 import {
@@ -51,12 +52,26 @@ export default function RecipeInputs({
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Required</th>
-            <th>Default</th>
-            <th>Description</th>
-            <th>Enum</th>
+            <th>
+              <Translate id="generatedReference.name">Name</Translate>
+            </th>
+            <th>
+              <Translate id="generatedReference.type">Type</Translate>
+            </th>
+            <th>
+              <Translate id="generatedReference.required">Required</Translate>
+            </th>
+            <th>
+              <Translate id="generatedReference.default">Default</Translate>
+            </th>
+            <th>
+              <Translate id="generatedReference.description">
+                Description
+              </Translate>
+            </th>
+            <th>
+              <Translate id="generatedReference.enum">Enum</Translate>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -66,7 +81,13 @@ export default function RecipeInputs({
                 <code>{input.name}</code>
               </td>
               <td>{input.type}</td>
-              <td>{input.required ? "Yes" : "No"}</td>
+              <td>
+                {input.required ? (
+                  <Translate id="generatedReference.yes">Yes</Translate>
+                ) : (
+                  <Translate id="generatedReference.no">No</Translate>
+                )}
+              </td>
               <td>{displayValue(input.default)}</td>
               <td>{input.description ?? "—"}</td>
               <td>

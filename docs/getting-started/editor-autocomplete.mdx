@@ -67,8 +67,7 @@ Add this comment as the first line of every recipe file:
 apiVersion: 1
 ```
 
-Use the `recipe-v1` schema for local recipes and recipes kept in a recipe
-repository.
+Use the `recipe-v1` schema for local recipes under `.bwv/recipes/`.
 
   </TabItem>
   <TabItem value="settings" label="VS Code settings">
@@ -79,10 +78,7 @@ Create or update `.vscode/settings.json` in the repository:
 {
   "yaml.schemas": {
     "https://<engine-host>/schemas/workflows.json": ".bwv/workflows.yml",
-    "https://<engine-host>/schemas/recipe-v1.json": [
-      "recipes/**/*.yml",
-      ".bwv/recipes/*.yml"
-    ]
+    "https://<engine-host>/schemas/recipe-v1.json": ".bwv/recipes/**/*.yml"
   }
 }
 ```

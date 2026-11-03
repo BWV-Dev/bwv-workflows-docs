@@ -45,7 +45,7 @@ version: 1
 
 workflows:
   - name: translate-specs
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/grouped.yml@<sha-of-latest-tag>
+    uses: BWV-Dev/bwv-workflows-recipes/translation/grouped@<full-sha-of-reviewed-tag>
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -83,7 +83,7 @@ git ls-remote --tags "$recipe_url" \
   "refs/tags/<tag>" "refs/tags/<tag>^{}"
 ```
 
-Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. A full SHA fixes the reviewed recipe version; `@translation/v1` can move without a change in your repository.
 
 ## Generated input reference
 
@@ -105,6 +105,7 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 | `maxFilesPerGroup`      | Maximum files in one group and maximum simultaneous translations for it.                                                                   | `3`                   |
 | `timeoutMinutes`        | Per-document, per-attempt timeout for translation or cache sync. Defaults to `40`; maximum `90`.                                           | `40`                  |
 | `maxTurns`              | Per-document, per-attempt Claude turn limit. Defaults to `40`.                                                                             | `40`                  |
+| `maxBudgetUsd`          | Per-document, per-attempt runaway guard. Defaults to `6`.                                                                                  | `6`                   |
 | `maxRepairs`            | Same-session model repairs after `checkOutputs` fails. Defaults to `1`; range `0`–`3`.                                                     | `1`                   |
 | `allowedTools`          | Complete tool list for translation. Omit it to use the maintained default.                                                                 | Omitted               |
 | `syncCacheAllowedTools` | Complete tool list for cache synchronization. Omit it to use the maintained default.                                                       | Omitted               |
@@ -113,6 +114,16 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 The default `checkOutputs` is a toolkit script and is valid in the translate step's `verify.shell`. A custom toolkit must keep the same `checkOutputs <source> <sourceRoot> <outputRoot>` contract so verification, model repair, and the final publication gate agree.
 
 The released recipe sets `permissionDenials: warn` only on the translate step. A denied tool remains blocked and appears as a warning, while the per-document `checkOutputs` verifier and the final group-wide output check still prevent incomplete work from being published. A definitive item or verifier failure stops sibling processes and leaves queued files unstarted.
+
+## Link rules
+
+Translation v1 preserves each link's query string and fragment, then applies these destination rules:
+
+- A relative link to Markdown below `sourceRoot` points to the mirrored `.vi.md` document below `outputRoot`, even when that translation does not exist yet. Anchors point to the translated heading.
+- A relative image, PDF, CSV, or other non-Markdown destination continues to point to the original source-tree file. The path is recalculated from the translated document, including when the asset sits outside `sourceRoot`.
+- Absolute URLs, root-absolute paths, anchor-only links, and `mailto:` links are left unchanged.
+
+The output check compares the resolved relative destinations with the source. A source link that is already broken remains aimed at the same missing target and produces a warning; the recipe does not guess a replacement.
 
 ## Common problems
 

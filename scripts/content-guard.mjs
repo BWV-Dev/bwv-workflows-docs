@@ -2,7 +2,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const SCAN_DIRECTORIES = ["docs", "src", "generated"];
+const SCAN_DIRECTORIES = ["docs", "src", "generated", "i18n"];
 const SCAN_FILES = [
   "README.md",
   "docusaurus.config.ts",

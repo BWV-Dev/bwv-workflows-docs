@@ -6,6 +6,7 @@ slug: /configuring/triggers
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
+import manualRunHub from "!!raw-loader!@site/src/content/generated-overrides/manual-run-hub.md";
 
 👤 Responsible: Project Leader
 
@@ -90,7 +91,7 @@ The conversation keeps one manual-run hub comment for each workflow and branch. 
 
 The request table records the command, requester, state, and check run. A loop workflow also shows every pass and attempt, its batch branch, live pull request state, result, summary, and check. Earlier requests remain in folded history.
 
-<GitHubComment sample="manual-run-hub" author="BWV Workflows" />
+<GitHubComment markdown={manualRunHub} author="BWV Workflows" />
 
 At pass boundaries and when the run finishes, the hub refreshes the state of published batches. Open batches appear under **Resumed after**. Closed and merged batches are loaded into folded history. A finished hub folds eligible Retry and Recreate boxes under **Actions**.
 

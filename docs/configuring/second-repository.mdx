@@ -7,8 +7,80 @@ slug: /configuring/second-repository
 
 👤 Responsible: Project Leader
 
-This page will show how to declare a second repository as context and how a workflow can use its checked-out files.
+Use `context` when a workflow in `acme/web-app` must read files pinned from another repository. BWV Workflows fetches the exact pinned commit through the GitHub App and unpacks it into the run's working directory.
 
-:::note Work in progress
-This guide will be completed in Wave 3.
+## Workflow Summary
+
+1. [Ask the maintainers to confirm access](#1-ask-the-maintainers-to-confirm-access).
+2. [Declare the repository and destination](#2-declare-the-repository-and-destination).
+3. [Keep the repository name trusted](#3-keep-the-repository-name-trusted).
+4. [Use the unpacked files](#4-use-the-unpacked-files).
+
+## Step-by-Step Instructions
+
+### 1. Ask the maintainers to confirm access
+
+👤 Responsible: Project Leader
+
+Ask the BWV Workflows maintainers to confirm that the second repository is visible to the same GitHub App installation as `acme/web-app`. The App must be installed for both repositories in that installation. BWV Workflows does not try another installation when the repository is not visible.
+
+Include both fake-style names in the request format:
+
+```text
+Target repository: acme/web-app
+Context repository: acme/spec-library
+```
+
+Wait for confirmation before merging the workflow configuration.
+
+### 2. Declare the repository and destination
+
+👤 Responsible: Project Leader
+
+Add a `context` entry to the workflow. The `submodule` value is the repository-relative gitlink path whose pinned commit is in the pull request tree. The `repo` value names the repository that BWV Workflows is allowed to fetch.
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: review-against-specs
+    on:
+      pull_request:
+        types: [opened, synchronize, reopened]
+        base: [main]
+        paths: ["src/**", "specs"]
+    context:
+      - submodule: specs
+        repo: acme/spec-library
+        require: [published]
+    steps:
+      - name: Review the implementation
+        claude:
+          prompt: |
+            Compare the pull request with the files below specs/published.
+            Report contradictions without editing the repository.
+          allowedTools: [Read, "Bash(git diff:*)"]
+```
+
+List each directory the step actually reads in `require`. Every listed path must contain a regular file after unpacking, or the run fails before the step starts.
+
+### 3. Keep the repository name trusted
+
+👤 Responsible: Project Leader
+
+Merge the `context.repo` configuration into the base branch before testing it. The base commit names the second repository. A pull request head can update the gitlink to another commit in that repository, but it cannot select a different repository.
+
+There is no floating `ref` field. The gitlink records the exact commit reviewed by the workflow, so the pull request shows the pin change.
+
+:::important No submodule cloning
+BWV Workflows does not run `git submodule`, initialize submodules, or read `.gitmodules`. It reads the gitlink commit, fetches that exact archive with the App, and unpacks it at `submodule`.
 :::
+
+### 4. Use the unpacked files
+
+👤 Responsible: Project Leader
+
+Read the second repository below the configured `submodule` path. In the example, the step reads `specs/published`.
+
+Treat the unpacked context as input. Git ignores files placed below the gitlink, so changes there are not included in an output pull request. Write generated results elsewhere in `acme/web-app` when the workflow must publish them.
+
+If fetching fails, confirm the repository name, the pinned commit, and visibility to the same App installation. Ask the BWV Workflows maintainers to check installation access; do not add credentials or submodule commands to the workflow.

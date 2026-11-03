@@ -39,7 +39,7 @@ version: 1
 
 workflows:
   - name: generate-testcases
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/testcase/batch.yml@<sha-of-latest-tag>
+    uses: BWV-Dev/bwv-workflows-recipes/testcase/batch@<full-sha-of-reviewed-tag>
     with:
       sourceRoot: docs_vn/specs
       outputRoot: testcases/specs
@@ -73,7 +73,7 @@ git ls-remote --tags "$recipe_url" \
   "refs/tags/<tag>" "refs/tags/<tag>^{}"
 ```
 
-Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the reviewed recipe version; `@v1` can move without a change in your repository.
+Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the reviewed recipe version; the prerelease family tag can move without a change in your repository.
 
 ## Generated input reference
 

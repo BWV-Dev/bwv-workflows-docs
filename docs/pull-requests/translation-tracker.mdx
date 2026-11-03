@@ -6,6 +6,7 @@ slug: /pull-requests/translation-tracker
 ---
 
 import GitHubComment from "@site/src/components/GitHubComment";
+import translationTrackerRunning from "!!raw-loader!@site/src/content/generated-overrides/translation-tracker-running.md";
 
 👤 Responsible: Dev & Com
 
@@ -29,7 +30,7 @@ Before merge, the tracker is a preview. After merge, the bot edits the same comm
 Do not approve a source pull request only because the preview looks complete. The bot recalculates the groups when the pull request is merged. The published tracker is the authoritative result.
 :::
 
-<GitHubComment sample="translation-tracker-running" author="BWV Workflows" />
+<GitHubComment markdown={translationTrackerRunning} author="BWV Workflows" />
 
 ### 2. Read the columns
 

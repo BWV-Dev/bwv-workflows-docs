@@ -23,8 +23,23 @@ Use an official recipe when its trigger and output match the process in your rep
 2. **Project Leader:** Add `translation/backfill` when documents already existed before the grouped translation process was enabled.
 3. **Project Leader:** Choose `testcase/batch` when reviewed translations are the source for generated test cases.
 4. **Project Leader:** Choose `common/command-fanout` inside a project recipe when the same project command must run independently for several items.
-5. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and replace `<sha-of-latest-tag>` with a full 40-character commit SHA.
+5. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and replace `<full-sha-of-reviewed-tag>` with the reviewed tag's full 40-character commit SHA.
 
 :::tip
 Start with each recipe's default toolkit. Override a toolkit only when your repository already has skills or scripts that meet the complete toolkit contract.
 :::
+
+## Report a problem or contribute a fix
+
+Open an issue in `BWV-Dev/bwv-workflows-recipes` when a shared recipe produces wrong or broken output, fails without a useful explanation, or needs an input that it does not expose. If you cannot open the repository, ask the BWV Workflows maintainers for access.
+
+Include:
+
+- The complete short `uses` reference, including its family tag or full commit SHA.
+- A link to the affected pull request and the exact `bwv/…` check.
+- The check summary footer: `Job … · attempt n/max · delivery …`.
+- What you expected and what happened instead, reduced to a small fictional example.
+
+Open a pull request when you know the fix. Change the recipe, skill, or script together with its tests, and explain which behavior changes for every project that uses it. Never paste private project documents into the shared repository.
+
+Once a fix is released, projects using a moving tag such as `@translation/v1` receive it on their next run. Projects pinned to a commit receive it only after updating the pin. A problem with checks, comments, retries, or triggers belongs to the engine; [ask the BWV Workflows maintainers](/troubleshooting#asking-the-bwv-workflows-maintainers-for-help).

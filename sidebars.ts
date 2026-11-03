@@ -50,6 +50,7 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Guides — Working on a pull request",
       collapsed: false,
+      link: { type: "doc", id: "pull-requests/index" },
       items: [
         "pull-requests/read-checks-status",
         "pull-requests/translation-tracker",
