@@ -693,7 +693,7 @@
                     }
                   },
                   "sourceRoot": {
-                    "description": "Sets the source directory that the `rel` output-template value is relative to.",
+                    "description": "Sets the source directory that the `rel` output-template value is relative to. Use `.` or `./` for the repository root; `rel` then keeps the full repository-relative path without its final extension.",
                     "type": "string",
                     "minLength": 1
                   },

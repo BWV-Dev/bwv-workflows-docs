@@ -36,7 +36,7 @@ version: 1
 
 workflows:
   - name: translation-v2-backfill
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/backfill.yml@translation/v2.0.0-beta.3
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/backfill.yml@translation/v2.0.0-beta.4
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -51,7 +51,23 @@ workflows:
       maxRepairs: 1
 ```
 
-Keep the exact `@translation/v2.0.0-beta.3` prerelease tag, or replace it with its full peeled commit SHA, before production use. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
+Keep the exact `@translation/v2.0.0-beta.4` prerelease tag, or replace it with its full peeled commit SHA, before production use. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
+
+## Use the repository root as the source
+
+Beta 4 accepts `sourceRoot: .` or `sourceRoot: ./`. This layout requires an engine version that includes engine PR #98; do not enable it until that engine version is deployed.
+
+```yaml
+with:
+  sourceRoot: .
+  outputRoot: docs_vn
+  glossary: glossary.md
+  exclude:
+    - "archive/**"
+    - "README.md"
+```
+
+At the repository root, the source glob is `**/*.md`. The recipe always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces the native-v2 pair `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
 
 ## Start and follow the backfill
 
@@ -85,7 +101,7 @@ A source changed after its existing v2 translation is `pending`; grouped v2 owns
 
 | Input            | Meaning                                                                                                       | Example               |
 | ---------------- | ------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `sourceRoot`     | Root folder of Japanese `.md` source files.                                                                   | `docs/specs`          |
+| `sourceRoot`     | Root of the Japanese `.md` source tree; `.` or `./` selects the repository root.                              | `docs/specs`          |
 | `outputRoot`     | Root folder for mirrored native-v2 `.vi.md` and `.vi.json` pairs.                                             | `docs_vn/specs`       |
 | `glossary`       | Markdown file containing project terms and translation rules.                                                 | `docs/glossary.md`    |
 | `exclude`        | Repository-relative source globs omitted from the v2 adoption backlog. A supplied list replaces the sentinel. | `["docs/archive/**"]` |
