@@ -49,7 +49,7 @@ version: 1
 
 workflows:
   - name: translate-specs-v2
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/grouped.yml@translation/v2.0.0-beta.1
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/grouped.yml@translation/v2.0.0-beta.2
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -63,7 +63,7 @@ workflows:
       maxRepairs: 1
 ```
 
-The inline `@translation/v2.0.0-beta.1` selects the recipe, skill, and trusted scripts together. Keep this exact prerelease tag, or replace it with the tag's full peeled commit SHA, before using the workflow in production. Do not point production at a branch or an unreviewed moving ref.
+The inline `@translation/v2.0.0-beta.2` selects the recipe, skill, and trusted scripts together. Keep this exact prerelease tag, or replace it with the tag's full peeled commit SHA, before using the workflow in production. Do not point production at a branch or an unreviewed moving ref.
 
 The recipe owns four workflows:
 
@@ -82,6 +82,8 @@ The recipe owns four workflows:
 The first `cache-in-sync` run after a human wording edit can be red while the cache still contains the earlier wording. The deterministic cache commit should make it green.
 
 Review wording only. Do not add, remove, reorder, or change the level of headings; do not change list, table, quote, directive, or block structure; and do not edit link targets, code, IDs, or protected HTML attributes. Heading wording may change, but its structural position and level must remain aligned with the Japanese source.
+
+Heading-structure mismatches are refused as `heading-structure`. The recipe also refuses a translated `\>` blockquote-content marker that the source does not have when the blockquote is the innermost owning container. Source-authored escapes remain valid, and list-item prose inside an alert remains wording.
 
 When either check refuses a structural edit, restore the translation and make the structural change in the Japanese source instead:
 

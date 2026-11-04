@@ -36,7 +36,7 @@ version: 1
 
 workflows:
   - name: translation-v2-backfill
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/backfill.yml@translation/v2.0.0-beta.1
+    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/backfill.yml@translation/v2.0.0-beta.2
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -51,7 +51,7 @@ workflows:
       maxRepairs: 1
 ```
 
-Keep the exact `@translation/v2.0.0-beta.1` prerelease tag, or replace it with its full peeled commit SHA, before production use. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
+Keep the exact `@translation/v2.0.0-beta.2` prerelease tag, or replace it with its full peeled commit SHA, before production use. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
 
 ## Start and follow the backfill
 
