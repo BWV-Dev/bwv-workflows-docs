@@ -2,9 +2,5 @@
 samples/manual-run-hub.md
 samples/translation-tracker-running.md
 
-# Translation v2 is still in beta and is intentionally absent from public docs.
-recipes/translation/v2/backfill.json
-recipes/translation/v2/grouped.json
-
 # Internal helper recipe: documented through its callers rather than as a catalog page.
 recipes/translation/translate-step.json
