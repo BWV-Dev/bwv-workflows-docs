@@ -13,6 +13,8 @@ Use this workflow recipe to create the first Vietnamese translations for documen
 
 Use [translation/grouped](./translation-grouped) for later source changes. Both recipes share the same translate step, output format, output check, and model-correction behavior.
 
+Translation v1.11.2, now included in the floating `translation/v1` tag, fixes cache checks for hard line breaks and indented continuation lines in paragraphs and block quotes. The publication gate now uses the same audit as `cache-in-sync`. A workflow that pins an exact version, such as `@translation/v1.11.1`, keeps running that version: change every translation `uses:` line to `@translation/v1.11.2` or `@translation/v1`, and merge the change into the branch whose `.bwv/workflows.yml` the run reads (the pull request's base branch, or the branch named in `/bwv run`). Then, if a pull request was blocked by `cache-in-sync` only because of this formatting, use **Retry** on that check; you do not need to regenerate the translation or cache.
+
 ## Prerequisites
 
 - Keep Japanese Markdown and API Blueprint documents under one source folder, such as `docs/specs`.
@@ -182,6 +184,8 @@ If the run stops because the Claude quota is used up, do not start another run. 
 | `toolkit`        | Complete replacement for translation, output check, planner, and finalizer tools.                  | Omitted               |
 
 Set `maxRepairs: 0` to keep the per-document verification gate without asking the model to repair a failed check.
+
+The default `checkOutputs` is a toolkit script. A custom toolkit must keep the same `checkOutputs <source> <sourceRoot> <outputRoot>` contract: every existing cache entry must have the exact current structural owner required by the drift gate, and a leading HTML comment is invalid when the source has no comment at the same position. Enforce both rules so verification, finalization, publication, and `cache-in-sync` agree.
 
 :::caution Tool overrides replace the whole list
 `allowedTools` replaces the maintained default. Keep `Read`, `Glob`, `Grep`, `Write`, `Edit`, and `Bash(jq empty:*)`, plus the narrow Git rules the translation skill needs. Do not grant broad `Bash`.
