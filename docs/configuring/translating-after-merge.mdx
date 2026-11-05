@@ -83,14 +83,14 @@ List every file that one source document must produce in `requireOutputs`. BWV W
 
 Use these per-source values in an output template:
 
-| Value         | Meaning                                                                                                                                                   |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `${{ item }}` | Full repository-relative source path, including its extension.                                                                                            |
-| `${{ stem }}` | Full source path without its final extension.                                                                                                             |
-| `${{ dir }}`  | Source directory, or an empty string for a file at the repository root.                                                                                   |
-| `${{ name }}` | Source basename without its final extension.                                                                                                              |
-| `${{ ext }}`  | Final source extension without the dot. Unavailable for a file with no extension or a single-dot name such as `.env`; `.env.local` has extension `local`. |
-| `${{ rel }}`  | Source path below `sourceRoot`, without its final extension.                                                                                              |
+| Value         | Meaning                                                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `${{ item }}` | Full repository-relative source path, including its extension.                                                                                         |
+| `${{ stem }}` | Full source path without its final extension.                                                                                                          |
+| `${{ dir }}`  | Source directory, or an empty string for a file at the repository root.                                                                                |
+| `${{ name }}` | Source basename without its final extension.                                                                                                           |
+| `${{ ext }}`  | Final source extension without the dot. Unavailable for a file with no extension or a single-dot name such as `.env`; a later dot starts an extension. |
+| `${{ rel }}`  | Source path below `sourceRoot`, without its final extension.                                                                                           |
 
 Use `sourceRoot` with `${{ rel }}` for a nested source tree. For example, these sources stay distinct:
 
