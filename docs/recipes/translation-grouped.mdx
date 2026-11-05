@@ -16,6 +16,8 @@ The recipe also keeps cache files aligned with wording that reviewers edit on a 
 
 After each document is translated, the recipe runs its deterministic `checkOutputs` toolkit script. A failed check can resume the same model session for a focused repair, then runs the check again. `maxRepairs` controls those model repair attempts; setting it to `0` keeps verification but disables model repair.
 
+Translation v1.11.2, now included in the floating `translation/v1` tag, fixes cache checks for hard line breaks and indented continuation lines in paragraphs and block quotes. The publication gate now uses the same audit as `cache-in-sync`. If a pull request was blocked by `cache-in-sync` only because of this formatting, use **Retry** on that check after the tag update; you do not need to regenerate the translation or cache.
+
 ## What users see on the pull request
 
 Before the sync pull request merges, BWV Workflows adds a planned [translation tracker](../pull-requests/translation-tracker). After the merge, the same tracker shows each source group and its generated pull request.
@@ -183,7 +185,7 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 | `syncCacheAllowedTools` | Complete tool list for cache synchronization. Omit it to use the maintained default.                                                       | Omitted               |
 | `toolkit`               | Complete replacement for the default translation, cache-sync, output-check, and drift-check tools. Omit it to use the maintained defaults. | Omitted               |
 
-The default `checkOutputs` is a toolkit script and is valid in the translate step's `verify.shell`. A custom toolkit must keep the same `checkOutputs <source> <sourceRoot> <outputRoot>` contract so verification, model repair, and the final publication gate agree.
+The default `checkOutputs` is a toolkit script and is valid in the translate step's `verify.shell`. A custom toolkit must keep the same `checkOutputs <source> <sourceRoot> <outputRoot>` contract: every existing cache entry must have the exact current structural owner required by the drift gate, and a leading HTML comment is invalid when the source has no comment at the same position. Enforce both rules so verification, model repair, publication, and `cache-in-sync` agree.
 
 The released recipe sets `permissionDenials: warn` only on the translate step. A denied tool remains blocked and appears as a warning, while the per-document `checkOutputs` verifier and the final group-wide output check still prevent incomplete work from being published. A definitive item or verifier failure stops sibling processes and leaves queued files unstarted.
 
