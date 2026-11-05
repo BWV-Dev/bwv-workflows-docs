@@ -48,6 +48,22 @@ workflows:
 
 Pin the full commit SHA behind the latest `translation/v1` release tag. One pinned commit selects the recipe, translation skill, and verification scripts together.
 
+## Use the repository root as the source
+
+`translation/v1` (from v1.10.0) also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
+
+```yaml
+with:
+  sourceRoot: .
+  outputRoot: docs_vn
+  glossary: glossary.md
+  exclude:
+    - "archive/**"
+    - "README.md"
+```
+
+At the repository root, the source glob is `**/*.md`. The recipe always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+
 ## Start and follow the backfill
 
 Open an issue or pull request conversation and comment:
@@ -92,7 +108,7 @@ If the run stops because the Claude quota is used up, do not start another run. 
 
 | Input            | Meaning                                                                                            | Example               |
 | ---------------- | -------------------------------------------------------------------------------------------------- | --------------------- |
-| `sourceRoot`     | Root folder of Japanese `.md` source files.                                                        | `docs/specs`          |
+| `sourceRoot`     | Root of the Japanese `.md` source tree; `.` or `./` selects the repository root with v1.10.0.      | `docs/specs`          |
 | `outputRoot`     | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                              | `docs_vn/specs`       |
 | `glossary`       | Markdown file containing project terms and translation rules.                                      | `docs/glossary.md`    |
 | `exclude`        | Source globs omitted from planning and translation. A supplied list replaces the default sentinel. | `["docs/archive/**"]` |

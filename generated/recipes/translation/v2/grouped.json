@@ -5,7 +5,7 @@
       "name": "sourceRoot",
       "type": "path",
       "required": true,
-      "description": "Repository-relative root of Japanese Markdown source files."
+      "description": "Repository-relative root of Japanese Markdown source files; \".\" or \"./\" selects the repository root."
     },
     {
       "name": "outputRoot",

@@ -61,6 +61,22 @@ workflows:
 
 The recipe owns its triggers and uses its default toolkit when `toolkit` is omitted.
 
+## Use the repository root as the source
+
+`translation/v1` (from v1.10.0) also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
+
+```yaml
+with:
+  sourceRoot: .
+  outputRoot: docs_vn
+  glossary: glossary.md
+  exclude:
+    - "archive/**"
+    - "README.md"
+```
+
+At the repository root, the source glob is `**/*.md`. The recipe always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+
 ### Get the SHA of the latest tag
 
 Replace `<tag>` with the latest release tag:
@@ -93,7 +109,7 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 
 | Input                   | Meaning                                                                                                                                    | Example               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `sourceRoot`            | Root folder of the Japanese `.md` source tree.                                                                                             | `docs/specs`          |
+| `sourceRoot`            | Root of the Japanese `.md` source tree; `.` or `./` selects the repository root with v1.10.0.                                              | `docs/specs`          |
 | `outputRoot`            | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                                                      | `docs_vn/specs`       |
 | `glossary`              | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`    |
 | `exclude`               | Source globs omitted from translation and cache checks. A supplied list replaces the default sentinel.                                     | `["docs/archive/**"]` |
