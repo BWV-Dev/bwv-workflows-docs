@@ -81,6 +81,17 @@ Set `maxFilesPerGroup` to the largest group one output pull request should conta
 
 List every file that one source document must produce in `requireOutputs`. BWV Workflows resolves each template for each source file and publishes the group only when all resolved files exist. Validate file contents in a workflow step when existence alone is not enough.
 
+Use these per-source values in an output template:
+
+| Value         | Meaning                                                                                            |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| `${{ item }}` | Full repository-relative source path, including its extension.                                     |
+| `${{ stem }}` | Full source path without its final extension.                                                      |
+| `${{ dir }}`  | Source directory, or an empty string for a file at the repository root.                            |
+| `${{ name }}` | Source basename without its final extension.                                                       |
+| `${{ ext }}`  | Final source extension without the dot. Unavailable for a file with no extension or for a dotfile. |
+| `${{ rel }}`  | Source path below `sourceRoot`, without its final extension.                                       |
+
 Use `sourceRoot` with `${{ rel }}` for a nested source tree. For example, these sources stay distinct:
 
 | Source                        | `${{ rel }}`    | Required translation                |
@@ -89,6 +100,22 @@ Use `sourceRoot` with `${{ rel }}` for a nested source tree. For example, these 
 | `docs/specs/admin/login.md`   | `admin/login`   | `docs_vn/specs/admin/login.vi.md`   |
 
 Avoid `${{ name }}` for nested documents. It contains only the basename, so both files above become `login` and claim the same output. BWV Workflows rejects a group when its source files collide across every declared output.
+
+Use `${{ ext }}` when one workflow accepts several source formats and each output must keep the
+source's final extension:
+
+```yaml title=".bwv/workflows.yml"
+sourcePrGrouping:
+  paths: ["docs/**/*.{md,apib}"]
+  sourceRoot: docs
+  requireOutputs:
+    - "localized/${{ rel }}.vi.${{ ext }}"
+```
+
+This maps `docs/guides/start.md` to `localized/guides/start.vi.md` and
+`docs/api/orders.apib` to `localized/api/orders.vi.apib`. If a matching source has no extension,
+the group fails with an output-template error that names the source; BWV Workflows does not create
+a path ending in a dot.
 
 :::important Keep the step and output map aligned
 `requireOutputs` does not create files. Make the steps write the exact paths declared there. A missing required output fails the group and prevents publication.
