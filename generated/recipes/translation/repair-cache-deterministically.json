@@ -5,7 +5,7 @@
       "name": "sourceRoot",
       "type": "path",
       "required": true,
-      "description": "Repository-relative root of the original Japanese Markdown files."
+      "description": "Repository-relative root of the original Japanese Markdown and API Blueprint files."
     },
     {
       "name": "outputRoot",

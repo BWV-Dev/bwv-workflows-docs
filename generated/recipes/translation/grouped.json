@@ -5,13 +5,13 @@
       "name": "sourceRoot",
       "type": "path",
       "required": true,
-      "description": "Repository-relative root of Japanese Markdown source files; \".\" or \"./\" selects the repository root."
+      "description": "Repository-relative root of Japanese Markdown and API Blueprint source files; \".\" or \"./\" selects the repository root."
     },
     {
       "name": "outputRoot",
       "type": "path",
       "required": true,
-      "description": "Repository-relative root for mirrored Vietnamese Markdown translations and JSON caches."
+      "description": "Repository-relative root for mirrored Vietnamese Markdown/API Blueprint translations and JSON caches; it must not equal or contain sourceRoot."
     },
     {
       "name": "glossary",
