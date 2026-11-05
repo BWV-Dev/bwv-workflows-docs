@@ -1,7 +1,7 @@
 ---
 title: translation/grouped
 sidebar_position: 2
-description: Translate Japanese Markdown in source-based groups and keep reviewed caches synchronized.
+description: Translate Japanese Markdown and API Blueprint documents in source-based groups and keep reviewed caches synchronized.
 slug: /recipes/translation-grouped
 ---
 
@@ -10,7 +10,7 @@ import { RecipeInputs } from "@site/src/components/GeneratedReference";
 
 👤 Responsible: Project Leader
 
-Use this workflow recipe for a repository that synchronizes Japanese Markdown through a dedicated branch and publishes reviewed Vietnamese translations to another branch. It groups files by their source pull request, creates one draft translation pull request per group, and checks that each translation and cache are complete before publication.
+Use this workflow recipe for a repository that synchronizes Japanese Markdown or API Blueprint documents through a dedicated branch and publishes reviewed Vietnamese translations to another branch. It groups files by their source pull request, creates one draft translation pull request per group, and checks that each translation and cache are complete before publication.
 
 The recipe also keeps cache files aligned with wording that reviewers edit on a translation branch. Pull requests into the configured gate branches must pass the cache check.
 
@@ -22,13 +22,13 @@ Before the sync pull request merges, BWV Workflows adds a planned [translation t
 
 <GitHubComment sample="translation-tracker-published" author="BWV Workflows" />
 
-Each generated pull request is a draft. Dev & Com review the Vietnamese Markdown there, then follow [Running something again](../pull-requests/retry), [Recreating a closed pull request](../pull-requests/recreate), or [When a merge is skipped or needs mapping](../pull-requests/merge-skipped) when the tracker offers an action.
+Each generated pull request is a draft. Dev & Com review the Vietnamese document there, then follow [Running something again](../pull-requests/retry), [Recreating a closed pull request](../pull-requests/recreate), or [When a merge is skipped or needs mapping](../pull-requests/merge-skipped) when the tracker offers an action.
 
 ## Prerequisites
 
 Prepare the target repository before adding the recipe:
 
-- Keep the Japanese Markdown below one repository-relative source folder, such as `docs/specs`.
+- Keep the Japanese Markdown and API Blueprint documents below one repository-relative source folder, such as `docs/specs`.
 - Choose a separate output folder that mirrors the source tree, such as `docs_vn/specs`.
 - Add a Markdown glossary, such as `docs/glossary.md`, with project terminology and translation rules. Project rules in this file take priority over the recipe's generic rules.
 - Use a sync branch, such as `docs-sync`, and merge it into the sync base, such as `main`, through a pull request.
@@ -75,7 +75,61 @@ with:
     - "README.md"
 ```
 
-At the repository root, the source glob is `**/*.md`. The recipe always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+At the repository root, the recipe selects `.md` and `.apib` files recursively. It always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+
+## API Blueprint (`.apib`)
+
+Translation v1.11.0 added API Blueprint support. The floating `translation/v1` tag already includes it. The recipe selects `.apib` alongside `.md` below `sourceRoot`, including when `sourceRoot: .`. One source pull request that changes both formats produces one group, one tracker entry, and one output pull request.
+
+For `sourceRoot: docs/specs` and `outputRoot: docs_vn/specs`, the source `docs/specs/api/orders.apib` produces:
+
+- `docs_vn/specs/api/orders.vi.apib`
+- `docs_vn/specs/api/orders.vi.json`
+
+Markdown output mapping is unchanged.
+
+| Translate                                                                               | Keep verbatim                                                                                                                                                       |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prose; group and action names; resource names without `+ Model`; descriptions after `-` | Blueprint keywords and metadata; URIs, methods, status codes, and media types; parameter and attribute names, types, sample values, and enum values                 |
+| Descriptive paragraphs, tables, and blockquotes                                         | Data Structures type names and references; resource names with `+ Model` and their references; all `Body`, `Headers`, and `Schema` code, including Japanese strings |
+
+For example, the model may produce this small translation:
+
+```apib title="api/orders.apib"
+FORMAT: 1A
+# 注文 API
+# Group 注文
+## 商品 [/items/{item_id}]
++ Model (application/json)
+### 商品を取得する [GET]
+商品を返します。
++ Response 200 (application/json)
+    + Body
+            {"name":"りんご"}
+```
+
+```apib title="docs_vn/api/orders.vi.apib"
+FORMAT: 1A
+# API đơn hàng
+# Group Đơn hàng
+## 商品 [/items/{item_id}]
++ Model (application/json)
+### Lấy sản phẩm [GET]
+Trả về sản phẩm.
++ Response 200 (application/json)
+    + Body
+            {"name":"りんご"}
+
+<!-- translate-vi-meta
+sourceCommit: 1111111111111111111111111111111111111111
+sourcePath: api/orders.apib
+translatedAt: 2026-11-05
+-->
+```
+
+The metadata footer is always the last block of `.vi.apib`. Official Blueprint parsers may report a harmless “ignoring unrecognized block” warning for it. The recipe does not run a Blueprint parser or validator; it trusts the model to follow these preservation rules.
+
+Do not place `a.md` and `a.apib` in the same folder within the active source scope. Both need the cache path `a.vi.json`, so the recipe fails closed before publication. Rename one source so every relative stem is unique.
 
 ### Get the SHA of the latest tag
 
@@ -109,8 +163,8 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 
 | Input                   | Meaning                                                                                                                                    | Example               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `sourceRoot`            | Root of the Japanese `.md` source tree; `.` or `./` selects the repository root with v1.10.0.                                              | `docs/specs`          |
-| `outputRoot`            | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                                                                      | `docs_vn/specs`       |
+| `sourceRoot`            | Root of the Japanese `.md` and `.apib` source tree; `.` or `./` selects the repository root.                                               | `docs/specs`          |
+| `outputRoot`            | Root folder for mirrored `.vi.md`/`.vi.apib` translations and `.vi.json` caches.                                                           | `docs_vn/specs`       |
 | `glossary`              | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`    |
 | `exclude`               | Source globs omitted from translation and cache checks. A supplied list replaces the default sentinel.                                     | `["docs/archive/**"]` |
 | `syncBase`              | Base branch that receives the merged sync pull request and generated translation pull requests.                                            | `main`                |
@@ -135,7 +189,7 @@ The released recipe sets `permissionDenials: warn` only on the translate step. A
 
 Translation v1 preserves each link's query string and fragment, then applies these destination rules:
 
-- A relative link to Markdown below `sourceRoot` points to the mirrored `.vi.md` document below `outputRoot`, even when that translation does not exist yet. Anchors point to the translated heading.
+- A relative link to Markdown or API Blueprint below `sourceRoot` points to the mirrored `.vi.md` or `.vi.apib` document below `outputRoot`, even when that translation does not exist yet. Anchors point to the translated heading.
 - A relative image, PDF, CSV, or other non-Markdown destination continues to point to the original source-tree file. The path is recalculated from the translated document, including when the asset sits outside `sourceRoot`.
 - Absolute URLs, root-absolute paths, anchor-only links, and `mailto:` links are left unchanged.
 
@@ -145,11 +199,11 @@ The output check compares the resolved relative destinations with the source. A 
 
 ### No translation starts after a merge
 
-Check that the pull request merged from `sourceBranch` into `syncBase` and changed a `.md` file below `sourceRoot`. The branch direction is significant.
+Check that the pull request merged from `sourceBranch` into `syncBase` and changed a `.md` or `.apib` file below `sourceRoot`. The branch direction is significant.
 
 ### A group fails with missing outputs
 
-Open the check run and inspect the named file. Every source must produce both the mirrored `.vi.md` translation and `.vi.json` cache. Fix the source, glossary, or custom toolkit, then follow [Running something again](../pull-requests/retry).
+Open the check run and inspect the named file. Every source must produce both its mirrored `.vi.md` or `.vi.apib` translation and `.vi.json` cache. Fix the source, glossary, or custom toolkit, then follow [Running something again](../pull-requests/retry).
 
 ### The tracker says outputs are partly on the base branch
 

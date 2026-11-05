@@ -1,7 +1,7 @@
 ---
 title: translation/backfill
 sidebar_position: 3
-description: Manually translate documents that existed before the grouped translation workflow was enabled.
+description: Manually translate Markdown and API Blueprint documents that existed before the grouped translation workflow was enabled.
 slug: /recipes/translation-backfill
 ---
 
@@ -15,14 +15,14 @@ Use [translation/grouped](./translation-grouped) for later source changes. Both 
 
 ## Prerequisites
 
-- Keep Japanese Markdown under one source folder, such as `docs/specs`.
+- Keep Japanese Markdown and API Blueprint documents under one source folder, such as `docs/specs`.
 - Choose a mirrored output folder, such as `docs_vn/specs`.
 - Add a Markdown glossary with project terminology and translation rules.
 - Use the same `branchPrefix` as `translation/grouped` so its cache-sync workflow covers backfill branches.
 - Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
 - Keep spaces out of configured paths and document paths.
 
-Every source document produces one `.vi.md` translation and one `.vi.json` cache below `outputRoot`.
+Every Markdown source produces one `.vi.md` translation and one `.vi.json` cache below `outputRoot`. API Blueprint output is described below.
 
 ## Add the workflow
 
@@ -62,7 +62,61 @@ with:
     - "README.md"
 ```
 
-At the repository root, the source glob is `**/*.md`. The recipe always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+At the repository root, the recipe selects `.md` and `.apib` files recursively. It always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+
+## API Blueprint (`.apib`)
+
+Translation v1.11.0 added API Blueprint support. The floating `translation/v1` tag already includes it. Backfill plans `.apib` alongside `.md` below `sourceRoot`, including when `sourceRoot: .`, and can publish both formats in the same batch pull request.
+
+For `sourceRoot: docs/specs` and `outputRoot: docs_vn/specs`, the source `docs/specs/api/orders.apib` produces:
+
+- `docs_vn/specs/api/orders.vi.apib`
+- `docs_vn/specs/api/orders.vi.json`
+
+Markdown output mapping is unchanged.
+
+| Translate                                                                               | Keep verbatim                                                                                                                                                       |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prose; group and action names; resource names without `+ Model`; descriptions after `-` | Blueprint keywords and metadata; URIs, methods, status codes, and media types; parameter and attribute names, types, sample values, and enum values                 |
+| Descriptive paragraphs, tables, and blockquotes                                         | Data Structures type names and references; resource names with `+ Model` and their references; all `Body`, `Headers`, and `Schema` code, including Japanese strings |
+
+For example, the model may produce this small translation:
+
+```apib title="api/orders.apib"
+FORMAT: 1A
+# 注文 API
+# Group 注文
+## 商品 [/items/{item_id}]
++ Model (application/json)
+### 商品を取得する [GET]
+商品を返します。
++ Response 200 (application/json)
+    + Body
+            {"name":"りんご"}
+```
+
+```apib title="docs_vn/api/orders.vi.apib"
+FORMAT: 1A
+# API đơn hàng
+# Group Đơn hàng
+## 商品 [/items/{item_id}]
++ Model (application/json)
+### Lấy sản phẩm [GET]
+Trả về sản phẩm.
++ Response 200 (application/json)
+    + Body
+            {"name":"りんご"}
+
+<!-- translate-vi-meta
+sourceCommit: 1111111111111111111111111111111111111111
+sourcePath: api/orders.apib
+translatedAt: 2026-11-05
+-->
+```
+
+The metadata footer is always the last block of `.vi.apib`. Official Blueprint parsers may report a harmless “ignoring unrecognized block” warning for it. The recipe does not run a Blueprint parser or validator; it trusts the model to follow these preservation rules.
+
+Do not place `a.md` and `a.apib` in the same folder within the active source scope. Both need the cache path `a.vi.json`, so backfill fails closed before publishing that work. Rename one source so every relative stem is unique.
 
 ## Start and follow the backfill
 
@@ -80,7 +134,7 @@ Documents inside one pass run in parallel up to the smaller of `batchSize` and `
 
 The released recipe uses `permissionDenials: warn` because every document has that deterministic output check and the finalizer drops incomplete documents. A denied tool is still blocked and reported. Backfill also sets `continueOnError: true`, so one failed document does not cancel its running siblings or skip the rest of the planned batch.
 
-Send every draft batch pull request to Dev & Com. Merge only after the Vietnamese Markdown is reviewed and its cache check passes.
+Send every draft batch pull request to Dev & Com. Merge only after the Vietnamese document is reviewed and its cache check passes.
 
 See [Recommended project setup](/getting-started/recommended-project-setup#2-create-the-first-vietnamese-documents) for a 13-document run that published PRs in three batches and resumed after a quota stop.
 
@@ -108,8 +162,8 @@ If the run stops because the Claude quota is used up, do not start another run. 
 
 | Input            | Meaning                                                                                            | Example               |
 | ---------------- | -------------------------------------------------------------------------------------------------- | --------------------- |
-| `sourceRoot`     | Root of the Japanese `.md` source tree; `.` or `./` selects the repository root with v1.10.0.      | `docs/specs`          |
-| `outputRoot`     | Root folder for mirrored `.vi.md` translations and `.vi.json` caches.                              | `docs_vn/specs`       |
+| `sourceRoot`     | Root of the Japanese `.md` and `.apib` source tree; `.` or `./` selects the repository root.       | `docs/specs`          |
+| `outputRoot`     | Root folder for mirrored `.vi.md`/`.vi.apib` translations and `.vi.json` caches.                   | `docs_vn/specs`       |
 | `glossary`       | Markdown file containing project terms and translation rules.                                      | `docs/glossary.md`    |
 | `exclude`        | Source globs omitted from planning and translation. A supplied list replaces the default sentinel. | `["docs/archive/**"]` |
 | `branches`       | Branches on which people may start the workflow and against which batch pull requests open.        | `[main]`              |
@@ -143,4 +197,4 @@ The planner selects only non-excluded source documents without a translation in 
 
 ### A batch publishes fewer documents than planned
 
-Read the pass summary and batch pull request body. The finalizer keeps only documents whose Markdown and cache pass `checkOutputs`; it discards ordinary failed documents and reports stray output paths. Fix the source, glossary, or custom toolkit, then use Retry when the hub offers it.
+Read the pass summary and batch pull request body. The finalizer keeps only documents whose translation and cache pass `checkOutputs`; it discards ordinary failed documents and reports stray output paths. Fix the source, glossary, or custom toolkit, then use Retry when the hub offers it.
