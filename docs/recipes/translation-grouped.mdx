@@ -79,14 +79,18 @@ At the repository root, the recipe selects `.md` and `.apib` files recursively. 
 
 ## API Blueprint (`.apib`)
 
-Translation v1.11.0 added API Blueprint support. The floating `translation/v1` tag already includes it. The recipe selects `.apib` alongside `.md` below `sourceRoot`, including when `sourceRoot: .`. One source pull request that changes both formats produces one group, one tracker entry, and one output pull request.
+Translation v1.11.1 supports API Blueprint and gives it a separate cache suffix. The floating `translation/v1` tag already includes it. The recipe selects `.apib` alongside `.md` below `sourceRoot`, including when `sourceRoot: .`. One source pull request that changes both formats produces one group, one tracker entry, and one output pull request.
 
-For `sourceRoot: docs/specs` and `outputRoot: docs_vn/specs`, the source `docs/specs/api/orders.apib` produces:
+For `sourceRoot: docs/specs` and `outputRoot: docs_vn/specs`, outputs map as follows:
 
-- `docs_vn/specs/api/orders.vi.apib`
-- `docs_vn/specs/api/orders.vi.json`
+| Source                       | Vietnamese translation             | Cache                                   |
+| ---------------------------- | ---------------------------------- | --------------------------------------- |
+| `docs/specs/api/orders.md`   | `docs_vn/specs/api/orders.vi.md`   | `docs_vn/specs/api/orders.vi.json`      |
+| `docs/specs/api/orders.apib` | `docs_vn/specs/api/orders.vi.apib` | `docs_vn/specs/api/orders.vi.apib.json` |
 
-Markdown output mapping is unchanged.
+Markdown paths are unchanged. Same-stem sources such as `a.md` and `a.apib` can be translated together because they produce four distinct files.
+
+If v1.11.0 created an API Blueprint cache at `<outputRoot>/<rel>.vi.json`, v1.11.1 ignores it and writes `<outputRoot>/<rel>.vi.apib.json` on the next translation run. Delete the old cache if it is still present.
 
 | Translate                                                                               | Keep verbatim                                                                                                                                                       |
 | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -129,8 +133,6 @@ translatedAt: 2026-11-05
 
 The metadata footer is always the last block of `.vi.apib`. Official Blueprint parsers may report a harmless “ignoring unrecognized block” warning for it. The recipe does not run a Blueprint parser or validator; it trusts the model to follow these preservation rules.
 
-Do not place `a.md` and `a.apib` in the same folder within the active source scope. Both need the cache path `a.vi.json`, so the recipe fails closed before publication. Rename one source so every relative stem is unique.
-
 ### Get the SHA of the latest tag
 
 Replace `<tag>` with the latest release tag:
@@ -164,7 +166,7 @@ Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. 
 | Input                   | Meaning                                                                                                                                    | Example               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
 | `sourceRoot`            | Root of the Japanese `.md` and `.apib` source tree; `.` or `./` selects the repository root.                                               | `docs/specs`          |
-| `outputRoot`            | Root folder for mirrored `.vi.md`/`.vi.apib` translations and `.vi.json` caches.                                                           | `docs_vn/specs`       |
+| `outputRoot`            | Root folder for mirrored translations and their `.vi.json`/`.vi.apib.json` caches.                                                         | `docs_vn/specs`       |
 | `glossary`              | Markdown file containing project terms and translation rules.                                                                              | `docs/glossary.md`    |
 | `exclude`               | Source globs omitted from translation and cache checks. A supplied list replaces the default sentinel.                                     | `["docs/archive/**"]` |
 | `syncBase`              | Base branch that receives the merged sync pull request and generated translation pull requests.                                            | `main`                |
@@ -203,7 +205,7 @@ Check that the pull request merged from `sourceBranch` into `syncBase` and chang
 
 ### A group fails with missing outputs
 
-Open the check run and inspect the named file. Every source must produce both its mirrored `.vi.md` or `.vi.apib` translation and `.vi.json` cache. Fix the source, glossary, or custom toolkit, then follow [Running something again](../pull-requests/retry).
+Open the check run and inspect the named file. Every source must produce its mirrored `.vi.md` or `.vi.apib` translation and extension-specific cache. Fix the source, glossary, or custom toolkit, then follow [Running something again](../pull-requests/retry).
 
 ### The tracker says outputs are partly on the base branch
 
