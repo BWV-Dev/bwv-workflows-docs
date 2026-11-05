@@ -1389,7 +1389,7 @@
                                     ]
                                   },
                                   "requireOutputs": {
-                                    "description": "Lists required output path templates for each source file before a group can publish.",
+                                    "description": "Lists required output path templates for each source file before a group can publish. Available values are `item`, `stem`, `dir`, `name`, `ext` (the final extension without its dot), and `rel` when `sourceRoot` is set.",
                                     "anyOf": [
                                       {
                                         "minItems": 1,
