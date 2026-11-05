@@ -225,7 +225,7 @@ In the example run, Com changed one `.vi.md` file. The bot committed only the ma
 
 👤 Responsible: Com
 
-This is safe with `translation/v1.9.0` or later, but it is not the recommended path. The configuration above uses the moving `translation/v1` tag, which currently points to `translation/v1.11.2` (`fb702a518fc38380fef2906d7b71ea16d942e764`).
+This is safe with `translation/v1.9.0` or later, but it is not the recommended path. The configuration above uses the moving `translation/v1` tag, which currently points to `translation/v1.11.3` (`f353b70748b30bffd303069a6a89e2d635ec93af`).
 
 When a push to `bwv-docs` changes Vietnamese Markdown, `repair-base-vi-cache` audits the current Japanese, Vietnamese, and cache content. Safe drift opens a draft PR titled `chore(vi): repair translation cache drift` from `bwv/translation/repair-<full-push-SHA>`, with the `bwv-automation` label. It changes only matching existing `.vi.json` entries; review and merge that PR after **Every cache matches its translation** passes. Content whose cache is already correct is a no-op.
 
