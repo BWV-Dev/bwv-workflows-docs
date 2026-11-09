@@ -1,0 +1,131 @@
+---
+title: Resolving overlapping output pull requests
+sidebar_position: 7
+description: Clear an output ownership conflict before BWV Workflows publishes.
+slug: /pull-requests/output-ownership
+---
+
+👤 Responsible: Project Leader and Dev & Com
+
+BWV Workflows checks open pull requests immediately before it pushes an output
+branch. It does not publish when another pull request already changes one of
+the same output paths. This protects work that is already under review.
+
+The check applies to ordinary single-pass publication, every loop batch, and
+every grouped publication. A pull request whose head is the exact branch in
+the same repository being published is excluded because the run is updating
+that pull request, not creating a second owner.
+
+## When you see this
+
+The conflict reason names the pull request, its owner, and the overlapping
+paths. For example, another BWV workflow can produce this exact reason:
+
+```text
+output ownership conflict: #42 (workflow `generate-specs`) holds `docs/specs/login.md`. Merge or close the pull request(s), then retry; nothing was pushed and no pull request was created or updated
+```
+
+At most ten paths are shown per pull request and at most five pull requests are
+shown inline. The message reports how many more paths or pull requests were
+omitted.
+
+### Ordinary single-pass publication
+
+The successful steps remain successful, but publication is held. The status
+comment and check summary show this exact line:
+
+```text
+**Pull request:** blocked — output ownership conflict: #42 (workflow `generate-specs`) holds `docs/specs/login.md`. Merge or close the pull request(s), then retry; nothing was pushed and no pull request was created or updated.
+```
+
+The status comment still uses the exact heading **✅ BWV workflow finished**.
+For a run with three successful steps, the check title is exactly **3 step(s)
+succeeded** because the workflow work finished and only publication was held.
+For a workflow named `translate-docs`, the comment ends with this exact line:
+
+```text
+_Run again: `/bwv retry translate-docs`._
+```
+
+### Loop batch publication
+
+The conflicting batch is not pushed. For a run with three completed steps, the
+check title is exactly **Failed after 3 step(s)**. Its summary contains the
+blocked pull-request line shown above and a **Batches not published** section
+with the same conflict reason. A pull request status comment uses the exact
+heading **❌ BWV workflow failed** and offers **Retry**.
+
+For a manual loop, the manual-run hub remains the tracker for the request and
+links to this failed check. Pull requests from earlier batches stay published.
+
+### Grouped publication
+
+The group check title is exactly **Group outputs are already under review**.
+Its summary says:
+
+```text
+Group **source-pr-7** is blocked: output ownership conflict: #42 (author `octo-reviewer`) holds `docs/specs/login.md`. Merge or close the pull request(s), then retry; nothing was pushed and no pull request was created or updated.
+
+The ownership check ran again at the publication boundary; the group did not push or create or update a pull request.
+```
+
+The **BWV source groups** tracker shows the group with ⏸️ followed by the same
+conflict reason. A grouped recreate that loses ownership at the final check
+uses the check title **The group is blocked** and adds this exact instruction:
+
+```text
+Re-run this check once the pull requests that hold its outputs are merged or closed.
+```
+
+Grouped publication also treats a human-authored pull request, or a bot pull
+request without a BWV owner marker, as an owner when its changed files overlap
+the group's declared outputs. Ordinary single-pass and loop publishers compare
+against other BWV-owned output pull requests; they do not claim human-authored
+pull requests as engine output owners.
+
+## Resolve the conflict
+
+1. **Dev or Com:** Open every pull request number named in the conflict.
+2. Review it and either merge it or close it through your normal project
+   process. Do not close valid review work only to bypass the check.
+3. **Dev or Com:** Return to the source pull request, sync pull request, or
+   manual-run thread.
+4. Use **Retry** or `/bwv retry <name>` after a merge or close. If the blocked
+   work was recreating a closed grouped output pull request, re-run its group
+   check. If the newest output pull request is closed and the tracker offers
+   **Recreate**, use **Recreate** instead.
+
+The next attempt reads the current set of open pull requests and checks again.
+A merge may also put the expected output on the base branch, so a grouped retry
+can finish as already on the base instead of opening another pull request.
+
+## Inspection limits
+
+The scan is deliberately bounded. Publication stops with one of these exact
+reasons instead of guessing when it cannot inspect the complete owner set:
+
+```text
+output ownership inspection reached its 10-page open pull request limit; reduce open pull requests, then retry
+```
+
+```text
+output ownership inspection found more than 100 candidate pull requests; merge or close some of them, then retry
+```
+
+```text
+output ownership inspection exceeded its bounded changed-file reads at pull request #42; reduce that pull request or the owner set, then retry
+```
+
+For an ordinary or loop run, the status comment and check summary put the
+reason after **Pull request: blocked —**. For a grouped run, the group check and
+tracker report it as a block. Follow the action named in the reason, then
+retry.
+
+Temporary GitHub read failures retry automatically and fail closed: BWV
+Workflows does not publish until it can complete the scan.
+
+If publication was interrupted after a push, durable repair keeps the original
+pull request intent. Before creating a missing pull request, repair checks
+ownership again and retries on its settlement backoff while a conflict or read
+limit remains. You do not need to reconstruct the title, body, labels, or
+target branch; clear the named conflict and let repair retry.

@@ -15,8 +15,9 @@ Give steps stable IDs, pass their outputs through expressions, and use
 1. [Capture a step output](#1-capture-a-step-output).
 2. [Use expressions in the right context](#2-use-expressions-in-the-right-context).
 3. [Run independent items in parallel](#3-run-independent-items-in-parallel).
-4. [Choose reporting and publication](#4-choose-reporting-and-publication).
-5. [Choose the clone depth](#5-choose-the-clone-depth).
+4. [Handle each item outcome](#4-handle-each-item-outcome).
+5. [Choose reporting and publication](#5-choose-reporting-and-publication).
+6. [Choose the clone depth](#6-choose-the-clone-depth).
 
 ## Step-by-Step Instructions
 
@@ -131,7 +132,70 @@ Make every item write disjoint files. When items contain a `file` or `files`
 field, BWV Workflows rejects duplicate targets before starting Claude. Review
 the plan yourself when the target is expressed another way.
 
-### 4. Choose reporting and publication
+### 4. Handle each item outcome
+
+👤 Responsible: Project Leader
+
+A Claude step with `forEach`, `fanout: process`, and an `id` exposes
+`${{ steps.<id>.itemOutcomes }}`. This is separate from
+`${{ steps.<id>.output }}` and does not change the existing output.
+
+The array has one entry for each value in `forEach`, in the same order:
+
+| `status`         | Meaning                                                          | Other field |
+| ---------------- | ---------------------------------------------------------------- | ----------- |
+| `ok`             | The item completed successfully.                                 | None        |
+| `failed`         | The item failed for a workflow or content reason.                | None        |
+| `infrastructure` | The Claude CLI could not use the API.                            | `reason`    |
+| `cancelled`      | The item was stopped or did not start after another item failed. | None        |
+
+Use array indexes to match outcomes to the original work list. The `reason`
+field of an `infrastructure` entry is a short classified status or connection
+error, not the API's free-form message.
+
+Set `continueOnError: true` when a later step must inspect every result and
+decide what can be retained:
+
+```yaml title=".bwv/workflows.yml"
+- id: prepare
+  name: Plan documents
+  shell: node scripts/plan-documents.mjs
+  outputJson: true
+- id: translate
+  name: Translate each document
+  forEach: ${{ steps.prepare.output.items }}
+  fanout: process
+  maxParallel: 3
+  continueOnError: true
+  claude:
+    skill: translate-doc
+    args: ${{ item.source }}
+    allowedTools: [Read, Write, Edit]
+- id: select
+  name: Select completed documents
+  shell: >-
+    node scripts/select-completed.mjs
+    "${{ steps.prepare.output.items }}"
+    "${{ steps.translate.itemOutcomes }}"
+  outputJson: true
+```
+
+When every non-`cancelled` item has `status: infrastructure`, and at least one
+such item exists, BWV Workflows finishes later steps and then treats the run as
+an infrastructure stop. It uses the normal automatic backoff instead of
+counting the items as document failures. A mixed result stays under the
+workflow's control, so the later step can decide what to keep. A later required
+step failure still becomes the run's failure.
+
+Subscription quota takes priority over these outcomes. Among classified API
+stops, a funding pause takes priority, followed by a terminal account,
+permission, or scope stop, then an API throttle with the longest advertised
+delay, then other retryable infrastructure errors.
+
+See [Waiting for quota and other stuck states](/pull-requests/waiting#3-wait-through-automatic-infrastructure-retries)
+for the exact check and comment messages.
+
+### 5. Choose reporting and publication
 
 👤 Responsible: Project Leader
 
@@ -153,7 +217,7 @@ passes:
 No output pull request is needed when the successful run changed no files.
 Dev and Com still review every pull request that is created.
 
-### 5. Choose the clone depth
+### 6. Choose the clone depth
 
 👤 Responsible: Project Leader
 
