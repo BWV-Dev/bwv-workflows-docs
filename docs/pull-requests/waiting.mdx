@@ -42,7 +42,63 @@ A yellow or in-progress BWV check is not always stuck. Read its title, summary, 
 
 ### 3. Wait through automatic infrastructure retries
 
-A temporary infrastructure stop leaves the check in progress while automatic attempts remain. The bot shows **Waiting for a retry** and the next retry time. If no automatic attempt remains, the check fails and says **Infrastructure error**.
+A temporary infrastructure stop leaves the check in progress while automatic
+attempts remain. This also applies when a `continueOnError` Claude process
+fan-out ends with only infrastructure outcomes for its non-cancelled items.
+
+The check run title is **Waiting for a retry: _reason_**. When the retry time is
+known, the title adds **· retrying around HH:MM UTC**. Its summary starts with
+this exact text:
+
+```text
+**Infrastructure error:** reason. The Claude CLI could not use the API, which is not a fault of this workflow. Retrying automatically around HH:MM UTC. This check stays in progress until the job ends.
+```
+
+Before the job has calculated the time, the retry sentence is exactly:
+
+```text
+Retrying automatically once the remaining workflows of this job finish.
+```
+
+The status comment uses the heading **⏳ BWV workflow waiting for a retry**.
+Its **Error** block and ending around the normal step table are exactly:
+
+```text
+Infrastructure error: reason
+```
+
+```text
+_Retrying automatically around HH:MM UTC. This comment updates when it does._
+```
+
+Ordinary retryable infrastructure stops use backoff delays of 30, 60, 120,
+and 240 seconds across attempts.
+
+If no automatic attempt remains, the check title is **Infrastructure error:
+_reason_** and its summary says:
+
+```text
+**Infrastructure error:** reason. The Claude CLI could not use the API, which is not a fault of this workflow, and no retry is left. Ask whoever runs this App to look at its worker log.
+```
+
+The status comment heading becomes exactly **❌ BWV workflow failed** and
+offers **Retry** when the run is attached to a pull request.
+
+Funding, account, and throttle stops use their selected handling instead of
+ordinary infrastructure backoff:
+
+- A funding or billing stop uses the check title **Waiting for funding** and
+  the status comment heading **⏸️ BWV workflow waiting for funding**. Its
+  check says **There is no automatic retry time. Everything already published
+  is kept.** Restore funding or switch authentication mode, then use **Retry**.
+- An account, permission, or scope stop is terminal. The check uses
+  **Infrastructure error: _reason_** with no automatic retry.
+- An API throttle retries at its advertised delay when available, or a short
+  backoff otherwise. It uses the same **Waiting for a retry: _reason_** check
+  title.
+
+The Claude subscription quota still wins over all of these. It keeps the
+separate **Waiting for quota** title and quota reset schedule shown above.
 
 ## What happens next
 

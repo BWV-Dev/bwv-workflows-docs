@@ -25,6 +25,7 @@ A **BWV source groups — planned** tracker is different. Before its sync pull r
 | ✅ `#N`                                                           | The output pull request was published.                          | Open it, review it, and merge it when it is ready.            |
 | ❌ **failed**                                                     | A step failed and no automatic attempt remains.                 | Fix the reported problem, then retry.                         |
 | `#N (closed)`                                                     | The output pull request was closed without a merge.             | Recreate it if it was closed by mistake.                      |
+| **Pull request: blocked — output ownership conflict**             | Another open pull request already changes an output file.       | Merge or close that pull request, then retry.                 |
 | **Waiting for quota** · _Retrying automatically around HH:MM UTC_ | The bot has paused for the quota and scheduled another attempt. | Do nothing. The bot retries by itself; do not tick **Retry**. |
 | Anything else                                                     | Your Project Leader needs to check the less common result.      | Tell your Project Leader.                                     |
 
@@ -77,3 +78,10 @@ If a manual-run hub lists a closed loop batch, use the same comment action: copy
 Recreate opens a new output pull request; it does not reopen the old one. Review and merge the new pull request in the normal way.
 
 ![The Recreate checkbox in an expanded BWV Workflows tracker](/img/screenshots/recreate-tracker-checkbox.png)
+
+## 5. Resolve overlapping output pull requests
+
+BWV Workflows does not publish files that another open pull request already
+owns. Follow [Resolving overlapping output pull requests](/pull-requests/output-ownership)
+when a check, status comment, or tracker reports an **output ownership
+conflict**.
