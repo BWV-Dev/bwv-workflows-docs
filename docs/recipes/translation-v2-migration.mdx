@@ -92,7 +92,7 @@ The report uses stable typed reasons. Fix the evidence or source condition, then
 
 For a small structural defect, prefer repairing the reviewed v1 translation and cache, then migrate again. If the owner explicitly accepts losing continuity for one pair, list that exact repository-relative source path in `quarantine`. Migration moves its legacy evidence to the excluded `archiveRoot`, reports the move, and continues. It never chooses quarantine itself and never starts backfill; review the archived paths and later let v2 backfill create a new pair.
 
-The [frozen migration contract](https://github.com/BWV-Dev/bwv-workflows-recipes/blob/translation/v2.0.0/docs/v2-migration-contract.md) is the source of truth for result codes, provenance, transaction recovery, and quarantine behavior.
+The [frozen migration contract](https://github.com/BWV-Dev/bwv-workflows-recipes/blob/14378e4f8245bf011fae311eb62edbc78aa79f40/docs/v2-migration-contract.md) is the source of truth for result codes, provenance, transaction recovery, and quarantine behavior.
 
 ## Roll back to v1
 

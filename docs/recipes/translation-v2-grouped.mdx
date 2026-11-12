@@ -84,7 +84,7 @@ At the repository root, the recipe selects `**/*.md` and `**/*.apib`. It always 
 
 V2 translates API names, ordinary prose, group and action display names, and descriptions that the Markdown and Blueprint parsers both identify as wording. It protects metadata, Blueprint keywords, URI templates, methods, status codes, media types, relation and identifier data, names and types, samples/defaults/enum values, named structures and references, code, assets, indentation, and non-prose Markdown syntax byte-for-byte.
 
-Directive labels, titles, and attributes remain source-owned in this GA release. Descriptions after members under a parameter's `Members` or `Values` list also remain source-owned; named enum descriptions under Data Structures can be translated. Read the [frozen API Blueprint contract](https://github.com/BWV-Dev/bwv-workflows-recipes/blob/translation/v2.0.0/docs/v2-apib-contract.md) for the authoritative range rules and fixtures.
+Directive labels, titles, and attributes remain source-owned in this GA release. Descriptions after members under a parameter's `Members` or `Values` list also remain source-owned; named enum descriptions under Data Structures can be translated. Read the [frozen API Blueprint contract](https://github.com/BWV-Dev/bwv-workflows-recipes/blob/14378e4f8245bf011fae311eb62edbc78aa79f40/docs/v2-apib-contract.md) for the authoritative range rules and fixtures.
 
 A prose line may be followed by physical lines that contain only `<br>`, `<br/>`, or `<br />`, with optional indentation. V2 accepts that shape, hides those protected lines from the model, and reproduces their exact spelling, indentation, EOL, position, and count. Adding, removing, respelling, or moving one fails the structural invariant.
 
