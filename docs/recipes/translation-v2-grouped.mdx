@@ -1,7 +1,7 @@
 ---
-title: translation/v2/grouped (beta)
+title: translation/v2/grouped
 sidebar_position: 4
-description: Opt in to deterministic, cache-miss-only Japanese-to-Vietnamese translation v2.
+description: Translate Japanese Markdown and API Blueprint with deterministic assembly and cache-miss-only model work.
 slug: /recipes/translation-v2-grouped
 ---
 
@@ -9,32 +9,31 @@ import { RecipeInputs } from "@site/src/components/GeneratedReference";
 
 👤 Responsible: Project Leader
 
-Use this beta workflow to translate Japanese Markdown into Vietnamese while keeping Markdown structure under deterministic control. V2 sends only cache misses to the model. Trusted scripts then assemble the `.vi.md`, write its native-v2 `.vi.json` cache, rewrite local document links, and prove the exact files that may be published.
+Use this GA workflow to translate Japanese Markdown and API Blueprint into Vietnamese while keeping document structure under deterministic control. V2 sends only cache misses to the model. Trusted scripts assemble the translated document and native-v2 cache, rewrite local document links, and prove the exact files that may be published.
 
-:::caution Beta opt-in
-Translation v2 is an explicit beta. It has no v1-to-v2 migration path. Start it on a new translation tree, or use [translation/v2/backfill](./translation-v2-backfill) for Japanese documents that do not already have v1 output.
-:::
+Use [translation/v2/backfill](./translation-v2-backfill) for source documents that do not have output yet. If the output tree already belongs to `translation/v1`, follow the model-free [v1 to v2 migration guide](./translation-v2-migration). Translation v1 remains supported; migrate only when your repository is ready for the v2 cutover.
 
 ## What v2 creates
 
-One Japanese document produces a pair next to each other below `outputRoot`:
+One Japanese document produces a translation/cache pair below `outputRoot`:
 
-| Japanese source               | Reviewed translation                | Native-v2 cache                       |
-| ----------------------------- | ----------------------------------- | ------------------------------------- |
-| `docs/specs/account/login.md` | `docs_vn/specs/account/login.vi.md` | `docs_vn/specs/account/login.vi.json` |
+| Japanese source               | Reviewed translation                | Native-v2 cache                         |
+| ----------------------------- | ----------------------------------- | --------------------------------------- |
+| `docs/specs/account/login.md` | `docs_vn/specs/account/login.vi.md` | `docs_vn/specs/account/login.vi.json`   |
+| `docs/specs/api/orders.apib`  | `docs_vn/specs/api/orders.vi.apib`  | `docs_vn/specs/api/orders.vi.apib.json` |
 
-The `.vi.json` file records schema version 2, the source path and commit, and the Japanese/Vietnamese wording pairs used for deterministic cache hits. Do not edit that cache to review prose. Edit the `.vi.md`; the recipe synchronizes the matching cache entries.
+Same-stem sources such as `guide.md` and `guide.apib` are independent and produce four separate files. Each JSON file records schema version 2, the source path and commit, and the Japanese/Vietnamese wording pairs used for deterministic cache hits. Do not edit a cache to review prose. Edit the matching `.vi.md` or `.vi.apib`; the recipe synchronizes cache-only wording changes.
 
 Compared with v1, the model does not write the final Markdown structure. It translates prepared wording segments only. The recipe preserves and checks headings, lists, tables, code, inline markup, link destinations, HTML destinations, and reference identifiers before publication.
 
 ## Prerequisites
 
-- Keep Japanese Markdown below one repository-relative folder, such as `docs/specs`.
+- Keep Japanese Markdown and API Blueprint below one repository-relative folder, such as `docs/specs`.
 - Choose a separate mirrored output folder, such as `docs_vn/specs`.
 - Add a Markdown glossary with project terminology and translation rules.
 - Use a sync branch and merge it into `syncBase` through a pull request.
 - Protect `syncBase` and every branch in `gateBases` with the `cache-in-sync` check.
-- Ask the BWV Workflows maintainers to confirm that your repository runs an engine release that supports translation v2 beta and retained publication fencing.
+- Ask the BWV Workflows maintainers to confirm that your repository runs the translation v2 GA engine baseline and retained publication fencing.
 - Ask the maintainers to make the official recipe repository available to your repository.
 - Keep whitespace out of configured paths and document paths.
 
@@ -49,7 +48,7 @@ version: 1
 
 workflows:
   - name: translate-specs-v2
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/grouped.yml@translation/v2.0.0-beta.4
+    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/grouped@translation/v2.0.0
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -63,11 +62,11 @@ workflows:
       maxRepairs: 1
 ```
 
-The inline `@translation/v2.0.0-beta.4` selects the recipe, skill, and trusted scripts together. Keep this exact prerelease tag, or replace it with the tag's full peeled commit SHA, before using the workflow in production. Do not point production at a branch or an unreviewed moving ref.
+The inline `@translation/v2.0.0` selects the recipe, skill, and trusted scripts together. In production, pin this immutable exact tag or, preferably, its full 40-character commit SHA. A branch or moving tag delegates trust to whoever can move that ref.
 
 ## Use the repository root as the source
 
-Beta 4 also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
+V2 also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
 
 ```yaml
 with:
@@ -79,7 +78,15 @@ with:
     - "README.md"
 ```
 
-At the repository root, the source glob is `**/*.md`. The recipe always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces the native-v2 pair `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+At the repository root, the recipe selects `**/*.md` and `**/*.apib`. It always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; `screen/a.apib` separately produces `docs_vn/screen/a.vi.apib` and `docs_vn/screen/a.vi.apib.json`.
+
+## API Blueprint ownership
+
+V2 translates API names, ordinary prose, group and action display names, and descriptions that the Markdown and Blueprint parsers both identify as wording. It protects metadata, Blueprint keywords, URI templates, methods, status codes, media types, relation and identifier data, names and types, samples/defaults/enum values, named structures and references, code, assets, indentation, and non-prose Markdown syntax byte-for-byte.
+
+Directive labels, titles, and attributes remain source-owned in this GA release. Descriptions after members under a parameter's `Members` or `Values` list also remain source-owned; named enum descriptions under Data Structures can be translated. Read the [frozen API Blueprint contract](https://github.com/BWV-Dev/bwv-workflows-recipes/blob/14378e4f8245bf011fae311eb62edbc78aa79f40/docs/v2-apib-contract.md) for the authoritative range rules and fixtures.
+
+A prose line may be followed by physical lines that contain only `<br>`, `<br/>`, or `<br />`, with optional indentation. V2 accepts that shape, hides those protected lines from the model, and reproduces their exact spelling, indentation, EOL, position, and count. Adding, removing, respelling, or moving one fails the structural invariant.
 
 The recipe owns four workflows:
 
@@ -91,13 +98,13 @@ The recipe owns four workflows:
 ## Review wording and synchronize the cache
 
 1. **Dev & Com:** Open the generated draft pull request.
-2. **Dev & Com:** Edit Vietnamese wording directly in the `.vi.md` files. Push the edit to the existing translation branch.
-3. **Dev & Com:** Wait for `sync-reviewed-cache`. A valid wording edit produces a bot commit that changes the matching `.vi.json` file only.
+2. **Dev & Com:** Edit Vietnamese wording directly in the `.vi.md` or `.vi.apib` files. Push the edit to the existing translation branch.
+3. **Dev & Com:** Wait for `sync-reviewed-cache`. A valid wording edit produces a cache-only bot commit that changes the matching `.vi.json` or `.vi.apib.json` file.
 4. **Dev & Com:** Wait for `cache-in-sync` to pass on the bot commit, then merge the pull request.
 
 The first `cache-in-sync` run after a human wording edit can be red while the cache still contains the earlier wording. The deterministic cache commit should make it green.
 
-Review wording only. Do not add, remove, reorder, or change the level of headings; do not change list, table, quote, directive, or block structure; and do not edit link targets, code, IDs, or protected HTML attributes. Heading wording may change, but its structural position and level must remain aligned with the Japanese source.
+Review wording only. Do not add, remove, reorder, or change the level of headings; do not change list, table, quote, directive, Blueprint, or block structure; and do not edit link targets, code, IDs, protected HTML attributes, protocol data, identifiers, assets, or standalone hard-break lines. Heading wording may change, but its structural position and level must remain aligned with the Japanese source.
 
 Heading-structure mismatches are refused as `heading-structure`. The recipe also refuses a translated `\>` blockquote-content marker that the source does not have when the blockquote is the innermost owning container. Source-authored escapes remain valid, and list-item prose inside an alert remains wording.
 
@@ -105,7 +112,7 @@ When either check refuses a structural edit, restore the translation and make th
 
 > edit wording only; change structure in the Japanese source
 
-`sync-reviewed-cache` blocks its cache commit when it cannot map the review edit safely. `cache-in-sync` blocks the pull request from merging when an included native-v2 pair is missing, invalid, structurally different, or out of sync.
+`sync-reviewed-cache` blocks its cache commit when it cannot map the review edit safely. Protected edits fail closed and never produce a repair commit. `cache-in-sync` blocks the pull request from merging when an included native-v2 pair is missing, invalid, structurally different, or out of sync.
 
 ## Understand `pending`
 
@@ -133,8 +140,8 @@ Do not hand-edit the cache to bypass the gate. One refused artifact makes the re
 
 | Input              | Meaning                                                                                                                        | Example               |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `sourceRoot`       | Root of the Japanese `.md` source tree; `.` or `./` selects the repository root.                                               | `docs/specs`          |
-| `outputRoot`       | Root folder for mirrored `.vi.md` translations and adjacent `.vi.json` caches.                                                 | `docs_vn/specs`       |
+| `sourceRoot`       | Root of the Japanese `.md` and `.apib` source tree; `.` or `./` selects the repository root.                                   | `docs/specs`          |
+| `outputRoot`       | Root folder for mirrored translations and their extension-specific native-v2 caches.                                           | `docs_vn/specs`       |
 | `glossary`         | Markdown file containing project terms and translation rules.                                                                  | `docs/glossary.md`    |
 | `exclude`          | Repository-relative source globs omitted from grouping, cache checks, sync, and repair. A supplied list replaces the sentinel. | `["docs/archive/**"]` |
 | `syncBase`         | Branch receiving the merged source sync and generated translation pull requests.                                               | `main`                |
@@ -153,29 +160,28 @@ Set `maxRepairs: 0` to keep deterministic validation without asking the same mod
 
 ## Differences from v1 and migration
 
-| Area                 | Translation v1                                                                        | Translation v2 beta                                                                                    |
+| Area                 | Translation v1                                                                        | Translation v2                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | Model scope          | The translation skill writes the translation and cache, then a checker verifies them. | The model receives only prepared cache misses; trusted scripts assemble the final artifacts.           |
 | Reviewer cache sync  | A cache-sync model updates reviewed wording.                                          | A deterministic script maps reviewed wording and updates the cache without a model.                    |
 | Cache                | V1 cache format and checks.                                                           | A strict per-document schema-v2 cache with source metadata and complete structural ownership.          |
 | Publication boundary | Required outputs and the v1 output checker.                                           | Structural proof, complete cache proof, sealed output digests, a publish allowlist, and clean scratch. |
-| Adoption             | Continue using v1 for an existing v1 output tree.                                     | Use a fresh output tree; no v1-to-v2 migration is provided in this beta.                               |
+| Adoption             | V1 remains supported.                                                                 | New trees can start directly; existing reviewed v1 trees use the model-free migration workflow.        |
 
-Do not change the `uses` line of a v1 project and point v2 at the same outputs. V2 rejects v1, sparse, unversioned, damaged, and ambiguous caches rather than guessing how to migrate them. Keep v1 in place until a reviewed migration plan exists.
+Do not change only the `uses` line and point v2 at v1 caches. Follow the [migration runbook](./translation-v2-migration), which proves and converts the complete selected tree in one transaction.
 
-## Known beta limitations
+## GA boundaries
 
-- V2 has no automated migration from v1 output.
-- Per-document model processes in one group share a work directory. Their read and edit permissions are still restricted per item, and all publishable output passes trusted structural gates; stronger worktree isolation is planned after beta.
-- Container and leaf directive fence lines, labels, titles, and attributes remain source-owned structure and are not translated in this beta.
-- Visible identifiers, paths, versions, and dates are wording to the segmenter. Review them carefully because the skill asks the model to retain them, but the gate does not reject every wording change to those values.
-- The beta intentionally fails closed on unsupported Markdown, ambiguous reviewer edits, missing Git history, and non-native caches. Fix the source or restore the pair; do not bypass the gate.
+- Per-document model processes in one group share a work directory. Read and edit permissions remain restricted per item, and every publishable output passes trusted structural gates.
+- Container and leaf directive fence lines, labels, titles, and attributes remain source-owned structure.
+- Visible identifiers, paths, versions, and dates can be ordinary wording. Review them carefully because the translation instructions retain them, but the gate does not reject every wording change to those visible values.
+- V2 fails closed on unsupported source shapes, ambiguous reviewer edits, missing Git history, and damaged or ambiguous caches. Fix the source or restore the pair; do not bypass the gate.
 
 ## Common problems
 
 ### No translation starts after the sync pull request merges
 
-Confirm that the pull request merged from `sourceBranch` into `syncBase`, changed an included `.md` file below `sourceRoot`, and did not match `exclude`.
+Confirm that the pull request merged from `sourceBranch` into `syncBase`, changed an included `.md` or `.apib` file below `sourceRoot`, and did not match `exclude`.
 
 ### Reviewer cache sync creates no commit
 

@@ -1,0 +1,78 @@
+{
+  "path": "recipes/translation/v2/migrate.yml",
+  "inputs": [
+    {
+      "name": "sourceRoot",
+      "type": "path",
+      "required": true,
+      "description": "Repository-relative source root; \".\" or \"./\" selects the repository root."
+    },
+    {
+      "name": "outputRoot",
+      "type": "string",
+      "required": true,
+      "description": "Repository-relative v1/v2 Vietnamese output root."
+    },
+    {
+      "name": "glossary",
+      "type": "path",
+      "required": true,
+      "description": "Glossary path excluded from a repository-root migration scope; no model reads it."
+    },
+    {
+      "name": "exclude",
+      "type": "array",
+      "required": false,
+      "default": [
+        ".git/**"
+      ],
+      "description": "Repository-relative source globs intentionally outside this migration."
+    },
+    {
+      "name": "quarantine",
+      "type": "array",
+      "required": false,
+      "default": [],
+      "description": "Exact source paths explicitly selected by an operator for evidence-preserving quarantine."
+    },
+    {
+      "name": "archiveRoot",
+      "type": "string",
+      "required": false,
+      "default": ".bwv-translation-v2/quarantine",
+      "description": "Excluded archive root for explicitly quarantined legacy pairs."
+    },
+    {
+      "name": "branches",
+      "type": "array",
+      "required": true,
+      "description": "Branches on which an operator may start the migration."
+    },
+    {
+      "name": "branchPrefix",
+      "type": "string",
+      "required": true,
+      "description": "Prefix for the single draft migration pull request branch."
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": false,
+      "default": {
+        "encodeExclude": {
+          "script": "scripts/encode-exclude.mjs"
+        },
+        "migrate": {
+          "script": "scripts/v2/migrate-v1.mjs"
+        },
+        "report": {
+          "script": "scripts/v2/migration-report.mjs"
+        },
+        "allowPublish": {
+          "script": "scripts/v2/check-publish-allowlist.mjs"
+        }
+      },
+      "description": "Trusted deterministic migration transaction, report and M3 publication allowlist."
+    }
+  ]
+}

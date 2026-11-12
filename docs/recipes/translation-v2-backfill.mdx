@@ -1,7 +1,7 @@
 ---
-title: translation/v2/backfill (beta)
+title: translation/v2/backfill
 sidebar_position: 5
-description: Create native-v2 translation pairs for an existing Japanese Markdown backlog.
+description: Create native-v2 translation pairs for an existing Japanese Markdown and API Blueprint backlog.
 slug: /recipes/translation-v2-backfill
 ---
 
@@ -9,12 +9,12 @@ import { RecipeInputs } from "@site/src/components/GeneratedReference";
 
 👤 Responsible: Project Leader
 
-Use this beta workflow to create the first native-v2 Vietnamese pairs for Japanese documents that already exist. A person starts it manually. Each loop pass plans a bounded batch, translates cache misses in parallel, keeps only documents that pass trusted validation, and opens one draft pull request containing those survivors.
+Use this GA workflow to create the first native-v2 Vietnamese pairs for Japanese Markdown and API Blueprint documents that already exist. A person starts it manually. Each loop pass plans a bounded batch, translates cache misses in parallel, keeps only documents that pass trusted validation, and opens one draft pull request containing those survivors.
 
 Use [translation/v2/grouped](./translation-v2-grouped) for later source changes and reviewer cache synchronization. Both recipes use the same native-v2 cache, deterministic assembly, structural proof, link rewriting, sealed publication set, and scratch cleanup.
 
-:::caution Not a v1 migration
-Backfill adopts Japanese documents that do not have native-v2 output. It does not convert or reuse v1 cache entries. Do not run it over a v1 output tree.
+:::caution Choose migration for reviewed v1 output
+Backfill creates output for an untranslated backlog. It does not reuse v1 cache entries or preserve reviewed v1 wording. To convert an existing v1 output tree without a model, use [translation/v2/migrate](./translation-v2-migration).
 :::
 
 ## Prerequisites
@@ -22,10 +22,10 @@ Backfill adopts Japanese documents that do not have native-v2 output. It does no
 - Add and validate [translation/v2/grouped](./translation-v2-grouped) first.
 - Use the same `sourceRoot`, `outputRoot`, `glossary`, `exclude`, and `branchPrefix` in both workflows.
 - Put every branch on which people may start backfill in `branches`.
-- Finish or close an open grouped-v2 translation pull request for the same source set before starting backfill. Pending batches from another workflow are not loaded into this manual run.
+- Finish or close any output pull request that owns the same pairs. The engine's open-output preflight refuses overlapping grouped, repair, migration, or backfill work before planning and again before publication.
 - Keep whitespace out of configured paths and document paths.
 
-Every successful source document produces one `.vi.md` and one `.vi.json` next to each other below `outputRoot`. Excluded documents are not planned, translated, or required by completeness.
+Every successful Markdown source produces `.vi.md` and `.vi.json`; every successful API Blueprint source produces `.vi.apib` and `.vi.apib.json`. Same-stem `.md` and `.apib` sources own four separate files. Excluded documents are not planned, translated, or required by completeness.
 
 ## Add the workflow
 
@@ -36,7 +36,7 @@ version: 1
 
 workflows:
   - name: translation-v2-backfill
-    uses: BWV-Dev/bwv-workflows-recipes/recipes/translation/v2/backfill.yml@translation/v2.0.0-beta.4
+    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/backfill@translation/v2.0.0
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -51,11 +51,11 @@ workflows:
       maxRepairs: 1
 ```
 
-Keep the exact `@translation/v2.0.0-beta.4` prerelease tag, or replace it with its full peeled commit SHA, before production use. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
+In production, pin the immutable exact `@translation/v2.0.0` tag or, preferably, its full 40-character commit SHA. A branch or moving tag delegates trust to whoever can move it. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
 
 ## Use the repository root as the source
 
-Beta 4 also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
+V2 also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
 
 ```yaml
 with:
@@ -67,7 +67,9 @@ with:
     - "README.md"
 ```
 
-At the repository root, the source glob is `**/*.md`. The recipe always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces the native-v2 pair `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; the full repository-relative stem is preserved below `outputRoot`.
+At the repository root, the recipe selects `**/*.md` and `**/*.apib`. It always excludes the `outputRoot` tree, `.bwv/**`, `.github/**`, `.claude/**`, `.bwv-translation-v2/**`, and the glossary, then adds the caller's `exclude` list. For example, `screen/a.md` produces `docs_vn/screen/a.vi.md` and `docs_vn/screen/a.vi.json`; `screen/a.apib` separately produces `docs_vn/screen/a.vi.apib` and `docs_vn/screen/a.vi.apib.json`.
+
+Backfill uses the same API Blueprint ownership and standalone hard-break rules as grouped v2. A prose line may be followed by `<br>`, `<br/>`, or `<br />`-only physical lines. Those lines are hidden from the model and reproduced exactly; adding, removing, respelling, or moving one fails closed. See [translation/v2/grouped](./translation-v2-grouped#api-blueprint-ownership) for the protected-range summary and contract link.
 
 ## Start and follow the backfill
 
@@ -81,9 +83,9 @@ The expanded recipe workflow name is `<caller>/backfill`. Add `on <branch>` when
 
 Each pass recomputes the native-v2 backlog. It skips excluded documents and pairs that already pass strict v2 completeness. It attempts up to `batchSize` documents, with at most `maxParallel` model processes at once.
 
-One failed document does not discard a valid sibling. The trusted selection step restores both output files of every failed document, removes its scratch state, and lets only validated survivors reach assembly and publication. An all-failed pass opens no pull request.
+One ordinary document failure does not discard a valid sibling. The trusted selection step restores both output files of every failed document, removes its scratch state, and lets only validated survivors reach assembly and publication. Infrastructure and cancelled item outcomes stay typed and deferred rather than being attributed to a document. If the whole pass fails because of infrastructure, the run uses infrastructure backoff and opens no pull request. An all-document-failed pass also opens no pull request.
 
-Send every draft batch pull request to Dev & Com. Review wording in `.vi.md`, let `sync-reviewed-cache` update `.vi.json`, and merge only after `cache-in-sync` passes.
+Send every draft batch pull request to Dev & Com. Review wording in `.vi.md` or `.vi.apib`, let `sync-reviewed-cache` make the matching cache-only update, and merge only after `cache-in-sync` passes. Protected edits fail closed and never produce a cache repair commit.
 
 ## When backfill refuses an existing pair
 
@@ -101,8 +103,8 @@ A source changed after its existing v2 translation is `pending`; grouped v2 owns
 
 | Input            | Meaning                                                                                                       | Example               |
 | ---------------- | ------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `sourceRoot`     | Root of the Japanese `.md` source tree; `.` or `./` selects the repository root.                              | `docs/specs`          |
-| `outputRoot`     | Root folder for mirrored native-v2 `.vi.md` and `.vi.json` pairs.                                             | `docs_vn/specs`       |
+| `sourceRoot`     | Root of the Japanese `.md` and `.apib` source tree; `.` or `./` selects the repository root.                  | `docs/specs`          |
+| `outputRoot`     | Root folder for mirrored native-v2 document/cache pairs.                                                      | `docs_vn/specs`       |
 | `glossary`       | Markdown file containing project terms and translation rules.                                                 | `docs/glossary.md`    |
 | `exclude`        | Repository-relative source globs omitted from the v2 adoption backlog. A supplied list replaces the sentinel. | `["docs/archive/**"]` |
 | `branches`       | Branches on which people may start backfill and against which batch pull requests open.                       | `[main]`              |
@@ -117,12 +119,11 @@ A source changed after its existing v2 translation is `pending`; grouped v2 owns
 | `maxIterations`  | Maximum loop passes in one manual run. Defaults to `10`; maximum `100`.                                       | `10`                  |
 | `toolkit`        | Complete replacement for the trusted v2 backfill pipeline. Omit it to use the maintained default.             | Omitted               |
 
-## Known beta limitations
+## GA boundaries
 
-- V1 and unversioned caches are not reusable v2 cache hits. Backfill may perform a full v2 translation only when the legacy state is unambiguous; otherwise it refuses the pair.
-- An infrastructure or service failure inside every parallel item can be reported as ordinary document failure in this beta. Read the item failures before retrying; the loop stops after its no-progress limit.
-- Open batches from the same backfill workflow are loaded before replanning, but an open grouped-v2 translation pull request is not cross-loaded. Finish or close it before backfilling the same source set.
-- A failed document can appear in a later pass. Fix the source, glossary, or service problem instead of relying on repeated random selection.
+- V1 and unversioned caches are not reusable v2 cache hits. Use the migration workflow to preserve reviewed v1 wording; backfill refuses ambiguous legacy state.
+- Open output pull requests are not merged into the backfill worktree. The ownership preflight refuses overlapping work instead of guessing which pull request should publish a pair.
+- A failed document can appear in a later pass. Fix the source, glossary, or document problem instead of relying on repeated random selection.
 
 ## Common problems
 
