@@ -1,0 +1,112 @@
+---
+title: Migrate translation v1 to v2
+sidebar_position: 6
+description: Convert one reviewed v1 output tree to translation v2 without a model, with an all-or-nothing cutover and rollback runbook.
+slug: /recipes/translation-v2-migration
+---
+
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
+👤 Responsible: Project Leader and Dev & Com
+
+Use `translation/v2/migrate` to convert one complete reviewed v1 output tree to native v2. Migration never invokes a model. It reads wording from the reviewed `.vi.md` and `.vi.apib` files, derives new cache keys with the v2 parser, and proves the rebuilt artifacts with the production v2 predicate.
+
+The default policy is all-or-nothing. Planning validates the complete selected scope in scratch. One blocked pair means the transaction writes nothing. Apply uses a journal and rolls back every replacement if a later write fails; sealing re-audits the exact published bytes.
+
+Translation v1 remains supported. The migration does not change, create, or move any `translation/v1` tag.
+
+## Prerequisites
+
+- Pin every v1 translation workflow to its current reviewed version and record the pre-cutover base commit.
+- Merge reviewed v1 output pull requests and wait for their cache sync and gates to pass.
+- Close or finish unreviewed v1 output, reviewer-sync, backfill, and repair pull requests. Wait for active, queued, retrying, and retained runs to drain.
+- Freeze source changes and automation that can write the output tree during the cutover.
+- Use a complete current v1 pair for every included `.md` and `.apib` source. The source, translation footer, and cache provenance must agree.
+- Run the v2 dry run on both formats and resolve every migration-readiness refusal before changing production configuration.
+- Ask the BWV Workflows maintainers to confirm the v2 GA engine baseline and open-output ownership fencing.
+
+## Configure the cutover
+
+Create a configuration pull request that removes the v1 grouped/backfill workflows and adds v2 grouped plus the temporary migration workflow. Keep the same source, output, glossary, and exclusion scope. Use a new `branchPrefix` so an old v1 follow-up cannot be mistaken for a v2 reviewer branch.
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+
+workflows:
+  - name: translate-v2
+    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/grouped@translation/v2.0.0
+    with:
+      sourceRoot: .
+      outputRoot: translated
+      glossary: glossary.md
+      exclude: ["archive/**"]
+      syncBase: main
+      sourceBranch: source-sync
+      gateBases: [main, source-sync]
+      branchPrefix: bwv/translation-v2
+
+  - name: migrate-translation-v2
+    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/migrate@translation/v2.0.0
+    with:
+      sourceRoot: .
+      outputRoot: translated
+      glossary: glossary.md
+      exclude: ["archive/**"]
+      branches: [main]
+      branchPrefix: bwv/translation-v2
+```
+
+In production, replace the example refs with the immutable exact `translation/v2.0.0` tag or, preferably, its full 40-character commit SHA. A branch or moving tag delegates trust to whoever can move that ref. Use the same ref for grouped, backfill, and migrate.
+
+Merge the configuration pull request while the freeze remains active. Then run:
+
+```text
+/bwv run migrate-translation-v2/migrate
+```
+
+Review the single draft migration pull request. Its report distinguishes cache-only conversions, deterministic canonicalization, no-ops, quarantined pairs, and blocked pairs. Merge only when `blocked: 0` and the v2 `cache-in-sync` gate passes. Finish by removing the temporary migrate workflow and adding v2 backfill only for genuinely untranslated sources.
+
+## Understand blocked pairs
+
+The report uses stable typed reasons. Fix the evidence or source condition, then rerun the complete migration; do not delete evidence merely to make planning continue.
+
+| Reason                        | What to do                                                                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `non-regular-input`           | Replace symlinks, special files, or unsupported hard links with reviewed regular files.                                       |
+| `invalid-utf8`                | Re-encode the named source, translation, or cache as strict UTF-8 and review the byte change.                                 |
+| `utf8-bom`                    | Remove the UTF-8 BOM, then rerun the v1 gate before migration.                                                                |
+| `provenance-mismatch`         | Restore matching footer/cache source identity and the exact current source commit; repair the v1 cache if needed.             |
+| `pending-pair`                | Finish the pending v1 translation and cache synchronization, or keep that source outside the cutover.                         |
+| `orphan-output`               | Restore the uniquely owned source/pair or remove the reviewed orphan in a separate pull request.                              |
+| `duplicate-ownership`         | Resolve the duplicate or cross-wired artifact paths so one source owns each pair.                                             |
+| `translation-invariant`       | Restore protected Markdown or API Blueprint structure in the reviewed translation; keep wording edits only.                   |
+| `apib-skeleton-mismatch`      | Restore the Blueprint declarations, references, protocol data, assets, and other protected structure.                         |
+| `ambiguous-wording`           | Edit the v1 translation/cache so each source wording key has one reviewed Vietnamese value.                                   |
+| `canonical-assembly-invalid`  | Fix the v1 artifact until the v2 parser can rebuild a complete canonical pair.                                                |
+| `legacy-apib-cache-ambiguous` | Restore unambiguous footer and cache metadata, especially for same-stem Markdown/APIB sources; do not rename by suffix alone. |
+| `legacy-apib-cache-orphan`    | Restore the API Blueprint pair that owns the legacy cache or remove the orphan in a separate reviewed change.                 |
+| `stale-plan`                  | Stop concurrent writers, restore the recorded base, and rerun planning from a clean worktree.                                 |
+| `apply-tamper`                | Discard the failed attempt, investigate the staged-byte change, and rerun from the unchanged base.                            |
+| `seal-tamper`                 | Restore the planned output bytes and rerun after all writers are stopped.                                                     |
+| `ambiguous-edit`              | Simplify or correct the reviewed wording edit so it maps one-to-one to v2 segments.                                           |
+
+For a small structural defect, prefer repairing the reviewed v1 translation and cache, then migrate again. If the owner explicitly accepts losing continuity for one pair, list that exact repository-relative source path in `quarantine`. Migration moves its legacy evidence to the excluded `archiveRoot`, reports the move, and continues. It never chooses quarantine itself and never starts backfill; review the archived paths and later let v2 backfill create a new pair.
+
+The [frozen migration contract](https://github.com/BWV-Dev/bwv-workflows-recipes/blob/translation/v2.0.0/docs/v2-migration-contract.md) is the source of truth for result codes, provenance, transaction recovery, and quarantine behavior.
+
+## Roll back to v1
+
+Keep the source and automation freeze in place. Do not make a config-only revert while schema-v2 caches are active.
+
+1. **Project Leader:** Create one reviewed rollback pull request from the recorded pre-cutover commit. Revert the configuration pin from `translation/v2` to the exact prior `translation/v1` pin and restore the entire translated output tree from that same commit.
+2. **Dev & Com:** Confirm that every already published v2 translation/cache pair is removed from the active tree or replaced by its recorded v1 pair. The v2 files remain recoverable in Git history; rollback does not convert v2 caches back to v1.
+3. **Project Leader:** Merge the rollback pull request and run the v1 predicate audit against the exact restored base.
+4. **Project Leader:** Remove the freeze only after the v1 audit is green and no v2 writer remains active or retained.
+
+Nothing in this runbook changes or moves the immutable v1 release tag or the floating `translation/v1` tag. It changes only your repository's configuration pin and output tree.
+
+After new v2 source translations or reviewer edits have been published, automatic rollback is no longer lossless. Export or cherry-pick the reviewed wording, restore the v1 tree from the cutover commit, and synchronize it through v1, or roll forward with a v2 fix. There is no reverse v2-to-v1 cache converter.
+
+## Generated input reference
+
+<RecipeInputs recipe="translation/v2/migrate" />

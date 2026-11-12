@@ -37,6 +37,7 @@ const sidebars: SidebarsConfig = {
             "recipes/translation-backfill",
             "recipes/translation-v2-grouped",
             "recipes/translation-v2-backfill",
+            "recipes/translation-v2-migration",
             "recipes/translation-sync-cache-completeness",
             "recipes/testcase-batch",
             "recipes/common-command-fanout",
