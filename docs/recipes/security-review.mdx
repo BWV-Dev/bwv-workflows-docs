@@ -1,0 +1,142 @@
+---
+title: security-review
+sidebar_position: 7
+description: Review one pull request for high-confidence security vulnerabilities when someone asks, and post the result as a separate comment.
+slug: /recipes/security-review
+---
+
+import { RecipeInputs } from "@site/src/components/GeneratedReference";
+
+👤 Responsible: Project Leader
+
+Use this step recipe when a pull request needs an on-demand security review. Someone with repository write access comments `/bwv run security-review` on an open pull request. The recipe reviews the changes that the pull request adds to its base branch, filters out likely false positives, and posts one result comment.
+
+The review is advisory. It never blocks a merge, never publishes files, and never fails the run because a finding remains. A failed step still fails the run in the usual way.
+
+The recipe follows the open-source `anthropics/claude-code-security-review` action at a pinned upstream revision. The recipe's `UPSTREAM.md` file records the pinned revision, how each upstream part maps to the recipe, and every deviation.
+
+:::note
+This is a step recipe. The calling workflow owns the trigger, `pullRequestBase`, and the `onSuccess.comment` that posts the result.
+:::
+
+## What users see on the pull request
+
+Dev & Com ask for the review in a comment on an open pull request:
+
+```text
+/bwv run security-review
+```
+
+BWV Workflows then reports the run in two places:
+
+- The usual `bwv/security-review` check run and status comment show the steps. They do not contain the findings. See [the check run and status comment](../pull-requests/read-checks-status).
+- When every step succeeds, a separate **Security review** comment appears. It opens with the reviewed range and the head commit, then a filtering summary with the original, excluded, and kept counts. Each kept finding appears in an overview table and as its own block with severity, category, location, description, exploit scenario, recommendation, and confidence.
+
+Every successful run posts a new result comment. BWV Workflows never edits an earlier one, so the comment for an older commit stays as a record. A failed run posts no result comment; read its status comment and check run instead.
+
+If one per-finding filter step fails, BWV Workflows keeps that finding and notes the warning in the filtering summary. The comment is cut at a fixed size and says how many findings it omitted.
+
+To run the review again after pushing a fix, comment `/bwv run security-review` again. Use [Retry](../pull-requests/retry) when the run failed.
+
+## Prerequisites
+
+Prepare the target repository before adding the workflow:
+
+- Merge the workflow into the base branch of the pull requests you want to review. BWV Workflows reads `.bwv/workflows.yml` from the base branch, so a pull request cannot add or change its own review.
+- Use pull requests from branches in the same repository. A manual run is refused for a fork.
+- Keep optional instruction files on the base branch. The recipe reads them from the trusted base commit, not from the pull request, so the author cannot rewrite the policy that reviews the change.
+- Ask the BWV Workflows maintainers to make the official recipe repository available to your repository.
+
+## Add the workflow
+
+Create `.bwv/workflows.yml` on the base branch:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+
+workflows:
+  - name: security-review
+    on:
+      manual:
+        pull_request:
+          base: [main]
+    pullRequestBase: true
+    onSuccess:
+      comment: ${{ steps.review_report.output.markdown }}
+    steps:
+      - id: review
+        uses: BWV-Dev/bwv-workflows-recipes/recipes/security-review/v1/review.yml@security-review/v1
+        with:
+          model: sonnet
+          excludeDirectories: vendor,generated
+          customSecurityScanInstructions: .bwv/security-review/custom-scan.txt
+          falsePositiveFilteringInstructions: .bwv/security-review/filtering.txt
+          maxDiffBytes: 1048576
+```
+
+Keep these three parts of the calling workflow:
+
+- `on.manual.pull_request` makes the workflow run only on request. See [Manual pull request triggers](../configuring/triggers#manual-pull-request-triggers).
+- `pullRequestBase: true` gives the recipe the base commit as `refs/bwv/base`. See [Compare with the pull request base](../configuring/passing-data#compare-with-the-pull-request-base).
+- `onSuccess.comment` posts the report. The recipe step has `id: review`, so its final step is `review_report`; use that exact expression. Without this setting, the review runs but nothing posts the result.
+
+Remove any `with` input you do not need. Every input has a default.
+
+:::tip
+Pin the immutable release tag `@security-review/v1.0.0`, or its full 40-character commit SHA, in production. `@security-review/v1` can move without a change in your repository.
+:::
+
+## Generated input reference
+
+<RecipeInputs recipe="security-review/v1/review" />
+
+## Inputs explained
+
+| Input                                | Meaning                                                                                                                                                          | Example                                |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `model`                              | Claude model alias used for the audit and for every per-finding filter. Defaults to `sonnet`; set `opus` for the model that the upstream action uses by default. | `sonnet`                               |
+| `excludeDirectories`                 | Comma-separated repository directories to leave out of the review and out of the final findings. Use letters, digits, `_`, `.`, `/`, `,`, and `-` only.          | `vendor,generated`                     |
+| `customSecurityScanInstructions`     | Repository-relative text file with extra audit categories. Read from the base commit. A missing file is ignored.                                                 | `.bwv/security-review/custom-scan.txt` |
+| `falsePositiveFilteringInstructions` | Repository-relative text file that replaces the default per-finding filter policy. Read from the base commit. A missing file keeps the default.                  | `.bwv/security-review/filtering.txt`   |
+| `maxDiffBytes`                       | Largest filtered diff that the audit receives in its prompt. A bigger diff makes the audit run without it. Defaults to 1 MiB, the most one prompt file can hold. | `1048576`                              |
+| `toolkit`                            | Complete replacement for the default review runtime. Omit it to use the maintained default.                                                                      | Omitted                                |
+
+## What the review does
+
+The recipe runs these stages in order:
+
+1. **Prepare.** It reads the pull request's title, description, author, and change counts, and computes the filtered diff of `refs/bwv/base...HEAD`. It leaves out generated files and any `excludeDirectories`.
+2. **Audit.** Claude reviews the diff for high-confidence vulnerabilities. It can only use `Read`, `Grep`, and `Glob`; it cannot edit files, run commands, or reach the web.
+3. **Hard exclusions.** Fixed upstream rules drop finding types that are not worth reporting.
+4. **Filter.** Claude judges each remaining finding in its own tool-free process and drops likely false positives.
+5. **Report.** The recipe applies the final directory exclusions and renders the Markdown comment.
+
+The audit first receives the complete filtered diff. If the diff is larger than `maxDiffBytes`, the prompt would exceed the one-prompt-file limit, or Claude answers that the prompt is too long, the audit runs without the diff instead. It then reads one filtered diff for each changed file from a scratch folder.
+
+Review text written by the model passes through one sanitizer before it is posted, so it cannot mention users, reference issues, add links, embed HTML, or open headings, lists, or tables. Secrets are scrubbed and the comment is cut at 30,000 characters.
+
+:::caution
+A pull request's title, description, and changed files are written by its author. The review treats them as untrusted input, but the model can still misjudge them. Use the result as one input to a human review, not as approval.
+:::
+
+## Common problems
+
+### `/bwv run security-review` gets no review
+
+Confirm that the workflow exists on the pull request's base branch, that its `on.manual.pull_request.base` list matches that branch, and that the pull request is open and comes from the same repository. BWV Workflows replies in the conversation with the accepted bases when the base does not match.
+
+### The run passed but no result comment appeared
+
+Check that `onSuccess.comment` is set exactly as in the example. A recipe step that has no matching expression posts nothing. A failed run never posts the result comment.
+
+### The run failed before the audit
+
+Open the failed `bwv/security-review` check and read the first red row. A `pullRequestBase: true` run fails when the pull request head and base share no history. Use [Retry](../pull-requests/retry) after fixing the cause.
+
+### Findings appear in a directory you do not want reviewed
+
+Add the directory to `excludeDirectories` on the base branch. It applies to the next run only.
+
+### A custom instruction file is ignored
+
+Merge the file into the base branch first. The recipe reads it from the base commit, so a file added only on the pull request is not used.

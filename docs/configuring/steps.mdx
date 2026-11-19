@@ -20,7 +20,7 @@ A `claude` step must set exactly one task source:
 | `skill`      | `.claude/skills/<name>/SKILL.md`.                        |
 | `command`    | `.claude/commands/<name>.md`, or a user-invocable skill. |
 
-Only `skill` and `command` accept `args`. The named file must already exist on the trusted branch that supplies the workflow.
+Only `skill` and `command` accept `args`. A `skill` or `command` file must already exist on the trusted branch that supplies the workflow. A `promptFile` is different: it is read from the working tree, as described below.
 
 ```yaml title=".bwv/workflows.yml"
 - name: Update the generated index
@@ -36,6 +36,28 @@ Put `timeoutMinutes` on the step. Put `model`, `effort`, `maxTurns`, `permission
 Keep `allowedTools` narrow. A broad shell permission can reach paths that a file-edit denial was meant to protect, so grant only specific rules such as `Bash(git diff:*)`.
 
 `permissionDenials` sits beside `claude` and defaults to `fail`. A denied tool then fails the step even when the Claude CLI exits successfully. Set it to `warn` only when a later deterministic gate proves the required output: the tool stays blocked, the step row shows a warning, and an otherwise failed Claude result still fails.
+
+### Read the prompt from a file
+
+Use `promptFile` when an earlier step prepares the prompt, or when it is too long to keep in the workflow:
+
+```yaml title=".bwv/workflows.yml"
+- id: prepare
+  name: Prepare the review prompt
+  shell: node scripts/write-review-prompt.mjs
+- name: Review the changes
+  claude:
+    promptFile: .bwv-scratch/review-prompt.txt
+    allowedTools: [Read, Grep, Glob]
+```
+
+BWV Workflows opens the file when the Claude invocation starts, so an earlier step may create it. The file is sent to Claude on standard input and may be up to 1 MiB.
+
+The path must be relative to the checked-out worktree. It may contain runtime expressions, and `fanout: process` resolves it separately for each item. The step fails when the path is absolute, leaves the worktree, passes through a symbolic link, names something other than a regular file, or cannot be read.
+
+:::caution A prompt file is working-tree content
+On a pull request, the head branch controls the file's contents, even though the base branch controls the path. Treat it like any changed file that can try to steer the model, and keep `allowedTools` narrow.
+:::
 
 ## Verify and repair Claude output
 
@@ -97,7 +119,7 @@ BWV Workflows resolves that script at the recipe's trusted commit and materializ
 
 For `fanout: process`, a definitive item failure immediately stops running siblings and leaves queued items unstarted when `continueOnError` is `false`. This includes a denied tool under `permissionDenials: fail`, a failed Claude result, a failed final verifier, or a non-recoverable infrastructure failure. The step reports the causal item and distinguishes stopped items from items that never started. Set `continueOnError: true` only when every item should run and a later step safely handles incomplete results.
 
-`${{ item }}` and `${{ index }}` in `prompt`, `args`, `verify.shell`, `allowedTools`, and `disallowedTools` resolve separately for each process, including same-session repairs. A subagent fan-out rejects item-dependent tool rules because all items share one Claude process. Invocation-wide fields such as `skill`, `command`, recipe `run`, `model`, `effort`, `permissionMode`, `maxTurns`, `maxBudgetUsd`, `appendSystemPrompt`, and `outputSchema` are step-level and reject item-dependent expressions in either fan-out mode.
+`${{ item }}` and `${{ index }}` in `prompt`, `promptFile`, `args`, `verify.shell`, `allowedTools`, and `disallowedTools` resolve separately for each process, including same-session repairs. A subagent fan-out rejects item-dependent tool rules because all items share one Claude process. Invocation-wide fields such as `skill`, `command`, recipe `run`, `model`, `effort`, `permissionMode`, `maxTurns`, `maxBudgetUsd`, `appendSystemPrompt`, and `outputSchema` are step-level and reject item-dependent expressions in either fan-out mode.
 
 ## Run a shell command safely
 

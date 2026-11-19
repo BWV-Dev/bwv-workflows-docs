@@ -1,0 +1,51 @@
+{
+  "path": "recipes/security-review/v1/review.yml",
+  "inputs": [
+    {
+      "name": "model",
+      "type": "string",
+      "required": false,
+      "default": "sonnet",
+      "description": "Claude model alias used for both the audit and per-finding filter."
+    },
+    {
+      "name": "excludeDirectories",
+      "type": "string",
+      "required": false,
+      "default": "",
+      "description": "Comma-separated repository directories excluded with upstream prefix/segment semantics."
+    },
+    {
+      "name": "customSecurityScanInstructions",
+      "type": "string",
+      "required": false,
+      "default": "",
+      "description": "Optional repository-relative file containing extra audit categories."
+    },
+    {
+      "name": "falsePositiveFilteringInstructions",
+      "type": "string",
+      "required": false,
+      "default": "",
+      "description": "Optional repository-relative file replacing the default per-finding filter policy."
+    },
+    {
+      "name": "maxDiffBytes",
+      "type": "number",
+      "required": false,
+      "default": 1048576,
+      "description": "Optional filtered-diff limit; defaults to the engine prompt-file cap."
+    },
+    {
+      "name": "toolkit",
+      "type": "toolkit",
+      "required": false,
+      "default": {
+        "runtime": {
+          "script": "recipes/security-review/v1/runtime/security-review.mjs"
+        }
+      },
+      "description": "Trusted deterministic preparation, filtering, collection, and report runtime."
+    }
+  ]
+}

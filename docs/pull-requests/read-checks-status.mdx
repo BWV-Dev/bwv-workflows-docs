@@ -87,6 +87,10 @@ Use the latest `bwv/…` check on the current commit. An older check describes a
 The bot does not offer the box while work is running, while an automatic retry is pending, after success, or when **Recreate** is the correct action. A push-triggered run also has no pull request comment to hold a box.
 :::
 
+:::note Why is there a second comment from BWV Workflows?
+Some workflows post their result as a separate comment when they succeed, for example the [security review](/recipes/security-review). Each successful run adds a new comment, and earlier ones stay as a record. The status comment keeps showing the steps and the state.
+:::
+
 :::note Why is there no status comment?
 Some repositories show the result only as a check run. Open the latest `bwv/<workflow>` check; it still contains the step table and result.
 :::

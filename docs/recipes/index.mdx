@@ -1,7 +1,7 @@
 ---
 title: Recipe catalog
 sidebar_position: 1
-description: Choose a maintained BWV Workflows recipe for translation, test cases, or fan-out work.
+description: Choose a maintained BWV Workflows recipe for translation, test cases, security review, or fan-out work.
 slug: /recipes
 ---
 
@@ -19,6 +19,7 @@ Use an official recipe when its trigger and output match the process in your rep
 | [translation/sync-cache-completeness](/recipes/translation-sync-cache-completeness) | Finds reviewer edits, updates only the affected translation caches, and verifies that every edit was recorded.                           | The calling workflow decides. `translation/grouped` calls it after a push to a translation branch.             | BWV Workflows verifies the cache; Dev & Com continue reviewing the translation pull request. |
 | [testcase/batch](/recipes/testcase-batch)                                           | Generates test cases from reviewed translations in resumable batches and opens one draft pull request per batch.                         | A push to a configured branch that changes a `.vi.md` file below the source root.                              | Dev & Com review each generated test-case pull request.                                      |
 | [common/command-fanout](/recipes/common-command-fanout)                             | Runs one project skill or command for every item, with separate processes and bounded parallelism.                                       | The calling workflow decides.                                                                                  | The reviewers of the calling workflow review its output.                                     |
+| [security-review](/recipes/security-review)                                         | Reviews one pull request for high-confidence security vulnerabilities and posts an advisory result as a separate comment.                | A person comments `/bwv run security-review` on an open pull request.                                          | Dev & Com read the advisory comment. It never blocks a merge.                                |
 
 ## Choose a recipe
 
@@ -27,7 +28,8 @@ Use an official recipe when its trigger and output match the process in your rep
 3. **Project Leader:** Choose `translation/v2/grouped` for deterministic GA translation. Add `translation/v2/backfill` for Japanese documents that have no output yet. Use `translation/v2/migrate` for an existing reviewed v1 output tree.
 4. **Project Leader:** Choose `testcase/batch` when reviewed translations are the source for generated test cases.
 5. **Project Leader:** Choose `common/command-fanout` inside a project recipe when the same project command must run independently for several items.
-6. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and pin the immutable exact release tag or, preferably for production, its full 40-character commit SHA.
+6. **Project Leader:** Choose `security-review` when reviewers want an on-demand, advisory security review of a pull request.
+7. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and pin the immutable exact release tag or, preferably for production, its full 40-character commit SHA.
 
 :::tip
 Start with each recipe's default toolkit. Override a toolkit only when your repository already has skills or scripts that meet the complete toolkit contract.

@@ -41,6 +41,7 @@ const sidebars: SidebarsConfig = {
             "recipes/translation-sync-cache-completeness",
             "recipes/testcase-batch",
             "recipes/common-command-fanout",
+            "recipes/security-review",
           ],
         },
         "configuring/translating-after-merge",
