@@ -85,9 +85,43 @@ Omit `on <branch>` only when the workflow accepts exactly one literal branch nam
 
 BWV Workflows reads `.bwv/workflows.yml` from the requested branch tip. It refuses an unknown workflow, a workflow without `on.manual`, or a branch that does not match the configured list.
 
+### Manual pull request triggers
+
+Use `on.manual.pull_request` when a workflow should run on a pull request only when someone asks for it. Automatic pull request events never start it:
+
+```yaml title=".bwv/workflows.yml"
+version: 1
+workflows:
+  - name: security-review
+    on:
+      manual:
+        pull_request:
+          base: [main, "release/*"]
+    pullRequestBase: true
+    steps:
+      - name: Review the changes
+        shell: node scripts/review-changes.mjs
+```
+
+`base` is required and takes a list of branch globs. `on.manual` needs `branches`, `pull_request`, or both.
+
+Start it from the open pull request, without `on <branch>`:
+
+```text
+/bwv run security-review
+```
+
+BWV Workflows reads `.bwv/workflows.yml`, recipes, and `.claude/` from the tip of the pull request's base branch. Only the head supplies the content to work on, so the pull request cannot change the workflow that runs on it. The run has the same `pr.*` expressions as an automatic pull request run.
+
+The request is refused when the pull request is closed, comes from a fork, or targets a base branch that `base` does not list. BWV Workflows replies in the conversation with the accepted bases.
+
+The run reports like any other pull request workflow: one `bwv/<workflow>` check run and one status comment with the usual **Retry** box. It does not create a manual-run hub. Repeated `/bwv run` and later `/bwv retry <workflow>` requests are sequenced like other pull request retries. Use `on <branch>` only for a workflow that declares `on.manual.branches`. A `loop` workflow needs `on.manual.branches`.
+
+Add `pullRequestBase: true` to the workflow when a step needs the exact changes that the pull request adds. See [Compare with the pull request base](./passing-data#compare-with-the-pull-request-base).
+
 ### Follow the hub
 
-The conversation keeps one manual-run hub comment for each workflow and branch. A later run, retry, or batch recreation with the same identity updates that comment rather than creating a second hub.
+A branch run keeps one manual-run hub comment in the conversation for each workflow and branch. A later run, retry, or batch recreation with the same identity updates that comment rather than creating a second hub.
 
 The request table records the command, requester, state, and check run. A loop workflow also shows every pass and attempt, its batch branch, live pull request state, result, summary, and check. Earlier requests remain in folded history.
 
@@ -120,4 +154,6 @@ At least one trigger is required. Each event is matched only against its own tri
 
 For a pull request run, the base branch supplies `.bwv/workflows.yml`, `.claude/`, and local recipes. A workflow change in the pull request does not control its own run.
 
-For push and manual runs, the target branch supplies both configuration and content. Merge the trigger configuration into that branch before testing it.
+For push and manual branch runs, the target branch supplies both configuration and content. Merge the trigger configuration into that branch before testing it.
+
+For a manual pull request run, the base branch supplies the configuration and the pull request head supplies the content. Merge the workflow into the base branch before asking for a run.

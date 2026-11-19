@@ -460,13 +460,13 @@
                                     ]
                                   },
                                   "manual": {
-                                    "description": "Configures branches on which the workflow may be started manually.",
+                                    "description": "Configures branch or pull request targets on which the workflow may be started manually.",
                                     "anyOf": [
                                       {
                                         "type": "object",
                                         "properties": {
                                           "branches": {
-                                            "description": "Allows manual runs on branches matching these globs.",
+                                            "description": "Allows manual branch runs on branches matching these globs.",
                                             "anyOf": [
                                               {
                                                 "minItems": 1,
@@ -479,11 +479,40 @@
                                                 "$ref": "#/$defs/recipePlaceholder"
                                               }
                                             ]
+                                          },
+                                          "pull_request": {
+                                            "description": "Allows manual pull request runs whose base branch matches.",
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "base": {
+                                                    "description": "Matches the requested pull request base branch against these globs.",
+                                                    "anyOf": [
+                                                      {
+                                                        "minItems": 1,
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      {
+                                                        "$ref": "#/$defs/recipePlaceholder"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "base"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "$ref": "#/$defs/recipePlaceholder"
+                                              }
+                                            ]
                                           }
                                         },
-                                        "required": [
-                                          "branches"
-                                        ],
                                         "additionalProperties": false
                                       },
                                       {
@@ -1062,6 +1091,18 @@
                               }
                             ]
                           },
+                          "pullRequestBase": {
+                            "description": "Fetches the trusted pull request base as refs/bwv/base with merge-base history.",
+                            "default": false,
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "$ref": "#/$defs/recipePlaceholder"
+                              }
+                            ]
+                          },
                           "context": {
                             "description": "Unpacks additional git-submodule repositories into the worktree.",
                             "default": [],
@@ -1124,19 +1165,27 @@
                             ]
                           },
                           "statusComment": {
-                            "description": "Maintains one pull request status comment as steps finish; defaults to true.",
+                            "description": "Maintains one pull request status comment as steps finish; a string appends its rendered result when the run ends.",
                             "default": true,
                             "anyOf": [
                               {
-                                "type": "boolean"
+                                "anyOf": [
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                ]
                               },
                               {
-                                "$ref": "#/$defs/recipePlaceholder"
+                                "$ref": "#/$defs/recipeInterpolation"
                               }
                             ]
                           },
                           "loop": {
-                            "description": "Repeats all steps while its condition is true and requires on.push or on.manual.",
+                            "description": "Repeats all steps while its condition is true and requires on.push or on.manual.branches.",
                             "anyOf": [
                               {
                                 "type": "object",

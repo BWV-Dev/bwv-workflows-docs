@@ -30,7 +30,7 @@ A matching GitHub event starts the run:
 - A pull request is opened, updated, reopened, or merged, when that action is
   configured.
 - A push reaches a configured branch.
-- A person with repository write access comments `/bwv run <workflow> [on <branch>]` for a workflow that declares `on.manual`.
+- A person with repository write access comments `/bwv run <workflow> [on <branch>]` for a workflow that declares `on.manual`. On an open pull request, `/bwv run <workflow>` starts a workflow that declares `on.manual.pull_request`.
 
 BWV Workflows reads `.bwv/workflows.yml`, matches the branch and paths, and
 selects the workflows that should run.
@@ -53,6 +53,8 @@ Leader which trusted branch supplied the invalid configuration.
 For a pull request run, BWV Workflows posts one status comment and edits it as
 steps finish. This keeps the current state in one place. A Project Leader can
 turn this comment off with `statusComment: false`; the check run still exists.
+A workflow can also add its result to this comment with a `statusComment`
+template, or post a separate result comment with `onSuccess.comment`.
 
 A push run normally reports only through its check run because there is no
 source pull request. A manual run keeps a hub comment in the conversation where

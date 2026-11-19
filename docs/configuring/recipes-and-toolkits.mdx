@@ -95,8 +95,18 @@ reads that reference from `recipes/<family>/<name>.yml` in the source
 repository at `<ref>`. A repository that authors or hosts shared recipes must
 therefore keep them under its `recipes/` directory.
 
+A recipe may also be named by its full file path, ending in `.yml`. The
+security review recipe is one:
+
+```text
+BWV-Dev/bwv-workflows-recipes/recipes/security-review/v1/review.yml@security-review/v1
+```
+
+Copy the line from the recipe's catalog page rather than building it.
+
 Each recipe family is versioned independently. Use `@translation/v1` for
-stable translation recipes and `@common/v1` for stable common recipes. The
+stable translation recipes, `@common/v1` for stable common recipes, and
+`@security-review/v1` for the security review recipe. The
 `testcase` family is still alpha, so pin its exact prerelease, currently
 `@testcase/v1.0.0-alpha.1`, instead of expecting a moving major tag.
 

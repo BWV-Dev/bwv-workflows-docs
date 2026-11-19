@@ -178,21 +178,36 @@
                     "additionalProperties": false
                   },
                   "manual": {
-                    "description": "Configures branches on which the workflow may be started manually.",
+                    "description": "Configures branch or pull request targets on which the workflow may be started manually.",
                     "type": "object",
                     "properties": {
                       "branches": {
+                        "description": "Allows manual branch runs on branches matching these globs.",
                         "minItems": 1,
                         "type": "array",
                         "items": {
                           "type": "string"
+                        }
+                      },
+                      "pull_request": {
+                        "description": "Allows manual pull request runs whose base branch matches.",
+                        "type": "object",
+                        "properties": {
+                          "base": {
+                            "minItems": 1,
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Matches the requested pull request base branch against these globs."
+                          }
                         },
-                        "description": "Allows manual runs on branches matching these globs."
+                        "required": [
+                          "base"
+                        ],
+                        "additionalProperties": false
                       }
                     },
-                    "required": [
-                      "branches"
-                    ],
                     "additionalProperties": false
                   }
                 },
@@ -520,6 +535,11 @@
                 "minimum": 0,
                 "maximum": 9007199254740991
               },
+              "pullRequestBase": {
+                "default": false,
+                "description": "Fetches the trusted pull request base as refs/bwv/base with merge-base history.",
+                "type": "boolean"
+              },
               "context": {
                 "default": [],
                 "description": "Unpacks additional git-submodule repositories into the worktree.",
@@ -555,11 +575,19 @@
               },
               "statusComment": {
                 "default": true,
-                "description": "Maintains one pull request status comment as steps finish; defaults to true.",
-                "type": "boolean"
+                "description": "Maintains one pull request status comment as steps finish; a string appends its rendered result when the run ends.",
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                ]
               },
               "loop": {
-                "description": "Repeats all steps while its condition is true and requires on.push or on.manual.",
+                "description": "Repeats all steps while its condition is true and requires on.push or on.manual.branches.",
                 "type": "object",
                 "properties": {
                   "while": {
