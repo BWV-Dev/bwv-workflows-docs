@@ -278,9 +278,16 @@ Every successful run posts a new comment. BWV Workflows never updates an earlier
 one in place, so a retry adds another comment. A run that fails posts none.
 
 The text receives the same safety treatment as a string `statusComment`:
-secrets are scrubbed, `<!--` is escaped so the text cannot imitate BWV
-Workflows markers, and the comment is cut at 30,000 characters. Prefer a string
-`statusComment` when one sticky comment is enough.
+secrets are scrubbed and `<!--` is escaped so the text cannot imitate BWV
+Workflows markers. Because the result is a comment of its own, it is cut at
+60,000 characters; a string `statusComment` shares the status comment with the
+step table and is cut at 30,000. Prefer a string `statusComment` when one sticky
+comment is enough.
+
+Posting the result comment never fails the run. If GitHub still refuses it after
+a few quick retries, the run stays successful and its status comment and check
+run say that the result comment could not be posted, with the command to run the
+workflow again.
 
 ### 6. Choose the clone depth
 

@@ -30,11 +30,11 @@ Dev & Com ask for the review in a comment on an open pull request:
 BWV Workflows then reports the run in two places:
 
 - The usual `bwv/security-review` check run and status comment show the steps. They do not contain the findings. See [the check run and status comment](../pull-requests/read-checks-status).
-- When every step succeeds, a separate **Security review** comment appears. It opens with the reviewed range and the head commit, then a filtering summary with the original, excluded, and kept counts. Each kept finding appears in an overview table and as its own block with severity, category, location, description, exploit scenario, recommendation, and confidence.
+- When every step succeeds, a separate **Security review** comment appears. It opens with the reviewed range and the head commit, then one summary line with the number of findings per severity and the filtering counts, for example `2 findings: 🔴 2 HIGH · Filtering: 2 found, 0 excluded, 2 kept`. Each kept finding follows, most severe first, as its own block: a heading with severity, category, and location, then the description, exploit scenario, recommendation, and confidence.
 
-Every successful run posts a new result comment. BWV Workflows never edits an earlier one, so the comment for an older commit stays as a record. A failed run posts no result comment; read its status comment and check run instead.
+Every successful run posts a new result comment. BWV Workflows never edits an earlier one, so the comment for an older commit stays as a record. A failed run posts no result comment; read its status comment and check run instead. If GitHub refuses the result comment, the run still succeeds and its status comment says the result comment could not be posted; run the review again.
 
-If one per-finding filter step fails, BWV Workflows keeps that finding and notes the warning in the filtering summary. The comment is cut at a fixed size and says how many findings it omitted.
+If one per-finding filter step fails, BWV Workflows keeps that finding and notes the warning under the summary line. The comment is cut at 60,000 characters and says how many findings it omitted.
 
 To run the review again after pushing a fix, comment `/bwv run security-review` again. Use [Retry](../pull-requests/retry) when the run failed.
 
@@ -83,7 +83,7 @@ Keep these three parts of the calling workflow:
 Remove any `with` input you do not need. Every input has a default.
 
 :::tip
-Pin the immutable release tag `@security-review/v1.0.0`, or its full 40-character commit SHA, in production. `@security-review/v1` can move without a change in your repository.
+Pin the immutable release tag `@security-review/v1.0.1`, or its full 40-character commit SHA, in production. `@security-review/v1` can move without a change in your repository.
 :::
 
 ## Generated input reference
@@ -113,7 +113,7 @@ The recipe runs these stages in order:
 
 The audit first receives the complete filtered diff. If the diff is larger than `maxDiffBytes`, the prompt would exceed the one-prompt-file limit, or Claude answers that the prompt is too long, the audit runs without the diff instead. It then reads one filtered diff for each changed file from a scratch folder.
 
-Review text written by the model passes through one sanitizer before it is posted, so it cannot mention users, reference issues, add links, embed HTML, or open headings, lists, or tables. Secrets are scrubbed and the comment is cut at 30,000 characters.
+Review text written by the model passes through one sanitizer before it is posted, so it cannot mention users, reference issues, add links, embed HTML, or open headings, lists, or tables. Secrets are scrubbed and the comment is cut at 60,000 characters.
 
 :::caution
 A pull request's title, description, and changed files are written by its author. The review treats them as untrusted input, but the model can still misjudge them. Use the result as one input to a human review, not as approval.
