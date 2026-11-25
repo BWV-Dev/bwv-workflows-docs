@@ -7,7 +7,7 @@ slug: /recipes
 
 👤 Responsible: Project Leader
 
-Use an official recipe when its trigger and output match the process in your repository. Pin every recipe to a full commit SHA before you merge the configuration.
+Use an official recipe when its trigger and output match the process in your repository. Reference the floating major tag shown on the recipe page, such as `@translation/v1`, so recipe releases reach your project without a change in your repository.
 
 | Recipe                                                                              | What it does                                                                                                                             | Trigger                                                                                                        | Who reviews the output                                                                       |
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -29,7 +29,7 @@ Use an official recipe when its trigger and output match the process in your rep
 4. **Project Leader:** Choose `testcase/batch` when reviewed translations are the source for generated test cases.
 5. **Project Leader:** Choose `common/command-fanout` inside a project recipe when the same project command must run independently for several items.
 6. **Project Leader:** Choose `security-review` when reviewers want an on-demand, advisory security review of a pull request.
-7. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and pin the immutable exact release tag or, preferably for production, its full 40-character commit SHA.
+7. **Project Leader:** Open the recipe page, check its prerequisites, copy the example, and keep its floating major tag. Pin an exact release tag or full commit SHA only when the project must not change without its own commit; see [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe).
 
 :::tip
 Start with each recipe's default toolkit. Override a toolkit only when your repository already has skills or scripts that meet the complete toolkit contract.
@@ -48,4 +48,4 @@ Include:
 
 Open a pull request when you know the fix. Change the recipe, skill, or script together with its tests, and explain which behavior changes for every project that uses it. Never paste private project documents into the shared repository.
 
-Once a fix is released, projects using a moving tag such as `@translation/v1` receive it on their next run. Projects pinned to a commit receive it only after updating the pin. A problem with checks, comments, retries, or triggers belongs to the engine; [ask the BWV Workflows maintainers](/troubleshooting#asking-the-bwv-workflows-maintainers-for-help).
+Once a fix is released, projects using a floating tag such as `@translation/v1` receive it on their next run. Projects pinned to an exact release tag or commit receive it only after updating the pin. A problem with checks, comments, retries, or triggers belongs to the engine; [ask the BWV Workflows maintainers](/troubleshooting#asking-the-bwv-workflows-maintainers-for-help).

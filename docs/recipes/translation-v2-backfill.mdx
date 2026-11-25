@@ -36,7 +36,7 @@ version: 1
 
 workflows:
   - name: translation-v2-backfill
-    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/backfill@translation/v2.0.0
+    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/backfill@translation/v2
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -51,7 +51,7 @@ workflows:
       maxRepairs: 1
 ```
 
-In production, pin the immutable exact `@translation/v2.0.0` tag or, preferably, its full 40-character commit SHA. A branch or moving tag delegates trust to whoever can move it. Use the same pin for grouped and backfill so their cache and structural contracts cannot diverge.
+Use the same `@translation/v2` reference for grouped and backfill so their cache and structural contracts cannot diverge. To pin an exact release or commit instead, see [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe).
 
 ## Use the repository root as the source
 

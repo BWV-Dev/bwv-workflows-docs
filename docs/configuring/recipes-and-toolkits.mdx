@@ -104,15 +104,27 @@ BWV-Dev/bwv-workflows-recipes/recipes/security-review/v1/review.yml@security-rev
 
 Copy the line from the recipe's catalog page rather than building it.
 
-Each recipe family is versioned independently. Use `@translation/v1` for
-stable translation recipes, `@common/v1` for stable common recipes, and
-`@security-review/v1` for the security review recipe. The
-`testcase` family is still alpha, so pin its exact prerelease, currently
-`@testcase/v1.0.0-alpha.1`, instead of expecting a moving major tag.
+Each recipe family is versioned independently. Reference the floating major
+tag of the family you use: `@translation/v1` or `@translation/v2` for
+translation recipes, `@common/v1` for common recipes, and
+`@security-review/v1` for the security review recipe. A recipe release reaches
+your project on its next run without a change in your repository. Each
+recipe's release history is in the
+[`CHANGELOG.md`](https://github.com/BWV-Dev/bwv-workflows-recipes/blob/main/CHANGELOG.md)
+of the recipes repository.
 
-The repository-wide `v1` tag no longer moves. Production projects may pin a
-full 40-character commit SHA when they need every recipe, skill, and script to
-stay on one reviewed revision.
+The `testcase` family is still alpha and has no floating tag, so reference its
+exact prerelease tag, currently `@testcase/v1.0.0-alpha.1`.
+
+:::note Referencing a floating tag trusts the recipe repository
+The floating major tag moves to every compatible release, so referencing it
+trusts the recipe repository with the prompts, skills, and scripts your jobs
+run. A project that must not change without its own commit can reference an
+exact release tag, such as `@<recipe>/vX.Y.Z`, or the full 40-character commit
+SHA instead.
+:::
+
+The repository-wide `v1` tag no longer moves.
 
 The target repository may belong to another organization. BWV Workflows can
 still read an allowlisted shared recipe when the App is installed on both the

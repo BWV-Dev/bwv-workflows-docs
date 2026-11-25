@@ -55,7 +55,7 @@ workflows:
           printf '%s\n' '{"files":[{"args":"docs/specs/login.md"},{"args":"docs/specs/profile.md"}]}'
         outputJson: true
       - id: review
-        uses: BWV-Dev/bwv-workflows-recipes/common/command-fanout@<full-sha-of-reviewed-tag>
+        uses: BWV-Dev/bwv-workflows-recipes/common/command-fanout@common/v1
         with:
           id: document
           items: ${{ steps.plan.output.files }}
@@ -73,9 +73,9 @@ workflows:
 
 Replace the fixed planning output with your repository's planner. Keep `items` as one runtime expression so it resolves to the array rather than text.
 
-### Get the SHA of the latest tag
+### Pin a commit SHA instead of a tag
 
-Replace `<tag>` with the latest release tag:
+The example above references a tag. To fix the recipe to one reviewed commit instead, replace `<tag>` with the release tag you reviewed:
 
 ```bash
 gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
@@ -95,7 +95,7 @@ git ls-remote --tags "$recipe_url" \
   "refs/tags/<tag>" "refs/tags/<tag>^{}"
 ```
 
-Use the `^{}` row when present; otherwise use the tag row. A full SHA fixes the reviewed recipe version; `@common/v1` can move without a change in your repository.
+Use the `^{}` row when present; otherwise use the tag row. Put the full 40-character commit SHA after `@` in the `uses` line. See [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe) for what each reference trusts.
 
 ## Generated input reference
 

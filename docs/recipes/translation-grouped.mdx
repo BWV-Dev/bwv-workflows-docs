@@ -16,9 +16,9 @@ The recipe also keeps cache files aligned with wording that reviewers edit on a 
 
 After each document is translated, the recipe runs its deterministic `checkOutputs` toolkit script. A failed check can resume the same model session for a focused repair, then runs the check again. `maxRepairs` controls those model repair attempts; setting it to `0` keeps verification but disables model repair.
 
-Translation v1.11.4, now included in the floating `translation/v1` tag, accepts a cache when both the Japanese `ja` value and Vietnamese `vi` value omit the final physical line containing only `<br>`, `<br/>`, or `<br />` from a prose segment with a hard break. A hard-break-only line in the middle, an omission on only one side, table cells, headings, and real wording must still match exactly. The publication gate uses the same audit as `cache-in-sync`. A workflow that pins an exact version, such as `@translation/v1.11.3`, keeps running that version: change every translation `uses:` line to `@translation/v1.11.4` or `@translation/v1`, and merge the change into the branch whose `.bwv/workflows.yml` the run reads (the pull request's base branch, or the branch named in `/bwv run`). Then, if a pull request was blocked by `cache-in-sync` only because of this final hard-break line, use **Retry** on that check; you do not need to regenerate the translation or cache.
+The cache check accepts a cache when both the Japanese `ja` value and Vietnamese `vi` value omit the final physical line containing only `<br>`, `<br/>`, or `<br />` from a prose segment with a hard break. A hard-break-only line in the middle, an omission on only one side, table cells, headings, and real wording must still match exactly. The publication gate uses the same audit as `cache-in-sync`.
 
-Translation v1.11.5, now included in the floating `translation/v1` tag, changes how API Blueprint list items are split. A `-` separates a declaration from its description only on the first line of a list item inside an attribute (MSON) declaration. A `-` in a description bullet, or on a later line of a list item such as a subtraction formula, stays ordinary prose. Declarations stay protected, and a cache that holds only a description remains valid. A workflow that pins an exact version, such as `@translation/v1.11.4`, keeps running that version: change every translation `uses:` line to `@translation/v1.11.5` or `@translation/v1`, and merge the change into the branch whose `.bwv/workflows.yml` the run reads. The next run uses the new rule.
+In an API Blueprint list item, a `-` separates a declaration from its description only on the first line of a list item inside an attribute (MSON) declaration. A `-` in a description bullet, or on a later line of a list item such as a subtraction formula, stays ordinary prose. Declarations stay protected, and a cache that holds only a description remains valid.
 
 ## What users see on the pull request
 
@@ -49,7 +49,7 @@ version: 1
 
 workflows:
   - name: translate-specs
-    uses: BWV-Dev/bwv-workflows-recipes/translation/grouped@<full-sha-of-reviewed-tag>
+    uses: BWV-Dev/bwv-workflows-recipes/translation/grouped@translation/v1
     with:
       sourceRoot: docs/specs
       outputRoot: docs_vn/specs
@@ -67,7 +67,7 @@ The recipe owns its triggers and uses its default toolkit when `toolkit` is omit
 
 ## Use the repository root as the source
 
-`translation/v1` (from v1.10.0) also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
+`translation/v1` also accepts `sourceRoot: .` or `sourceRoot: ./` to translate from the repository root.
 
 ```yaml
 with:
@@ -83,7 +83,7 @@ At the repository root, the recipe selects `.md` and `.apib` files recursively. 
 
 ## API Blueprint (`.apib`)
 
-Translation v1.11.1 supports API Blueprint and gives it a separate cache suffix. The floating `translation/v1` tag already includes it. The recipe selects `.apib` alongside `.md` below `sourceRoot`, including when `sourceRoot: .`. One source pull request that changes both formats produces one group, one tracker entry, and one output pull request.
+API Blueprint has a separate cache suffix. The recipe selects `.apib` alongside `.md` below `sourceRoot`, including when `sourceRoot: .`. One source pull request that changes both formats produces one group, one tracker entry, and one output pull request.
 
 For `sourceRoot: docs/specs` and `outputRoot: docs_vn/specs`, outputs map as follows:
 
@@ -94,7 +94,7 @@ For `sourceRoot: docs/specs` and `outputRoot: docs_vn/specs`, outputs map as fol
 
 Markdown paths are unchanged. Same-stem sources such as `a.md` and `a.apib` can be translated together because they produce four distinct files.
 
-If v1.11.0 created an API Blueprint cache at `<outputRoot>/<rel>.vi.json`, v1.11.1 ignores it and writes `<outputRoot>/<rel>.vi.apib.json` on the next translation run. Delete the old cache if it is still present.
+An API Blueprint cache at `<outputRoot>/<rel>.vi.json` is not read. The next translation run writes `<outputRoot>/<rel>.vi.apib.json`. Delete the old cache if it is still present.
 
 | Translate                                                                               | Keep verbatim                                                                                                                                                       |
 | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -137,9 +137,9 @@ translatedAt: 2026-11-05
 
 The metadata footer is always the last block of `.vi.apib`. Official Blueprint parsers may report a harmless “ignoring unrecognized block” warning for it. The recipe does not run a Blueprint parser or validator; it trusts the model to follow these preservation rules.
 
-### Get the SHA of the latest tag
+### Pin a commit SHA instead of a tag
 
-Replace `<tag>` with the latest release tag:
+The example above references a tag. To fix the recipe to one reviewed commit instead, replace `<tag>` with the release tag you reviewed:
 
 ```bash
 gh api repos/BWV-Dev/bwv-workflows-recipes/git/ref/tags/<tag> --jq '.object'
@@ -159,7 +159,7 @@ git ls-remote --tags "$recipe_url" \
   "refs/tags/<tag>" "refs/tags/<tag>^{}"
 ```
 
-Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. A full SHA fixes the reviewed recipe version; `@translation/v1` can move without a change in your repository.
+Use the `^{}` row for an annotated tag. If that row is absent, use the tag row. Put the full 40-character commit SHA after `@` in the `uses` line. See [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe) for what each reference trusts.
 
 ## Generated input reference
 
