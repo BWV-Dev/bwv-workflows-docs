@@ -17,7 +17,7 @@ Translation v1 remains supported. The migration does not change, create, or move
 
 ## Prerequisites
 
-- Pin every v1 translation workflow to its current reviewed version and record the pre-cutover base commit.
+- Keep every v1 translation workflow on its current reviewed configuration and record the pre-cutover base commit.
 - Merge reviewed v1 output pull requests and wait for their cache sync and gates to pass.
 - Close or finish unreviewed v1 output, reviewer-sync, backfill, and repair pull requests. Wait for active, queued, retrying, and retained runs to drain.
 - Freeze source changes and automation that can write the output tree during the cutover.
@@ -34,7 +34,7 @@ version: 1
 
 workflows:
   - name: translate-v2
-    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/grouped@translation/v2.0.0
+    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/grouped@translation/v2
     with:
       sourceRoot: .
       outputRoot: translated
@@ -46,7 +46,7 @@ workflows:
       branchPrefix: bwv/translation-v2
 
   - name: migrate-translation-v2
-    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/migrate@translation/v2.0.0
+    uses: BWV-Dev/bwv-workflows-recipes/translation/v2/migrate@translation/v2
     with:
       sourceRoot: .
       outputRoot: translated
@@ -56,7 +56,7 @@ workflows:
       branchPrefix: bwv/translation-v2
 ```
 
-In production, replace the example refs with the immutable exact `translation/v2.0.0` tag or, preferably, its full 40-character commit SHA. A branch or moving tag delegates trust to whoever can move that ref. Use the same ref for grouped, backfill, and migrate.
+Use the same `translation/v2` reference for grouped, backfill, and migrate. To pin an exact release or commit instead, see [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe).
 
 Merge the configuration pull request while the freeze remains active. Then run:
 
@@ -98,12 +98,12 @@ The [frozen migration contract](https://github.com/BWV-Dev/bwv-workflows-recipes
 
 Keep the source and automation freeze in place. Do not make a config-only revert while schema-v2 caches are active.
 
-1. **Project Leader:** Create one reviewed rollback pull request from the recorded pre-cutover commit. Revert the configuration pin from `translation/v2` to the exact prior `translation/v1` pin and restore the entire translated output tree from that same commit.
+1. **Project Leader:** Create one reviewed rollback pull request from the recorded pre-cutover commit. Revert the `uses:` references from `translation/v2` to the `translation/v1` references they had at that commit and restore the entire translated output tree from that same commit.
 2. **Dev & Com:** Confirm that every already published v2 translation/cache pair is removed from the active tree or replaced by its recorded v1 pair. The v2 files remain recoverable in Git history; rollback does not convert v2 caches back to v1.
 3. **Project Leader:** Merge the rollback pull request and run the v1 predicate audit against the exact restored base.
 4. **Project Leader:** Remove the freeze only after the v1 audit is green and no v2 writer remains active or retained.
 
-Nothing in this runbook changes or moves the immutable v1 release tag or the floating `translation/v1` tag. It changes only your repository's configuration pin and output tree.
+Nothing in this runbook changes or moves any `translation/v1` tag. It changes only your repository's configuration references and output tree.
 
 After new v2 source translations or reviewer edits have been published, automatic rollback is no longer lossless. Export or cherry-pick the reviewed wording, restore the v1 tree from the cutover commit, and synchronize it through v1, or roll forward with a v2 fix. There is no reverse v2-to-v1 cache converter.
 

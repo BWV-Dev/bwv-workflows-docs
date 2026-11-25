@@ -34,7 +34,6 @@ version: 1
 
 workflows:
   - name: translation
-    # This moving tag is intentional for the demo. Production projects should pin a full SHA.
     uses: BWV-Dev/bwv-workflows-recipes/translation/grouped@translation/v1
     with:
       sourceRoot: docs
@@ -50,7 +49,6 @@ workflows:
   - name: translation-backfill
     # Run this manual workflow when first integrating a repository whose source
     # documents have never been translated. Keep it available after initialization.
-    # This moving tag is intentional for the demo. Production projects should pin a full SHA.
     uses: BWV-Dev/bwv-workflows-recipes/translation/backfill@translation/v1
     with:
       sourceRoot: docs
@@ -64,8 +62,8 @@ workflows:
       maxIterations: 3
 ```
 
-:::important Pin recipes in production
-The moving `translation/v1` tag makes this demonstration easy to repeat. In a production project, replace each tag with the approved full 40-character commit SHA.
+:::note Floating recipe tag
+`translation/v1` moves to every compatible release, so recipe releases reach this project without a change in its repository. See [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe) for what that trusts and how to pin an exact release or commit instead.
 :::
 
 :::note Why these recipes warn on denied tools
@@ -225,7 +223,7 @@ In the example run, Com changed one `.vi.md` file. The bot committed only the ma
 
 👤 Responsible: Com
 
-This is safe with `translation/v1.9.0` or later, but it is not the recommended path. The configuration above uses the moving `translation/v1` tag, which currently points to `translation/v1.11.5` (`8d0213ed78023113a04d78cdbba18f47b4c0bddb`).
+This is safe with the `translation/v1` recipe used above, but it is not the recommended path.
 
 When a push to `bwv-docs` changes Vietnamese Markdown, `repair-base-vi-cache` audits the current Japanese, Vietnamese, and cache content. Safe drift opens a draft PR titled `chore(vi): repair translation cache drift` from `bwv/translation/repair-<full-push-SHA>`, with the `bwv-automation` label. It changes only matching existing `.vi.json` entries; review and merge that PR after **Every cache matches its translation** passes. Content whose cache is already correct is a no-op.
 
