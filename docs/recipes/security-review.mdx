@@ -68,6 +68,7 @@ workflows:
         uses: BWV-Dev/bwv-workflows-recipes/recipes/security-review/v1/review.yml@security-review/v1
         with:
           model: sonnet
+          effort: high
           excludeDirectories: vendor,generated
           customSecurityScanInstructions: .bwv/security-review/custom-scan.txt
           falsePositiveFilteringInstructions: .bwv/security-review/filtering.txt
@@ -83,7 +84,7 @@ Keep these three parts of the calling workflow:
 Remove any `with` input you do not need. Every input has a default.
 
 :::tip
-Pin the immutable release tag `@security-review/v1.0.1`, or its full 40-character commit SHA, in production. `@security-review/v1` can move without a change in your repository.
+Pin the immutable release tag `@security-review/v1.0.2`, or its full 40-character commit SHA, in production. `@security-review/v1` can move without a change in your repository.
 :::
 
 ## Generated input reference
@@ -92,14 +93,15 @@ Pin the immutable release tag `@security-review/v1.0.1`, or its full 40-characte
 
 ## Inputs explained
 
-| Input                                | Meaning                                                                                                                                                          | Example                                |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `model`                              | Claude model alias used for the audit and for every per-finding filter. Defaults to `sonnet`; set `opus` for the model that the upstream action uses by default. | `sonnet`                               |
-| `excludeDirectories`                 | Comma-separated repository directories to leave out of the review and out of the final findings. Use letters, digits, `_`, `.`, `/`, `,`, and `-` only.          | `vendor,generated`                     |
-| `customSecurityScanInstructions`     | Repository-relative text file with extra audit categories. Read from the base commit. A missing file is ignored.                                                 | `.bwv/security-review/custom-scan.txt` |
-| `falsePositiveFilteringInstructions` | Repository-relative text file that replaces the default per-finding filter policy. Read from the base commit. A missing file keeps the default.                  | `.bwv/security-review/filtering.txt`   |
-| `maxDiffBytes`                       | Largest filtered diff that the audit receives in its prompt. A bigger diff makes the audit run without it. Defaults to 1 MiB, the most one prompt file can hold. | `1048576`                              |
-| `toolkit`                            | Complete replacement for the default review runtime. Omit it to use the maintained default.                                                                      | Omitted                                |
+| Input                                | Meaning                                                                                                                                                                                        | Example                                |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `model`                              | Claude model alias used for the audit and for every per-finding filter. Defaults to `sonnet`; set `opus` for the model that the upstream action uses by default.                               | `sonnet`                               |
+| `effort`                             | Reasoning effort for the audit and every per-finding filter: `low`, `medium`, `high`, `xhigh`, or `max`. Defaults to `high`. Higher thinks longer and costs more; lower is faster and cheaper. | `high`                                 |
+| `excludeDirectories`                 | Comma-separated repository directories to leave out of the review and out of the final findings. Use letters, digits, `_`, `.`, `/`, `,`, and `-` only.                                        | `vendor,generated`                     |
+| `customSecurityScanInstructions`     | Repository-relative text file with extra audit categories. Read from the base commit. A missing file is ignored.                                                                               | `.bwv/security-review/custom-scan.txt` |
+| `falsePositiveFilteringInstructions` | Repository-relative text file that replaces the default per-finding filter policy. Read from the base commit. A missing file keeps the default.                                                | `.bwv/security-review/filtering.txt`   |
+| `maxDiffBytes`                       | Largest filtered diff that the audit receives in its prompt. A bigger diff makes the audit run without it. Defaults to 1 MiB, the most one prompt file can hold.                               | `1048576`                              |
+| `toolkit`                            | Complete replacement for the default review runtime. Omit it to use the maintained default.                                                                                                    | Omitted                                |
 
 ## What the review does
 
