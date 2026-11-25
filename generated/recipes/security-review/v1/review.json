@@ -9,6 +9,20 @@
       "description": "Claude model alias used for both the audit and per-finding filter."
     },
     {
+      "name": "effort",
+      "type": "string",
+      "required": false,
+      "default": "high",
+      "description": "Claude reasoning effort used for the audit, its retry, and the per-finding filter.",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    {
       "name": "excludeDirectories",
       "type": "string",
       "required": false,
