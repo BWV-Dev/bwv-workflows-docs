@@ -20,7 +20,7 @@ Backfill creates output for an untranslated backlog. It does not reuse v1 cache 
 ## Prerequisites
 
 - Add and validate [translation/v2/grouped](./translation-v2-grouped) first.
-- Use the same `sourceRoot`, `outputRoot`, `glossary`, `exclude`, and `branchPrefix` in both workflows.
+- Use the same `sourceRoot`, `outputRoot`, `glossary`, `repoRead`, `globalGlossary`, `exclude`, and `branchPrefix` in both workflows.
 - Put every branch on which people may start backfill in `branches`.
 - Finish or close any output pull request that owns the same pairs. The engine's open-output preflight refuses overlapping grouped, repair, migration, or backfill work before planning and again before publication.
 - Keep whitespace out of configured paths and document paths.
@@ -52,6 +52,16 @@ workflows:
 ```
 
 Use the same `@translation/v2` reference for grouped and backfill so their cache and structural contracts cannot diverge. To pin an exact release or commit instead, see [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe).
+
+## Configure glossary and repository reads
+
+Keep only project-specific terms and rules in the project glossary. By default, `globalGlossary: true` makes the miss-only model read the complete recipe-pinned Japanese-to-Vietnamese IT glossary first, then the complete project glossary. The global glossary supplies Vietnamese writing rules, symbol conversions, items to keep untranslated, and common terms. Both files form one rule set. A project term or rule wins when it differs from the global glossary.
+
+Set `globalGlossary: false` when the project must use only its own glossary. Keep grouped and backfill on the same setting.
+
+By default, `repoRead: true` lets the miss-only model use read-only `Read`, `Glob`, and `Grep` when a glossary rule points to another repository file or depends on the document path. For example, a rule can direct the model to approved wording in `screen_vn/common.vi.md`. The prepared misses data includes the repository-relative source path, translation path, and selected `repoRead` mode. The skill does not search other documents proactively. It reads repository files only when the glossary directs it, and it can read the document's own existing translation when present.
+
+Set `repoRead: false` when the project needs the earlier sealed-file-only boundary. The model can then read only the misses file, the project glossary, the enabled global glossary, the sealed Japanese source, and the document's existing Vietnamese translation when present.
 
 ## Use the repository root as the source
 
@@ -105,7 +115,9 @@ A source changed after its existing v2 translation is `pending`; grouped v2 owns
 | ---------------- | ------------------------------------------------------------------------------------------------------------- | --------------------- |
 | `sourceRoot`     | Root of the Japanese `.md` and `.apib` source tree; `.` or `./` selects the repository root.                  | `docs/specs`          |
 | `outputRoot`     | Root folder for mirrored native-v2 document/cache pairs.                                                      | `docs_vn/specs`       |
-| `glossary`       | Markdown file containing project terms and translation rules.                                                 | `docs/glossary.md`    |
+| `glossary`       | Markdown file containing only project-specific terms and translation rules.                                   | `docs/glossary.md`    |
+| `repoRead`       | Allow glossary-directed read-only repository lookups and path-dependent rules. Defaults to `true`.            | `true`                |
+| `globalGlossary` | Read the recipe-pinned global glossary before the project glossary. Defaults to `true`; project rules win.    | `true`                |
 | `exclude`        | Repository-relative source globs omitted from the v2 adoption backlog. A supplied list replaces the sentinel. | `["docs/archive/**"]` |
 | `branches`       | Branches on which people may start backfill and against which batch pull requests open.                       | `[main]`              |
 | `branchPrefix`   | Prefix for deterministic backfill batch branches. Use the grouped-v2 prefix.                                  | `bwv/translation`     |

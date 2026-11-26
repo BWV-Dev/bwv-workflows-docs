@@ -20,6 +20,20 @@
       "description": "Project terminology and translation rules read by the miss-only model step."
     },
     {
+      "name": "repoRead",
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Allow the miss-only model to read repository files for glossary cross-references and path-dependent rules."
+    },
+    {
+      "name": "globalGlossary",
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Read recipe-pinned global terminology and rules before the project glossary, which overrides conflicts."
+    },
+    {
       "name": "exclude",
       "type": "array",
       "required": false,
