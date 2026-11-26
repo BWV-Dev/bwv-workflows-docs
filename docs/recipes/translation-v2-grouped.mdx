@@ -30,7 +30,7 @@ Compared with v1, the model does not write the final Markdown structure. It tran
 
 - Keep Japanese Markdown and API Blueprint below one repository-relative folder, such as `docs/specs`.
 - Choose a separate mirrored output folder, such as `docs_vn/specs`.
-- Add a Markdown glossary with project terminology and translation rules.
+- Add a Markdown project glossary with project-specific terminology and rules.
 - Use a sync branch and merge it into `syncBase` through a pull request.
 - Protect `syncBase` and every branch in `gateBases` with the `cache-in-sync` check.
 - Ask the BWV Workflows maintainers to confirm that your repository runs the translation v2 GA engine baseline and retained publication fencing.
@@ -63,6 +63,16 @@ workflows:
 ```
 
 The inline `@translation/v2` selects the recipe, skill, and trusted scripts together. To pin an exact release or commit instead, see [Use an official shared recipe](../configuring/recipes-and-toolkits#2-use-an-official-shared-recipe).
+
+## Configure glossary and repository reads
+
+Keep only project-specific terms and rules in the project glossary. By default, `globalGlossary: true` makes the miss-only model read the complete recipe-pinned Japanese-to-Vietnamese IT glossary first, then the complete project glossary. The global glossary supplies Vietnamese writing rules, symbol conversions, items to keep untranslated, and common terms. Both files form one rule set. A project term or rule wins when it differs from the global glossary.
+
+Set `globalGlossary: false` when the project must use only its own glossary. Keep grouped and backfill on the same setting.
+
+By default, `repoRead: true` lets the miss-only model use read-only `Read`, `Glob`, and `Grep` when a glossary rule points to another repository file or depends on the document path. For example, a rule can direct the model to approved wording in `screen_vn/common.vi.md`. The prepared misses data includes the repository-relative source path, translation path, and selected `repoRead` mode. The skill does not search other documents proactively. It reads repository files only when the glossary directs it, and it can read the document's own existing translation when present.
+
+Set `repoRead: false` when the project needs the earlier sealed-file-only boundary. The model can then read only the misses file, the project glossary, the enabled global glossary, the sealed Japanese source, and the document's existing Vietnamese translation when present.
 
 ## Use the repository root as the source
 
@@ -142,7 +152,9 @@ Do not hand-edit the cache to bypass the gate. One refused artifact makes the re
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
 | `sourceRoot`       | Root of the Japanese `.md` and `.apib` source tree; `.` or `./` selects the repository root.                                   | `docs/specs`          |
 | `outputRoot`       | Root folder for mirrored translations and their extension-specific native-v2 caches.                                           | `docs_vn/specs`       |
-| `glossary`         | Markdown file containing project terms and translation rules.                                                                  | `docs/glossary.md`    |
+| `glossary`         | Markdown file containing only project-specific terms and translation rules.                                                    | `docs/glossary.md`    |
+| `repoRead`         | Allow glossary-directed read-only repository lookups and path-dependent rules. Defaults to `true`.                             | `true`                |
+| `globalGlossary`   | Read the recipe-pinned global glossary before the project glossary. Defaults to `true`; project rules win conflicts.           | `true`                |
 | `exclude`          | Repository-relative source globs omitted from grouping, cache checks, sync, and repair. A supplied list replaces the sentinel. | `["docs/archive/**"]` |
 | `syncBase`         | Branch receiving the merged source sync and generated translation pull requests.                                               | `main`                |
 | `sourceBranch`     | Head branch whose merged pull request into `syncBase` starts translation.                                                      | `docs-sync`           |
